@@ -4,6 +4,8 @@ const child_process = require('child_process');
 
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
+
+/** @type {child_process.SpawnSyncOptionsWithStringEncoding} */
 const options = {
   cwd: process.cwd(),
   env: process.env,
@@ -15,6 +17,9 @@ if (os.type() === 'Windows_NT') {
   options.shell = true;
 }
 
+/**
+ * @type {child_process.SpawnSyncReturns<string>}
+ */
 let result;
 
 if (process.cwd() !== root || args.length) {
@@ -26,4 +31,4 @@ if (process.cwd() !== root || args.length) {
   result = child_process.spawnSync('yarn', ['bootstrap'], options);
 }
 
-process.exitCode = result.status;
+process.exitCode = result.status ? result.status : undefined;

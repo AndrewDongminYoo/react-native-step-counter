@@ -65,7 +65,6 @@ To edit the Objective-C or Swift files, open `example/ios/StepCounterExample.xcw
 
 To edit the Java or Kotlin files, open `example/android` in Android studio and find the source files at `react-native-step-counter` under `Android`.
 
-
 ### Commit message convention
 
 We follow the [conventional commits specification](https://www.conventionalcommits.org/en) for our commit messages:
