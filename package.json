@@ -52,13 +52,14 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@evilmartians/lefthook": "^1.2.8",
     "@commitlint/config-conventional": "^17.4.2",
+    "@evilmartians/lefthook": "^1.2.8",
     "@react-native-community/eslint-config": "^3.2.0",
     "@release-it/conventional-changelog": "^5.1.1",
     "@types/jest": "^29.4.0",
     "@types/react": "~18.0.27",
     "@types/react-native": "0.71.1",
+    "babel-plugin-module-resolver": "^5.0.0",
     "commitlint": "^17.4.2",
     "del-cli": "^5.0.0",
     "eslint": "^8.33.0",
