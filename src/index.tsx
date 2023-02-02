@@ -1,43 +1,33 @@
-import StepCounter from './NativeStepCounter';
-import { IDate, PermissionStatus } from './types';
+import StepCounter, { LINKING_ERROR } from './NativeStepCounter';
 
-export function isStepCountingSupported(
-  callback: (error: any, isAvailable: boolean) => void
-) {
-  return StepCounter.isStepCountingSupported(callback);
+if (StepCounter === null) {
+  throw new Error(LINKING_ERROR);
+}
+export function isStepCountingSupported() {
+  return StepCounter.isStepCountingSupported();
 }
 
 export function queryStepCounterDataBetweenDates(
-  startDate: IDate,
-  endDate: IDate,
-  handler: (error: any, stepCounterData: any) => void
+  startDate: number,
+  endDate: number
 ) {
-  return StepCounter.queryStepCounterDataBetweenDates(
-    startDate,
-    endDate,
-    handler
-  );
+  return StepCounter.queryStepCounterDataBetweenDates(startDate, endDate);
 }
 
 export function stopStepCounterUpdate() {
   return StepCounter.stopStepCounterUpdate();
 }
 
-export function startStepCounterUpdate(
-  date: IDate,
-  handler: (stepCounterData: any) => void
-) {
-  return StepCounter.startStepCounterUpdate(date, handler);
+export function startStepCounterUpdate(date: number) {
+  return StepCounter.startStepCounterUpdate(date);
 }
 
-export function authorizationStatus(
-  callback: (error: any, status: PermissionStatus) => void
-) {
-  return StepCounter.authorizationStatus(callback);
+export function checkPermission() {
+  return StepCounter.checkPermission();
 }
 
 export default {
-  authorizationStatus,
+  checkPermission,
   isStepCountingSupported,
   queryStepCounterDataBetweenDates,
   startStepCounterUpdate,

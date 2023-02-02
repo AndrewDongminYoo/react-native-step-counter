@@ -25,10 +25,7 @@
     }
   },
   "hooks": {
-    "before:init": [
-      "npm run lint",
-      "npm test"
-    ],
+    "before:init": ["npm run lint", "npm test"],
     "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./package-lock.json",
     "after:git:release": "echo After git push, before github release",
     "before:release": "npm run release:changelog:fix",

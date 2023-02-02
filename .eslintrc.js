@@ -1,7 +1,14 @@
 /** @type {import('eslint').ESLint.Options} */
 module.exports = {
   root: true,
-  extends: ['@react-native-community', 'prettier'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    '@react-native-community',
+    'prettier',
+  ],
+  plugins: ['@typescript-eslint'],
+  parser: '@typescript-eslint/parser',
   rules: {
     'prettier/prettier': [
       'error',
@@ -13,6 +20,7 @@ module.exports = {
         useTabs: false,
       },
     ],
+    '@typescript-eslint/no-explicit-any': 'warn',
   },
   ignorePatterns: ['node_modules/', 'lib/'],
 };
