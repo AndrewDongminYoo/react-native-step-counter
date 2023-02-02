@@ -18,6 +18,11 @@ lint:
   disabled:
     - shfmt
     - oxipng
+  ignore:
+    - linters: 
+      - shellcheck
+      paths: 
+      - '**/gradlew'
 runtimes:
   enabled:
     - go@1.18.3
