@@ -1,4 +1,3 @@
-import { PermissionStatus } from 'react-native';
 import { TurboModule, TurboModuleRegistry } from 'react-native';
 import { Platform } from 'react-native';
 
@@ -21,19 +20,29 @@ export type StepCountData = {
 
 export interface Spec extends TurboModule {
   getConstants(): {
-    platform: string;
+    platform: string; // 'ios'|'android'
   };
   isStepCountingSupported(): boolean;
   isWritingStepsSupported(): boolean;
   startStepCounterUpdate(from: number): Promise<StepCountData>;
   stopStepCounterUpdate(): void;
   queryStepCounterDataBetweenDates(
-    startDate: number,
+    startDate: number, // new Date()
     endDate: number
   ): Promise<StepCountData[]>;
   requestPermission(): Promise<PermissionStatus>;
   checkPermission(): PermissionStatus;
 }
+
+const RESULTS = Object.freeze({
+  UNAVAILABLE: 'unavailable', // no-support device
+  BLOCKED: 'blocked', // never_ask_again in Android
+  DENIED: 'denied', // disallowed
+  GRANTED: 'granted', // allowed
+  LIMITED: 'limited', // partial permission allowed
+} as const);
+type Values<T extends object> = T[keyof T];
+type PermissionStatus = Values<typeof RESULTS>;
 
 const StepCounterModule = TurboModuleRegistry.getEnforcing<Spec>('StepCounter');
 

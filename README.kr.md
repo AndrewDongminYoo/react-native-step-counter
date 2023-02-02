@@ -2,7 +2,7 @@
 
 리액트네이티브 모바일 디바이스를 위한 걸음 측정 라이브러리입니다.
 
-## Installation
+## 설치
 
 ```sh
 npm install react-native-step-counter
@@ -11,21 +11,21 @@ npm install react-native-step-counter
 yarn add react-native-step-counter
 ```
 
-## Interface
+## 인터페이스
 
-- `requestPermission`: Asynchronously requests motion tracking permission from the user. Returns a promise that resolves with the permission status.
+- `requestPermission` '권한 요청': 사용자에게 모션 추적 권한을 비동기적으로 요청합니다. 사용 권한 상태를 확인할 수 있는 프로미스 객체를 반환합니다.
 
-- `checkPermission`: Synchronously retrieves the current motion tracking permission status. Returns the permission status.
+- `checkPermission` '권한 확인': 현재 모션 추적 권한 상태를 동기적으로 체크합니다. 권한 상태를 참/거짓으로 반환합니다.
 
-- `startStepCounterUpdate`: Starts updating StepCounter data. Returns a listener that should be passed to stopStepCounterUpdates to stop the updates.
+- `startStepCounterUpdate` '걸음 수 측정 시작': StepCounter 데이터 업데이트를 시작합니다. 추후 StepCounter 업데이트를 중지할 수 있도록 이벤트 수신기를 리턴합니다.
 
-- `stopStepCounterUpdate`: Stops updating stepCounter data. Accepts a listener returned by startStepCounterUpdates.
+- `stopStepCounterUpdate` '걸음 수 측정 종료': StepCounter 데이터 업데이트를 중지합니다. startStepCounterUpdate에서 반환된 수신기를 인수로 받아 제거합니다.
 
-- `PermissionStatus`: An enumeration of possible permission statuses.
+- `PermissionStatus` '권한 상태': 가능한 권한 상태의 열거(Enum 타입)입니다.
 
-## Usage
+## 용법
 
-To use the module, first import it in your React component:
+모듈을 사용하려면 먼저 React Component로 임포트해 가져옵니다:
 
 ```typescript
 import {
@@ -37,19 +37,19 @@ import {
 } from 'react-native-step-counter';
 ```
 
-Then, you can use the requestMotionTrackingPermission function to request permission from the user:
+그런 다음 requestMotionTrackingPermission 기능을 사용하여 사용자에게 권한을 요청할 수 있습니다:
 
 ```typescript
 const status = await requestMotionTrackingPermission();
 ```
 
-You can use the queryMotionTrackingPermission function to retrieve the current permission status:
+queryMotionTrackingPermission 함수를 사용하여 현재 권한 상태를 검색할 수 있습니다:
 
 ```typescript
 const status = await queryMotionTrackingPermission();
 ```
 
-Once you have permission, you can start and stop stepCounter updates:
+권한이 확인되면 stepCounter 업데이트를 시작 및 중지할 수 있습니다:
 
 ```typescript
 const stepCounterListener = startStepCounterUpdates();
@@ -57,7 +57,7 @@ const stepCounterListener = startStepCounterUpdates();
 stopStepCounterUpdates(stepCounterListener);
 ```
 
-Here's an example of a complete React component that uses the NativeStepCounter:
+다음은 NativeStepCounter를 사용하는 전체 React 컴포넌트의 예입니다:
 
 ```typescript
 import React, { Component } from 'react';
@@ -130,14 +130,12 @@ class App extends Component {
 export default App;
 ```
 
-## Contributing
+## 기여
 
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
+[기여 가이드](CONTRIBUTING.md)에서 저장소 및 개발 워크플로우에 기여하는 방법을 알아보십시오.
 
-## License
+## 라이선스
 
 MIT
-
----
 
 Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)

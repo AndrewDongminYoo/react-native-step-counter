@@ -28,9 +28,12 @@ def getExtOrIntegerDefault(name) {
 }
 
 android {
-  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
+    ndkVersion getExtOrIntegerDefault("ndkVersion")
+    buildToolsVersion getExtOrIntegerDefault("buildToolsVersion")
+    compileSdkPreview getExtOrIntegerDefault("compileSdkVersion")
+    compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
-  defaultConfig {
+    defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
     buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
@@ -38,8 +41,16 @@ android {
 
   buildTypes {
     release {
-      minifyEnabled false
+        // signingConfig signingConfigs.release
+        minifyEnabled false
+        versionNameSuffix 'prod'
+        multiDexEnabled false
     }
+    debug {
+        signingConfig signingConfigs.debug
+        versionNameSuffix 'dev'
+        multiDexEnabled true
+      }
   }
 
   lintOptions {
@@ -53,7 +64,7 @@ android {
 
   sourceSets {
     main {
-      if (isNewArchitectureEnabled()) {
+      if (isNewArchitectureEnabled) {
           java.srcDirs += [
             // This is needed to build Kotlin project with NewArch enabled
             "${project.buildDir}/generated/source/codegen/java"
