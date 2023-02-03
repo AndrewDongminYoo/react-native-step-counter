@@ -19,11 +19,4 @@ public class StepCounterModule extends NativeStepCounterSpec {
     return NAME;
   }
 
-
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-  @Override
-  public double multiply(double a, double b) {
-    return a * b;
-  }
 }

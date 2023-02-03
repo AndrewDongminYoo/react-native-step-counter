@@ -28,16 +28,16 @@ public class StepCounterPackage extends TurboReactPackage {
     return () -> {
       final Map<String, ReactModuleInfo> moduleInfos = new HashMap<>();
       moduleInfos.put(
-              StepCounterModule.NAME,
-              new ReactModuleInfo(
-                      StepCounterModule.NAME,
-                      StepCounterModule.NAME,
-                      false, // canOverrideExistingModule
-                      false, // needsEagerInit
-                      true, // hasConstants
-                      false, // isCxxModule
-                      true // isTurboModule
-      ));
+        StepCounterModule.NAME,
+        new ReactModuleInfo(
+          StepCounterModule.NAME,
+          StepCounterModule.NAME,
+          false, // canOverrideExistingModule
+          false, // needsEagerInit
+          true, // hasConstants
+          false, // isCxxModule
+          true // isTurboModule
+        ));
       return moduleInfos;
     };
   }
