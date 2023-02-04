@@ -82,6 +82,8 @@ repositories {
 dependencies {
   //noinspection GradleDynamicVersion
   implementation 'com.facebook.react:react-android:0.71.2'
+  implementation 'com.alibaba.fastjson2:fastjson2:2.0.23'
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
 }
 
 if (isNewArchitectureEnabled()) {
