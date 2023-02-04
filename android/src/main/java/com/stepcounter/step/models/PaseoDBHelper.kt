@@ -902,7 +902,6 @@ class PaseoDBHelper(context: Context) :
     // retrieve the average number of steps taken in timeUnit (day, week,...)
     fun getAverageSteps(timeUnit: String, weekStart: Int = 2): Int {
         var theQuery = ""
-        var result = 0
         val db = writableDatabase
         val cursor: Cursor?
         when (timeUnit) {
@@ -963,7 +962,7 @@ class PaseoDBHelper(context: Context) :
             db.close()
             return 0
         }
-        result = if (cursor!!.moveToFirst()) {
+        val result = if (cursor!!.moveToFirst()) {
             cursor.getInt(cursor.getColumnIndexOrThrow("maxSteps"))
         } else {
             0

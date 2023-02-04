@@ -34,15 +34,13 @@ export interface Spec extends TurboModule {
   checkPermission(): PermissionStatus;
 }
 
-const RESULTS = Object.freeze({
-  UNAVAILABLE: 'unavailable', // no-support device
-  BLOCKED: 'blocked', // never_ask_again in Android
-  DENIED: 'denied', // disallowed
-  GRANTED: 'granted', // allowed
-  LIMITED: 'limited', // partial permission allowed
-} as const);
-type Values<T extends object> = T[keyof T];
-type PermissionStatus = Values<typeof RESULTS>;
+enum PermissionStatus {
+  UNAVAILABLE = 'unavailable', // no-support device
+  BLOCKED = 'blocked', // never_ask_again in Android
+  DENIED = 'denied', // disallowed
+  GRANTED = 'granted', // allowed
+  LIMITED = 'limited', // partial permission allowed
+}
 
 const StepCounterModule = TurboModuleRegistry.getEnforcing<Spec>('StepCounter');
 

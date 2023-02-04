@@ -5,8 +5,8 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.3.1'
-    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20'
+    classpath 'com.android.tools.build:gradle:7.4.1'
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0'
   }
 }
 
@@ -16,6 +16,12 @@ boolean isNewArchitectEnabled() {
 
 apply plugin: "com.android.library"
 apply plugin: 'org.jetbrains.kotlin.android'
+
+ext {
+  ndkVersion = '23.1.7779620'
+  compileSdkVersion = 33
+  buildToolsVersion = '33.0.1'
+}
 
 if (isNewArchitectEnabled()) {
   apply plugin: "com.facebook.react"
@@ -30,10 +36,9 @@ def getExtOrIntegerDefault(name) {
 }
 
 android {
-  ndkVersion StepCounter_ndkversion
-  buildToolsVersion '33.0.1'
-  compileSdk compileSdkVersion
-  compileSdkVersion getExtOrIntegerDefault("compileSdk")
+  ndkVersion ndkVersion
+  buildToolsVersion buildToolsVersion
+  compileSdk 33
 
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
@@ -59,8 +64,8 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
   }
 }
 
@@ -69,11 +74,9 @@ repositories {
   google()
 }
 
-
 dependencies {
   //noinspection GradleDynamicVersion
   implementation 'com.facebook.react:react-android:0.71.2'
-  implementation 'com.alibaba.fastjson2:fastjson2:2.0.23'
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
 }
 

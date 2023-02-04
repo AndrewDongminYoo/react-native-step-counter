@@ -16,10 +16,14 @@
 
     <uses-feature
         android:name="android.hardware.sensor.stepcounter"
-        android:required="true" />
+        android:required="true"
+        tools:targetApi="eclair"
+        tools:ignore="ObsoleteSdkInt" />
     <uses-feature
         android:name="android.hardware.sensor.stepdetector"
-        android:required="true" />
+        android:required="true"
+        tools:targetApi="eclair"
+        tools:ignore="ObsoleteSdkInt" />
 
     <queries>
         <intent>
@@ -29,9 +33,8 @@
 
     <application
         android:allowBackup="false"
-        android:appCategory="audio"
-        android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="o">
         <service
             android:name=".step.background.StepCounterService"
@@ -40,6 +43,7 @@
             android:name=".step.utils.DateHandler"
             android:enabled="true"
             android:exported="true" />
+
         <receiver
             android:name=".step.background.RebootActionReceiver"
             android:enabled="true"
@@ -59,7 +63,7 @@
             android:name=".step.background.ReStarter"
             android:enabled="true"
             android:exported="true"
-            android:permission="false">
+            android:permission="@string/androidx_startup">
             <intent-filter>
                 <action android:name="restartservice" />
             </intent-filter>

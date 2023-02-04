@@ -1,6 +1,6 @@
 # react-native-step-counter
 
-리액트네이티브 모바일 디바이스를 위한 걸음 측정 라이브러리입니다.
+리액트네이티브 모바일 애플리케이션을 위한 걸음 측정 라이브러리입니다.
 
 ## Installation
 
@@ -8,7 +8,7 @@
 npm install react-native-step-counter
 
 # or if you use Yarn,
-yarn add react-native-step-counter
+yarn add react-native-step-counter
 ```
 
 ## Interface
