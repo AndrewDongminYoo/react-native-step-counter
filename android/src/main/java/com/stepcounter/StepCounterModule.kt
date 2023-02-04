@@ -1,22 +1,16 @@
-package com.stepcounter;
+package com.stepcounter
 
-import androidx.annotation.NonNull;
-
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.annotations.ReactModule
 
 @ReactModule(name = StepCounterModule.NAME)
-public class StepCounterModule extends NativeStepCounterSpec {
-  public static final String NAME = "StepCounter";
+class StepCounterModule(reactContext: ReactApplicationContext) :
+    NativeStepCounterSpec(reactContext) {
+    override fun getName(): String {
+        return NAME
+    }
 
-  public StepCounterModule(ReactApplicationContext reactContext) {
-    super(reactContext);
-  }
-
-  @Override
-  @NonNull
-  public String getName() {
-    return NAME;
-  }
-
+    companion object {
+        const val NAME = "StepCounter"
+    }
 }

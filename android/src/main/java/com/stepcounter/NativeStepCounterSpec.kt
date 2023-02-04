@@ -1,33 +1,25 @@
-package com.stepcounter;
+package com.stepcounter
 
-import androidx.annotation.NonNull;
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
 
-import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.bridge.ReactApplicationContext;
+open class NativeStepCounterSpec(reactContext: ReactApplicationContext) : NativeModule {
+    init {
+        reactContext.applicationContext
+    }
 
-public class NativeStepCounterSpec implements NativeModule {
-  public NativeStepCounterSpec(ReactApplicationContext reactContext) {
-    reactContext.getApplicationContext();
-  }
+    override fun getName(): String {
+        return "NativeStepCounterSpec"
+    }
 
-  @NonNull
-  public String getName() {
-    return "NativeStepCounterSpec";
-  }
+    override fun initialize() {}
+    override fun canOverrideExistingModule(): Boolean {
+        return false
+    }
 
-  public void initialize() {
-  }
+    @Deprecated("")
+    override fun onCatalystInstanceDestroy() {
+    }
 
-  public boolean canOverrideExistingModule() {
-    return false;
-  }
-
-  /**
-   * @deprecated
-   */
-  public void onCatalystInstanceDestroy() {
-  }
-
-  public void invalidate() {
-  }
+    override fun invalidate() {}
 }

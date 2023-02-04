@@ -1,44 +1,33 @@
-package com.stepcounter;
+package com.stepcounter
 
-import androidx.annotation.Nullable;
+import com.facebook.react.TurboReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.model.ReactModuleInfo
+import com.facebook.react.module.model.ReactModuleInfoProvider
 
-import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.module.model.ReactModuleInfo;
-import com.facebook.react.module.model.ReactModuleInfoProvider;
-import com.facebook.react.TurboReactPackage;
-
-import java.util.HashMap;
-import java.util.Map;
-
-public class StepCounterPackage extends TurboReactPackage {
-
-  @Nullable
-  @Override
-  public NativeModule getModule(String name, ReactApplicationContext reactContext) {
-    if (name.equals(StepCounterModule.NAME)) {
-      return new StepCounterModule(reactContext);
-    } else {
-      return null;
+class StepCounterPackage : TurboReactPackage() {
+    override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
+        return if (name == StepCounterModule.NAME) {
+            StepCounterModule(reactContext)
+        } else {
+            null
+        }
     }
-  }
 
-  @Override
-  public ReactModuleInfoProvider getReactModuleInfoProvider() {
-    return () -> {
-      final Map<String, ReactModuleInfo> moduleInfos = new HashMap<>();
-      moduleInfos.put(
-        StepCounterModule.NAME,
-        new ReactModuleInfo(
-          StepCounterModule.NAME,
-          StepCounterModule.NAME,
-          false, // canOverrideExistingModule
-          false, // needsEagerInit
-          true, // hasConstants
-          false, // isCxxModule
-          true // isTurboModule
-        ));
-      return moduleInfos;
-    };
-  }
+    override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
+        return ReactModuleInfoProvider {
+            val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
+            moduleInfos[StepCounterModule.NAME] = ReactModuleInfo(
+                StepCounterModule.NAME,
+                StepCounterModule.NAME,
+                false,  // canOverrideExistingModule
+                false,  // needsEagerInit
+                true,  // hasConstants
+                false,  // isCxxModule
+                true // isTurboModule
+            )
+            moduleInfos
+        }
+    }
 }
