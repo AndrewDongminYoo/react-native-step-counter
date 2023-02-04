@@ -9,13 +9,13 @@ buildscript {
   }
 }
 
-def isNewArchitectureEnabled() {
+boolean isNewArchitectEnabled() {
   return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
 }
 
 apply plugin: "com.android.library"
 
-if (isNewArchitectureEnabled()) {
+if (isNewArchitectEnabled()) {
   apply plugin: "com.facebook.react"
 }
 
@@ -36,7 +36,7 @@ android {
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
-    buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+    buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectEnabled().toString()
     signingConfig signingConfigs.debug
   }
 
@@ -60,17 +60,6 @@ android {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
-
-  sourceSets {
-    main {
-      if (isNewArchitectureEnabled()) {
-        java.srcDirs += [
-            // This is needed to build Kotlin project with NewArch enabled
-            "${project.buildDir}/generated/source/codegen/java"
-        ]
-      }
-    }
-  }
 }
 
 repositories {
@@ -86,7 +75,15 @@ dependencies {
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
 }
 
-if (isNewArchitectureEnabled()) {
+if (isNewArchitectEnabled()) {
+  sourceSets {
+    main {
+      java.srcDirs += [
+          // This is needed to build Kotlin project with NewArch enabled
+          "${project.buildDir}/generated/source/codegen/java"
+      ]
+    }
+  }
   react {
     jsRootDir = file("../src/")
     libraryName = "StepCounter"
