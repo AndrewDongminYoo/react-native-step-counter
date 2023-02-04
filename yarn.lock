@@ -3854,6 +3854,11 @@ dot-prop@^6.0.1:
   dependencies:
     is-obj "^2.0.0"
 
+downloader@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/downloader/-/downloader-0.1.2.tgz#bebebb695e127f3119cb13904638754d926ea85c"
+  integrity sha512-Avd0JngH7nAuwy7x83Q9rT9RTpelZdYmStQjrGgbnGCthd5O1KJxzYasEXsDuO7JzPxZe7RPW6Cq79pN6XXYvQ==
+
 eastasianwidth@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/eastasianwidth/-/eastasianwidth-0.2.0.tgz#696ce2ec0aa0e6ea93a397ffcf24aa7840c827cb"
@@ -6358,6 +6363,13 @@ kleur@^4.1.4:
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-4.1.5.tgz#95106101795f7050c6c650f350c683febddb1780"
   integrity sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==
+
+ktlint@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/ktlint/-/ktlint-0.0.5.tgz#75a6a4eea90b4917576cb7a9b3dd50684dcd7a24"
+  integrity sha512-feqg8GOWsZQ/uXG93uU+H3CFzLXTCn+y6ajW9AgDbS3d3Iag3gzbTGtnj5NrN+ZPUFKlWVTFkNmIdClYEM03OQ==
+  dependencies:
+    downloader "^0.1.2"
 
 latest-version@^7.0.0:
   version "7.0.0"

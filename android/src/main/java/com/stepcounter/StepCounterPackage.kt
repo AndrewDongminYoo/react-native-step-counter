@@ -17,17 +17,17 @@ class StepCounterPackage : TurboReactPackage() {
 
     override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
         return ReactModuleInfoProvider {
-            val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
-            moduleInfos[StepCounterModule.NAME] = ReactModuleInfo(
+            val moduleInfo: MutableMap<String, ReactModuleInfo> = HashMap()
+            moduleInfo[StepCounterModule.NAME] = ReactModuleInfo(
                 StepCounterModule.NAME,
                 StepCounterModule.NAME,
-                false,  // canOverrideExistingModule
-                false,  // needsEagerInit
-                true,  // hasConstants
-                false,  // isCxxModule
-                true // isTurboModule
+                false, // canOverrideExistingModule
+                false, // needsEagerInit
+                true, // hasConstants
+                false, // isCxxModule
+                true, // isTurboModule
             )
-            moduleInfos
+            moduleInfo
         }
     }
 }

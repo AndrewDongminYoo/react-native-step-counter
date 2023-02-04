@@ -1,36 +1,50 @@
 version: 0.1
 cli:
-  version: 1.4.0
+  version: 1.4.1
 plugins:
   sources:
     - id: trunk
-      ref: v0.0.8
+      ref: v0.0.9
       uri: https://github.com/trunk-io/plugins
 lint:
+  disabled:
+    - oxipng
+    - shfmt
+    - git-diff-check
+    - gitleaks
   enabled:
     - dotenv-linter@3.3.0
-    - prettier@2.8.3
-    - actionlint@1.6.23
     - markdownlint@0.33.0
-    - gitleaks@8.15.3
     - shellcheck@0.9.0
-    - git-diff-check
-  disabled:
-    - shfmt
-    - oxipng
+    - prettier@2.8.3
+    - ktlint@0.48.2
+    - eslint@8.33.0
+    - actionlint@1.6.23
   ignore:
-    - linters: 
-      - shellcheck
-      paths: 
-      - '**/gradlew'
+    - linters:
+        - ALL
+      paths:
+        - "**/.trunk/**"
+    - linters:
+        - shellcheck
+      paths:
+        - "**/gradlew"
+    - linters:
+        - ALL
+      paths:
+        - "**/trunk"
+        - "**/.trunk"
+        - "**/package-lock.json"
+        - "**/yarn.lock"
+        - "**/vendor/**"
 runtimes:
   enabled:
     - go@1.18.3
+    - java@11.0.13
     - node@18.12.1
 actions:
-  disabled:
-    - trunk-check-pre-push
-    - trunk-fmt-pre-commit
   enabled:
     - trunk-announce
+    - trunk-check-pre-push
+    - trunk-fmt-pre-commit
     - trunk-upgrade-available
