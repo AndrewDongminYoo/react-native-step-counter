@@ -1087,7 +1087,6 @@ class PaseoDBHelper(context: Context) :
                 if (cursor.getInt(5) > 1) {
                     insertSteps(
                         StepsModel(
-                            _id = 0,
                             date = cursor.getInt(0),
                             hour = cursor.getInt(1),
                             startSteps = cursor.getInt(2),

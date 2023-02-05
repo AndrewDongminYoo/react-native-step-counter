@@ -46,12 +46,35 @@ class StepCounterModule(applicationContext: ReactApplicationContext?) :
     private var startSteps = 0
     private var lastStepDate = 0
 
-    override val typedExportedConstants: Map<String, Any>
-        get() = mutableMapOf(Pair("platform", "android"))
-    override val isStepCountingSupported: Boolean
-        get() = stepCountingSupported()
-    override val isWritingStepsSupported: Boolean
-        get() = healthDataSupported()
+    override fun getTypedExportedConstants(): Map<String, Any> {
+        return mutableMapOf(Pair("platform", "android"))
+    }
+
+    override fun isStepCountingSupported(): Boolean {
+        stepCounter = this.sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        accelerometer = this.sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        return if (accelerometer != null || stepCounter != null) {
+            this.status = STARTING
+            true
+        } else {
+            this.status = ERROR_NO_SENSOR_FOUND
+            false
+        }
+    }
+
+    override fun isWritingStepsSupported(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            (
+                reactContext?.checkPermission(healthPermissionKey, Process.myPid(), Process.myUid()) ==
+                    PackageManager.PERMISSION_GRANTED
+                )
+        } else {
+            (
+                reactContext?.checkPermission(writeDataPermission, Process.myPid(), Process.myUid()) ==
+                    PackageManager.PERMISSION_GRANTED
+                )
+        }
+    }
 
     override fun startStepCounterUpdate(from: Double, promise: Promise?) {
         TODO("Not yet implemented")
@@ -104,33 +127,7 @@ class StepCounterModule(applicationContext: ReactApplicationContext?) :
     override fun canOverrideExistingModule() = false
 
     @Deprecated("Deprecated in Java")
-    override fun onCatalystInstanceDestroy() {
-    }
+    override fun onCatalystInstanceDestroy() {}
 
-    override fun invalidate() {
-    }
-
-    private fun stepCountingSupported(): Boolean {
-        stepCounter = this.sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        accelerometer = this.sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        return if (accelerometer != null || stepCounter != null) {
-            this.status = STARTING
-            true
-        } else {
-            this.status = ERROR_NO_SENSOR_FOUND
-            false
-        }
-    }
-
-    private fun healthDataSupported(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            (reactContext?.checkPermission(
-                healthPermissionKey, Process.myPid(), Process.myUid()
-            ) == PackageManager.PERMISSION_GRANTED)
-        } else {
-            (reactContext?.checkPermission(
-                writeDataPermission, Process.myPid(), Process.myUid()
-            ) == PackageManager.PERMISSION_GRANTED)
-        }
-    }
+    override fun invalidate() {}
 }

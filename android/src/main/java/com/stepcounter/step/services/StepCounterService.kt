@@ -369,7 +369,6 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
         if (update) {
             paseoDBHelper.updateEndSteps(
                 StepsModel(
-                    0,
                     date = date,
                     hour = time,
                     startSteps = startSteps,
@@ -379,7 +378,6 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
         } else {
             paseoDBHelper.insertSteps(
                 StepsModel(
-                    0,
                     date = date,
                     hour = time,
                     startSteps = startSteps,
