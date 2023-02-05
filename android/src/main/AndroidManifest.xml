@@ -39,11 +39,6 @@
         <service
             android:name=".step.services.StepCounterService"
             android:enabled="true" />
-        <uses-library
-            android:name=".step.utils.DateHandler"
-            android:enabled="true"
-            android:exported="true" />
-
         <receiver
             android:name=".step.receivers.RebootActionReceiver"
             android:enabled="true"

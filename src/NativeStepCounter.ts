@@ -42,6 +42,7 @@ enum PermissionStatus {
   LIMITED = 'limited', // partial permission allowed
 }
 
-const StepCounterModule = TurboModuleRegistry.getEnforcing<Spec>('StepCounter');
+const StepCounterModule =
+  TurboModuleRegistry.getEnforcing<Spec>('RNStepCounter');
 
 export default StepCounterModule;
