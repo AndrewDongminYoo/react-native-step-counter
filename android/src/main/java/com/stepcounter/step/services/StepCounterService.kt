@@ -1,4 +1,4 @@
-package com.stepcounter.step.background
+package com.stepcounter.step.services
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -16,28 +16,25 @@ import android.speech.tts.TextToSpeech.*
 import android.speech.tts.Voice
 import android.util.Log
 import com.stepcounter.step.models.AccelVector
-import com.stepcounter.step.models.PaseoDBHelper
 import com.stepcounter.step.models.StepsModel
+import com.stepcounter.step.receivers.ServiceRestarter
+import com.stepcounter.step.utils.PaseoDBHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
 class StepCounterService : Service(), SensorEventListener, OnInitListener {
-    inner class LocalBinder : Binder() {
-        val serverInstance: StepCounterService
-            get() = this@StepCounterService
-    }
 
     private var hasAccelerometer = true
     private var hasStepCounter = true
     private var endSteps = 0
 
     // default values for target steps (overridden later from shared preferences)
-    var targetSteps = 10000
+    private var targetSteps = 10000
     private var lastAccelData: FloatArray? = floatArrayOf(0f, 0f, 0f)
     private lateinit var paseoDBHelper: PaseoDBHelper
     private var tts: TextToSpeech? = null
     private var ttsAvailable = false
-    private var mBinder: IBinder = LocalBinder()
+    private var mBinder: IBinder = Binder()
 
     // set up things for resetting steps (to zero (most of the time) at midnight
     private var myPendingIntent: PendingIntent? = null
@@ -45,10 +42,10 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
     private var myBroadcastReceiver: BroadcastReceiver? = null
     var sensorManager: SensorManager? = null
     var running = false
-    var startSteps = 0
-    var currentSteps = 0
-    var latestDay = 0
-    var latestHour = 0
+    private var startSteps = 0
+    private var currentSteps = 0
+    private var latestDay = 0
+    private var latestHour = 0
 
     /**
      * Return the communication channel to the service.  May return null if
@@ -77,7 +74,6 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
      * Called by the system when the service is first created.  Do not call this method directly.
      */
     override fun onCreate() {
-        super.onCreate()
         super.onCreate()
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         running = true
@@ -439,7 +435,7 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
         if (restartService) {
             val broadcastIntent = Intent()
             broadcastIntent.action = "restart" + "service"
-            broadcastIntent.setClass(this, ReStarter::class.java)
+            broadcastIntent.setClass(this, ServiceRestarter::class.java)
             this.sendBroadcast(broadcastIntent)
         }
         // Shutdown TTS
@@ -455,6 +451,6 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
     companion object {
         private const val STEP_DETECTED = 1
         private const val NO_STEP_DETECTED = 0
-        private var LAST_DETECTION = this.NO_STEP_DETECTED
+        private var LAST_DETECTION = NO_STEP_DETECTED
     }
 }

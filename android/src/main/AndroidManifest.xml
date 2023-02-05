@@ -37,7 +37,7 @@
         android:requestLegacyExternalStorage="true"
         tools:targetApi="o">
         <service
-            android:name=".step.background.StepCounterService"
+            android:name=".step.services.StepCounterService"
             android:enabled="true" />
         <uses-library
             android:name=".step.utils.DateHandler"
@@ -45,7 +45,7 @@
             android:exported="true" />
 
         <receiver
-            android:name=".step.background.RebootActionReceiver"
+            android:name=".step.receivers.RebootActionReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -53,14 +53,14 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".step.utils.UpdateReceiver"
+            android:name=".step.receivers.UpdateReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".step.background.ReStarter"
+            android:name=".step.receivers.ServiceRestarter"
             android:enabled="true"
             android:exported="true"
             android:permission="@string/androidx_startup">

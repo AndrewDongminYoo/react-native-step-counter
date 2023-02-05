@@ -1,9 +1,10 @@
-package com.stepcounter.step.background
+package com.stepcounter.step.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
+import com.stepcounter.step.services.StepCounterService
 
 class RebootActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

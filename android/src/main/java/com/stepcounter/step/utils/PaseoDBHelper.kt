@@ -1,4 +1,4 @@
-package com.stepcounter.step.models
+package com.stepcounter.step.utils
 
 import android.content.ContentValues
 import android.content.Context
@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.text.TextUtils.substring
 import com.stepcounter.step.models.DBContract.ActivityTypeTable
 import com.stepcounter.step.models.DBContract.StepsTable
-import com.stepcounter.step.utils.DateHandler
+import com.stepcounter.step.models.StepsModel
 import java.text.SimpleDateFormat
 import java.util.*
 
