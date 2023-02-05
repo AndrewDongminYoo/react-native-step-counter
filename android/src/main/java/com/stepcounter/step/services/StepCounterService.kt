@@ -26,7 +26,6 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
 
     private var hasAccelerometer = true
     private var hasStepCounter = true
-    private var endSteps = 0
 
     // default values for target steps (overridden later from shared preferences)
     private var targetSteps = 10000
@@ -43,6 +42,7 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
     var sensorManager: SensorManager? = null
     var running = false
     private var startSteps = 0
+    private var endSteps = 0
     private var currentSteps = 0
     private var latestDay = 0
     private var latestHour = 0
@@ -181,22 +181,16 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
         if (hasStepCounter) {
             // read the step count value from the devices step counter sensor
             currentSteps = event.values[0].toInt()
-        }
-        // *** experimental code for using accelerometer to detect steps on devices that do not hav
-        //  a step counter sensor (currently unused as Paseo will not install on such a device -
-        //   based on settings in manifest)
-        else if (hasAccelerometer && event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+        } else if (hasAccelerometer && event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             lastAccelData = lowPassFilter(event.values, lastAccelData)
             val accelData = AccelVector(lastAccelData!!)
             if (accelData.accelVector > 12.5f) {
                 if (LAST_DETECTION == NO_STEP_DETECTED) {
                     currentSteps = paseoDBHelper.readLastEndSteps() + 1
                 }
-                LAST_DETECTION =
-                    STEP_DETECTED
+                LAST_DETECTION = STEP_DETECTED
             } else {
-                LAST_DETECTION =
-                    NO_STEP_DETECTED
+                LAST_DETECTION = NO_STEP_DETECTED
             }
         }
         // get the latest step information from the database

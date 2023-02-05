@@ -9,15 +9,16 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
-import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.turbomodule.core.interfaces.TurboModule
+import com.stepcounter.step.services.PermissionService
 import com.stepcounter.step.services.StepCounterService
 import com.stepcounter.step.utils.PaseoDBHelper
 
 @ReactModule(name = StepCounterModule.NAME)
-class StepCounterModule(applicationContext: ReactApplicationContext?) :
-    NativeStepCounterSpec(applicationContext) {
+class StepCounterModule(reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext), ReactModuleWithSpec, TurboModule {
 
     companion object {
         const val NAME = "RNStepCounter"
@@ -29,28 +30,43 @@ class StepCounterModule(applicationContext: ReactApplicationContext?) :
         const val STEP_IN_METERS = 0.762f
     }
 
-    private val reactContext = applicationContext
-    private var status = STOPPED
+    private val applicationContext = reactContext
     private val stepCounterService: StepCounterService = StepCounterService()
+    private val permissionService: PermissionService = PermissionService()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private val healthPermissionKey = Manifest.permission.ACTIVITY_RECOGNITION
     private val writeDataPermission = Manifest.permission.WRITE_EXTERNAL_STORAGE
 
     // point to the Paseo database that stores all the daily steps data
-    private var dbHelper: PaseoDBHelper = PaseoDBHelper(this.reactApplicationContext)
+    private var dbHelper: PaseoDBHelper = PaseoDBHelper(reactContext)
     private var sensorManager: SensorManager? = null
     private var stepCounter: Sensor? = null
     private var accelerometer: Sensor? = null
 
-    private var startSteps = 0
-    private var lastStepDate = 0
+    private var startSteps = 0f
+    private var lastStepDate = 0f
+    private var startAt = 0
+    private var numSteps = 0f
+    private var status = STOPPED
 
-    override fun getTypedExportedConstants(): Map<String, Any> {
-        return mutableMapOf(Pair("platform", "android"))
-    }
+    private val stepsParamsMap: WritableMap
+        get() {
+            val map = Arguments.createMap()
+            // pedometerData.startDate; -> ms since UTC
+            // pedometerData.endDate; -> ms since UTC
+            // pedometerData.numberOfSteps;
+            // pedometerData.distance;
+            // pedometerData.floorsAscended;
+            // pedometerData.floorsDescended;
+            map.putInt("startDate", startAt)
+            map.putInt("endDate", System.currentTimeMillis().toInt())
+            map.putDouble("numberOfSteps", numSteps.toDouble())
+            map.putDouble("distance", (numSteps * STEP_IN_METERS).toDouble())
+            return map
+        }
 
-    override fun isStepCountingSupported(): Boolean {
+    fun isStepCountingSupported(): Boolean {
         stepCounter = this.sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         accelerometer = this.sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         return if (accelerometer != null || stepCounter != null) {
@@ -62,43 +78,65 @@ class StepCounterModule(applicationContext: ReactApplicationContext?) :
         }
     }
 
-    override fun isWritingStepsSupported(): Boolean {
+    fun requestPermission(promise: Promise) {
+        currentActivity?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                permissionService.requestPermission(
+                    healthPermissionKey,
+                    it,
+                    promise,
+                )
+            }
+        }
+    }
+
+    fun checkPermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             (
-                reactContext?.checkPermission(healthPermissionKey, Process.myPid(), Process.myUid()) ==
-                    PackageManager.PERMISSION_GRANTED
+                applicationContext.checkPermission(
+                    healthPermissionKey,
+                    Process.myPid(),
+                    Process.myUid(),
+                ) == PackageManager.PERMISSION_GRANTED
                 )
         } else {
             (
-                reactContext?.checkPermission(writeDataPermission, Process.myPid(), Process.myUid()) ==
-                    PackageManager.PERMISSION_GRANTED
+                applicationContext.checkPermission(
+                    writeDataPermission,
+                    Process.myPid(),
+                    Process.myUid(),
+                ) == PackageManager.PERMISSION_GRANTED
                 )
         }
     }
 
-    override fun startStepCounterUpdate(from: Double, promise: Promise?) {
-        TODO("Not yet implemented")
+    fun startStepCounterUpdate(from: Int, promise: Promise) {
+        val service = Intent(applicationContext, StepCounterService::class.java)
+        stepCounterService.startService(service)
+        promise.resolve(dbHelper.getDaysSteps(from))
     }
 
-    override fun stopStepCounterUpdate() {
-        TODO("Not yet implemented")
+    fun stopStepCounterUpdate() {
+        val service = Intent(applicationContext, StepCounterService::class.java)
+        stepCounterService.stopService(service)
     }
 
-    override fun queryStepCounterDataBetweenDates(
-        startDate: Double,
-        endDate: Double,
-        promise: Promise?,
+    fun queryStepCounterDataBetweenDates(
+        startDate: Int,
+        endDate: Int,
+        promise: Promise,
     ) {
-        TODO("Not yet implemented")
+        val stepParams: WritableMap = stepsParamsMap.copy()
+        stepParams.putInt("startDate", startDate)
+        stepParams.putInt("endDate", endDate)
+        promise.resolve(stepParams)
     }
 
-    override fun requestPermission(promise: Promise?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun checkPermission(): String? {
-        TODO("Not yet implemented")
-    }
+//    private fun sendPedometerUpdateEvent(params: WritableMap?) {
+//        applicationContext
+//            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+//            .emit("pedometerDataDidUpdate", params)
+//    }
 
     override fun getName(): String {
         return NAME
@@ -108,15 +146,15 @@ class StepCounterModule(applicationContext: ReactApplicationContext?) :
         sensorManager = stepCounterService.sensorManager
         try {
             // set up the manager for the step counting service
-            reactContext?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
             // get the date of the last record from the steps table in the database
-            lastStepDate = dbHelper.readLastStepsDate()
+            lastStepDate = dbHelper.readLastStepsDate().toFloat()
             // get the start steps of the last record from the steps table in the database
-            startSteps = dbHelper.readLastStartSteps()
+            startSteps = dbHelper.readLastStartSteps().toFloat()
             // do not start the step counting service if it is already running
             if (!stepCounterService.running) {
-                val service = Intent(reactContext, StepCounterService::class.java)
-                reactContext.startService(service)
+                val service = Intent(applicationContext, StepCounterService::class.java)
+                applicationContext.startService(service)
             }
             status = RUNNING
         } catch (_: Exception) {
@@ -127,7 +165,8 @@ class StepCounterModule(applicationContext: ReactApplicationContext?) :
     override fun canOverrideExistingModule() = false
 
     @Deprecated("Deprecated in Java")
-    override fun onCatalystInstanceDestroy() {}
+    override fun onCatalystInstanceDestroy() {
+    }
 
     override fun invalidate() {}
 }
