@@ -15,7 +15,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.*
 import android.speech.tts.Voice
 import android.util.Log
-import com.stepcounter.step.models.AccelVector
+import com.stepcounter.step.models.AccelValues
 import com.stepcounter.step.models.StepsModel
 import com.stepcounter.step.receivers.ServiceRestarter
 import com.stepcounter.step.utils.PaseoDBHelper
@@ -183,7 +183,7 @@ class StepCounterService : Service(), SensorEventListener, OnInitListener {
             currentSteps = event.values[0].toInt()
         } else if (hasAccelerometer && event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             lastAccelData = lowPassFilter(event.values, lastAccelData)
-            val accelData = AccelVector(lastAccelData!!)
+            val accelData = AccelValues(lastAccelData!!)
             if (accelData.accelVector > 12.5f) {
                 if (LAST_DETECTION == NO_STEP_DETECTED) {
                     currentSteps = paseoDBHelper.readLastEndSteps() + 1

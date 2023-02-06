@@ -97,31 +97,30 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         activity: Activity,
         promise: Promise,
     ): Boolean {
-        if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
-            promise.resolve(
-                if (activity.applicationContext.checkPermission(
-                        permission,
-                        Process.myPid(),
-                        Process.myUid(),
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    GRANTED
-                } else {
-                    BLOCKED
-                },
-            )
-            return false
-        }
         mSharedPrefs =
             activity.applicationContext.getSharedPreferences(SETTING_NAME, Context.MODE_PRIVATE)
-        if (activity.applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            promise.resolve(GRANTED)
-            return false
-        } else if (mSharedPrefs != null && mSharedPrefs!!.getBoolean(permission, false)) {
-            promise.resolve(BLOCKED) // not supporting reset the permission with "Ask me every time"
-            return false
+        val notBlocked = mSharedPrefs != null && mSharedPrefs!!.getBoolean(permission, false)
+        val result = if (activity.applicationContext.checkPermission(
+                permission,
+                Process.myPid(),
+                Process.myUid(),
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            GRANTED
+        } else {
+            DENIED
         }
-        return true
+        return if (result == GRANTED) {
+            promise.resolve(result)
+            true
+        } else if (!notBlocked) {
+            // not supporting reset the permission with "Ask me every time"
+            promise.resolve(BLOCKED)
+            false
+        } else {
+            promise.resolve(DENIED)
+            false
+        }
     }
 
     fun openSettings(promise: Promise) {

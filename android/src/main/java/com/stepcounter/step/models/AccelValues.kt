@@ -83,9 +83,9 @@ import kotlin.math.sqrt
  * minus the force of gravity (-9.81 m/s^2).</li>
  * </ul>
  */
-class AccelVector(accelEvent: FloatArray) {
+class AccelValues(accelEvent: FloatArray) {
     private var accelX: Float
-    var accelY: Float
+    private var accelY: Float
     private var accelZ: Float
     var accelVector: Double
 
