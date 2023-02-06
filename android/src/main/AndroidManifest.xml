@@ -16,14 +16,10 @@
 
     <uses-feature
         android:name="android.hardware.sensor.stepcounter"
-        android:required="true"
-        tools:targetApi="eclair"
-        tools:ignore="ObsoleteSdkInt" />
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.sensor.stepdetector"
-        android:required="true"
-        tools:targetApi="eclair"
-        tools:ignore="ObsoleteSdkInt" />
+        android:required="true" />
 
     <queries>
         <intent>
@@ -33,12 +29,13 @@
 
     <application
         android:allowBackup="false"
-        android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
+        android:supportsRtl="true"
         tools:targetApi="o">
         <service
             android:name=".step.services.StepCounterService"
             android:enabled="true" />
+
         <receiver
             android:name=".step.receivers.RebootActionReceiver"
             android:enabled="true"

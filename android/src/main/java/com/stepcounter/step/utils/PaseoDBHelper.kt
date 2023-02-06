@@ -14,6 +14,7 @@ import com.stepcounter.step.models.StepsModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+@Suppress("unused")
 class PaseoDBHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     /**
@@ -681,7 +682,8 @@ class PaseoDBHelper(context: Context) :
                 maxDate =
                     sdf.format(DateHandler.getFirstDayInWeek(weekStart, theYear, 12, 31)).toInt()
             }
-            Pair("hours", "Month"), Pair("days", "Month"), Pair("months", "Day"), Pair(
+            Pair("hours", "Month"), Pair("days", "Month"), Pair("months", "Day"),
+            Pair(
                 "months",
                 "Month",
             ),
@@ -689,7 +691,8 @@ class PaseoDBHelper(context: Context) :
                 minDate = theYear * 10000 + theMonth * 100
                 maxDate = minDate + 31
             }
-            Pair("hours", "Year"), Pair("days", "Year"), Pair("months", "Year"), Pair(
+            Pair("hours", "Year"), Pair("days", "Year"), Pair("months", "Year"),
+            Pair(
                 "years",
                 "Year",
             ),
