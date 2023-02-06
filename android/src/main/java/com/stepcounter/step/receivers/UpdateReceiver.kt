@@ -6,7 +6,7 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.stepcounter.step.services.StepCounterService
 
-// when an update to paseo is installed, restart the step counting service
+// when an update on broadCast, restart the step counting service
 class UpdateReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent != null) {

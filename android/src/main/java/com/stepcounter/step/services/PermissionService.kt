@@ -304,8 +304,9 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
     }
 
     companion object {
-        private const val BLOCKED = "blocked"
+        @Suppress("SpellCheckingInspection")
         private const val SETTING_NAME = "@RNSNPermissions:NonRequestables"
+        private const val BLOCKED = "blocked"
         private const val GRANTED = "granted"
         private const val DENIED = "denied"
         private const val UNAVAILABLE = "unavailable"

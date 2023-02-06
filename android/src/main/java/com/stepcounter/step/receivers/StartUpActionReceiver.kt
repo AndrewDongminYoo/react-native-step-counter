@@ -6,7 +6,7 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.stepcounter.step.services.StepCounterService
 
-class RebootActionReceiver : BroadcastReceiver() {
+class StartUpActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         val action = intent.action

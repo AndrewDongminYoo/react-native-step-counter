@@ -11,16 +11,14 @@ import android.os.Build.VERSION_CODES
 import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.turbomodule.core.interfaces.TurboModule
 import com.stepcounter.step.services.PermissionService
 import com.stepcounter.step.services.StepCounterService
-import com.stepcounter.step.utils.PaseoDBHelper
 
-// class StepCounterModule(reactContext: ReactApplicationContext) :
-//    ReactContextBaseJavaModule(reactContext), ReactModuleWithSpec, TurboModule {
 @ReactModule(name = StepCounterModule.NAME)
-class StepCounterModule(
-    reactContext: ReactApplicationContext,
-) : NativeStepCounterSpec(reactContext) {
+class StepCounterModule(reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext), ReactModuleWithSpec, TurboModule {
     companion object {
         const val NAME = "RNStepCounter"
         const val STOPPED = 0
@@ -30,11 +28,6 @@ class StepCounterModule(
         const val ERROR_NO_SENSOR_FOUND = 4
         const val STEP_IN_METERS = 0.762f
     }
-
-    override val typedExportedConstants: Map<String, Any>
-        get() {
-            TODO()
-        }
 
     private val applicationContext = reactContext
     private val stepCounterService: StepCounterService = StepCounterService()
@@ -54,14 +47,10 @@ class StepCounterModule(
     @RequiresApi(VERSION_CODES.TIRAMISU)
     private val backgroundSensorPermission = Manifest.permission.BODY_SENSORS_BACKGROUND
 
-    // point to the Paseo database that stores all the daily steps data
-    private var dbHelper: PaseoDBHelper = PaseoDBHelper(reactContext)
     private var sensorManager: SensorManager? = null
     private var stepCounter: Sensor? = null
     private var accelerometer: Sensor? = null
 
-    private var startSteps = 0f
-    private var lastStepDate = 0f
     private var startAt = 0
     private var numSteps = 0f
     private var status = STOPPED
@@ -96,7 +85,7 @@ class StepCounterModule(
             return map
         }
 
-    override fun requestPermission(promise: Promise?) {
+    fun requestPermission(promise: Promise?) {
         if (promise == null) return
         permissionService.requestMultiplePermissions(
             permissionArray,
@@ -104,16 +93,18 @@ class StepCounterModule(
         )
     }
 
-    override fun checkPermission(): String {
+    fun checkPermission(): String {
         return permissionService.checkPermission(
             bodySensorPermission,
         )
     }
 
-    override val isStepCountingSupported: Boolean
+    @ReactMethod
+    val isStepCountingSupported: Boolean
         get() = stepCountingSupported()
 
-    override val isWritingStepsSupported: Boolean
+    @ReactMethod
+    val isWritingStepsSupported: Boolean
         get() = checkPermission().equals(other = "granted", ignoreCase = true)
 
     private fun stepCountingSupported(): Boolean {
@@ -128,17 +119,30 @@ class StepCounterModule(
         }
     }
 
-    override fun startStepCounterUpdate(from: Double, promise: Promise?) {
+    @ReactMethod
+    fun startStepCounterUpdate(from: Double, promise: Promise?) {
         val service = Intent(applicationContext, StepCounterService::class.java)
         stepCounterService.startService(service)
+        numSteps++
+        try {
+            sendPedometerUpdateEvent(stepsParamsMap)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    override fun stopStepCounterUpdate() {
+    @ReactMethod
+    fun stopStepCounterUpdate() {
         val service = Intent(applicationContext, StepCounterService::class.java)
         stepCounterService.stopService(service)
+        if (status != STOPPED) {
+            sensorManager?.unregisterListener(stepCounterService)
+        }
+        status = STOPPED
     }
 
-    override fun queryStepCounterDataBetweenDates(
+    @ReactMethod
+    fun queryStepCounterDataBetweenDates(
         startDate: Double,
         endDate: Double,
         promise: Promise?,
@@ -146,13 +150,18 @@ class StepCounterModule(
         val stepParams: WritableMap = stepsParamsMap.copy()
         stepParams.putInt("startDate", startDate.toInt())
         stepParams.putInt("endDate", endDate.toInt())
+        try {
+            promise?.resolve(stepsParamsMap)
+        } catch (e: Exception) {
+            promise?.reject(e)
+        }
     }
 
-//    private fun sendPedometerUpdateEvent(params: WritableMap?) {
-//        applicationContext
-//            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-//            .emit("pedometerDataDidUpdate", params)
-//    }
+    private fun sendPedometerUpdateEvent(params: WritableMap?) {
+        applicationContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit("pedometerDataDidUpdate", params)
+    }
 
     override fun getName(): String {
         return NAME
@@ -161,21 +170,17 @@ class StepCounterModule(
     override fun initialize() {
         activity = this.currentActivity
         sensorManager = stepCounterService.sensorManager
-        try {
+        status = try {
             // set up the manager for the step counting service
             applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-            // get the date of the last record from the steps table in the database
-            lastStepDate = dbHelper.readLastStepsDate().toFloat()
-            // get the start steps of the last record from the steps table in the database
-            startSteps = dbHelper.readLastStartSteps().toFloat()
             // do not start the step counting service if it is already running
-            if (!stepCounterService.running) {
+            if (!stepCounterService.isServiceRunning) {
                 val service = Intent(applicationContext, StepCounterService::class.java)
                 applicationContext.startService(service)
             }
-            status = RUNNING
+            RUNNING
         } catch (_: Exception) {
-            status = ERROR_FAILED_TO_START
+            ERROR_FAILED_TO_START
         }
     }
 

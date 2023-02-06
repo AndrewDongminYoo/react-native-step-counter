@@ -1,11 +1,13 @@
-package com.stepcounter
+package com.stepcounter.step.services
 
+import com.stepcounter.step.utils.SensorFilter
+import com.stepcounter.step.utils.StepListener
 import kotlin.math.min
 
 class StepDetector {
     // change this threshold according to your sensitivity preferences
-    private val stepTHRESHOLD: Float
-    private val stepDELAYNS: Int
+    private val stepTHRESHOLD: Float = 10f
+    private val stepDELAYNS: Int = 80000000
     private var accelRingCounter = 0
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
@@ -47,16 +49,6 @@ class StepDetector {
             lastStepTimeNs = timeNs
         }
         oldVelocityEstimate = velocityEstimate
-    }
-
-    internal constructor(THRESHOLD: Float, DELAY_NS: Int) {
-        stepTHRESHOLD = THRESHOLD
-        stepDELAYNS = DELAY_NS
-    }
-
-    internal constructor() {
-        stepTHRESHOLD = 10f
-        stepDELAYNS = 80000000
     }
 
     companion object {

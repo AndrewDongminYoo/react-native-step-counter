@@ -37,7 +37,7 @@
             android:enabled="true" />
 
         <receiver
-            android:name=".step.receivers.RebootActionReceiver"
+            android:name=".step.receivers.StartUpActionReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
