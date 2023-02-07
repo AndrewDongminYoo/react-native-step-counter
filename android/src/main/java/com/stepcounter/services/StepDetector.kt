@@ -1,13 +1,11 @@
-package com.stepcounter.step.services
+package com.stepcounter.services
 
-import com.stepcounter.step.utils.SensorFilter
-import com.stepcounter.step.utils.StepListener
+import com.stepcounter.models.StepperInterface
+import com.stepcounter.utils.SensorFusionMath
 import kotlin.math.min
 
 class StepDetector {
     // change this threshold according to your sensitivity preferences
-    private val stepTHRESHOLD = 10f
-    private val stepDELAYNS = 80000000
     private var velRingCounter = 0
     private var accelRingCounter = 0
     private var oldVelocityEstimate = 0f
@@ -16,8 +14,9 @@ class StepDetector {
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
     private val velRing = FloatArray(VEL_RING_SIZE)
-    private var listener: StepListener? = null
-    fun registerListener(listener: StepListener?) {
+    private var listener: StepperInterface? = null
+
+    fun registerListener(listener: StepperInterface?) {
         this.listener = listener
     }
 
@@ -33,19 +32,22 @@ class StepDetector {
         accelRingY[accelRingCounter % ACCEL_RING_SIZE] = currentAccel[1]
         accelRingZ[accelRingCounter % ACCEL_RING_SIZE] = currentAccel[2]
         val worldZ = FloatArray(3)
-        worldZ[0] = SensorFilter.sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE)
-        worldZ[1] = SensorFilter.sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE)
-        worldZ[2] = SensorFilter.sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
-        val normalizationFactor = SensorFilter.norm(worldZ)
+        worldZ[0] = SensorFusionMath.sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE)
+        worldZ[1] = SensorFusionMath.sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE)
+        worldZ[2] = SensorFusionMath.sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
+        val normalizationFactor = SensorFusionMath.norm(worldZ)
         worldZ[0] = worldZ[0] / normalizationFactor
         worldZ[1] = worldZ[1] / normalizationFactor
         worldZ[2] = worldZ[2] / normalizationFactor
-        val currentZ = SensorFilter.dot(worldZ, currentAccel) - normalizationFactor
+
+        // Next step is to figure out the component of the current acceleration
+        // in the direction of world_z and subtract gravity's contribution
+        val currentZ = SensorFusionMath.dot(worldZ, currentAccel) - normalizationFactor
         velRingCounter++
         velRing[velRingCounter % VEL_RING_SIZE] = currentZ
-        val velocityEstimate = SensorFilter.sum(velRing)
-        if (velocityEstimate > stepTHRESHOLD && oldVelocityEstimate <= stepTHRESHOLD && timeNs - lastStepTimeNs > stepDELAYNS) {
-            listener?.step()
+        val velocityEstimate = SensorFusionMath.sum(velRing)
+        if (velocityEstimate > STEP_THRESHOLD && oldVelocityEstimate <= STEP_THRESHOLD && timeNs - lastStepTimeNs > STEP_DELAY_NS) {
+            listener!!.step(timeNs)
             lastStepTimeNs = timeNs
         }
         oldVelocityEstimate = velocityEstimate
@@ -54,5 +56,7 @@ class StepDetector {
     companion object {
         private const val ACCEL_RING_SIZE = 50
         private const val VEL_RING_SIZE = 10
+        private const val STEP_THRESHOLD = 4f
+        private const val STEP_DELAY_NS = 250000000
     }
 }

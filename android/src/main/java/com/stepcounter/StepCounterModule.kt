@@ -11,8 +11,8 @@ import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.turbomodule.core.interfaces.TurboModule
-import com.stepcounter.step.services.PermissionService
-import com.stepcounter.step.services.StepCounterService
+import com.stepcounter.services.PermissionService
+import com.stepcounter.services.StepCounterService
 
 @ReactModule(name = StepCounterModule.NAME)
 class StepCounterModule(reactContext: ReactApplicationContext) :
@@ -28,7 +28,7 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     }
 
     private var applicationContext = reactContext
-    private var stepCounterService = StepCounterService()
+    private var stepCounterService = StepCounterService(reactContext)
     private var permissionService = PermissionService(reactContext)
     private var status = STOPPED
 

@@ -9,40 +9,40 @@ export default function App() {
 
   useEffect(() => {
     const askPermission = async () => {
-      const possible = await StepCounter.isStepCountingSupported();
-      console.debug('🚀 - file: App.tsx:21 - possible', possible);
-      const available = await StepCounter.isWritingStepsSupported();
-      console.debug('🚀 - file: App.tsx:22 - available', available);
-      await StepCounter.requestPermission();
-      const isOk = await StepCounter.checkPermission();
-      console.debug('🚀 - file: App.tsx:18 - isOk', isOk);
-      setAllow(isOk && possible && available);
+      await StepCounter.requestPermission().then((result) => {
+        console.debug('🚀 - file: App.tsx:29 - requestPermission', result);
+        const supported = StepCounter.isStepCountingSupported();
+        console.debug(
+          `Sensor TYPE_STEP_COUNTER is ${
+            supported ? '' : 'not '
+          }supported on this device`
+        );
+        const available = StepCounter.isWritingStepsSupported();
+        console.debug(
+          '🚀 - file: App.tsx:22 - isWritingStepsSupported',
+          available
+        );
+        let isOk = false;
+        if (isOk) {
+          const current = StepCounter.checkPermission();
+          console.debug('🚀 - file: App.tsx:28 - checkPermissionStr', current);
+          isOk = current === 'granted';
+          console.debug('🚀 - file: App.tsx:24 - checkPermissionBool', isOk);
+        }
+        setAllow(isOk && supported && available);
+      });
     };
     askPermission();
   }, []);
 
   useEffect(() => {
-    const supported = StepCounter.isStepCountingSupported();
-    StepCounter.requestPermission().then((result) =>
-      console.debug("User's Permission is", result)
-    );
-    const possible = StepCounter.checkPermission();
-    console.debug("User's Permission is", possible);
-    supported
-      ? console.debug('Sensor TYPE_STEP_COUNTER is supported on this device')
-      : console.debug(
-          'Sensor TYPE_STEP_COUNTER is not supported on this device'
-        );
-    const today = Date.now();
-    StepCounter.startStepCounterUpdate(today).then((data) => {
-      console.debug('STEPS', data.steps);
-      setSteps(data.steps);
-    });
-  }, []);
-
-  useEffect(() => {
     if (allowed) {
-      StepCounter.startStepCounterUpdate(Date.now());
+      const today = Date.now();
+      console.debug('🚀 - startStepCounterUpdate');
+      StepCounter.startStepCounterUpdate(today).then((data) => {
+        console.debug('STEPS', data.steps);
+        setSteps(data.steps);
+      });
     }
     return () => {
       StepCounter.stopStepCounterUpdate();

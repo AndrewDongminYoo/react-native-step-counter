@@ -1,8 +1,8 @@
-package com.stepcounter.step.utils
+package com.stepcounter.utils
 
 import kotlin.math.sqrt
 
-object SensorFilter {
+object SensorFusionMath {
     fun sum(array: FloatArray): Float {
         var returnVal = 0f
         for (v in array) {
@@ -29,15 +29,5 @@ object SensorFilter {
 
     fun dot(a: FloatArray, b: FloatArray): Float {
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-    }
-
-    @Suppress("unused")
-    fun normalize(a: FloatArray): FloatArray {
-        val returnVal = FloatArray(a.size)
-        val norm = norm(a)
-        for (i in a.indices) {
-            returnVal[i] = a[i] / norm
-        }
-        return returnVal
     }
 }

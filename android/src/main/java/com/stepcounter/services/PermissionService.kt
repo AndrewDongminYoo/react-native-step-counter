@@ -1,4 +1,4 @@
-package com.stepcounter.step.services
+package com.stepcounter.services
 
 import android.app.Activity
 import android.content.Context
@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES
+import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
 import android.util.SparseArray
@@ -14,6 +15,8 @@ import androidx.core.app.NotificationManagerCompat
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
+import com.stepcounter.models.PermissionsResponse
+import com.stepcounter.models.PermissionsResponse.PermissionStatus.*
 
 class PermissionService(reactContext: ReactApplicationContext?) : PermissionListener {
     private val mCallbacks = SparseArray<Callback>()
@@ -24,7 +27,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         Context.MODE_PRIVATE,
     )
     private var mRequestCode = 0
-
+    private var permissions: Array<String> = emptyArray()
     private val permissionAwareActivity: PermissionAwareActivity
         get() {
             check(activity is PermissionAwareActivity) {
@@ -149,7 +152,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
 
     fun checkPermission(permission: String?): String {
         if ((permission == null) || permissionNotExists(permission)) {
-            return UNAVAILABLE
+            return UNAVAILABLE.status
         }
         return if (applicationContext.checkPermission(
                 permission,
@@ -157,9 +160,9 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                 Process.myUid(),
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            GRANTED
+            GRANTED.status
         } else {
-            DENIED
+            DENIED.status
         }
     }
 
@@ -177,11 +180,11 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         }
     }
 
-    fun checkMultiplePermissions(permissions: Array<String>): WritableMap {
+    fun checkMultiplePermissions(permissionArr: Array<String>): WritableMap {
         val output: WritableMap = WritableNativeMap()
-        for (permission in permissions.iterator()) {
+        for (permission in permissionArr.iterator()) {
             if (permissionNotExists(permission)) {
-                output.putString(permission, UNAVAILABLE)
+                output.putString(permission, UNAVAILABLE.status)
             } else if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
                 output.putString(
                     permission,
@@ -191,28 +194,29 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                             Process.myUid(),
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        GRANTED
+                        GRANTED.status
                     } else {
-                        BLOCKED
+                        BLOCKED.status
                     },
                 )
             } else if (applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-                output.putString(permission, GRANTED)
+                output.putString(permission, GRANTED.status)
             } else {
-                output.putString(permission, DENIED)
+                output.putString(permission, DENIED.status)
             }
         }
         return output
     }
 
-    fun requestMultiplePermissions(permissions: Array<String>, promise: Promise?) {
+    fun requestMultiplePermissions(permissionArr: Array<String>, promise: Promise?) {
+        permissions = permissionArr
         val output: WritableMap = WritableNativeMap()
         val permissionsToCheck = ArrayList<String>()
         var checkedPermissionsCount = 0
-        for (permission in permissions.iterator()) {
+        for (permission in permissionArr.iterator()) {
             if (permission.isNotBlank()) {
                 if (permissionNotExists(permission)) {
-                    output.putString(permission, UNAVAILABLE)
+                    output.putString(permission, UNAVAILABLE.status)
                     checkedPermissionsCount++
                 } else if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
                     output.putString(
@@ -223,21 +227,21 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                                 Process.myUid(),
                             ) == PackageManager.PERMISSION_GRANTED
                         ) {
-                            GRANTED
+                            GRANTED.status
                         } else {
-                            BLOCKED
+                            BLOCKED.status
                         },
                     )
                     checkedPermissionsCount++
                 } else if (applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-                    output.putString(permission, GRANTED)
+                    output.putString(permission, GRANTED.status)
                     checkedPermissionsCount++
                 } else {
                     permissionsToCheck.add(permission)
                 }
             }
         }
-        if (permissions.size == checkedPermissionsCount) {
+        if (permissionArr.size == checkedPermissionsCount) {
             promise?.resolve(output)
             return
         }
@@ -251,12 +255,12 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                     for (j in permissionsToCheck.indices) {
                         val permission = permissionsToCheck[j]
                         if (results.isNotEmpty() && results[j] == PackageManager.PERMISSION_GRANTED) {
-                            output.putString(permission, GRANTED)
+                            output.putString(permission, GRANTED.status)
                         } else {
                             if (perActivity.shouldShowRequestPermissionRationale(permission)) {
-                                output.putString(permission, DENIED)
+                                output.putString(permission, DENIED.status)
                             } else {
-                                output.putString(permission, BLOCKED)
+                                output.putString(permission, BLOCKED.status)
                             }
                         }
                     }
@@ -270,18 +274,9 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         }
     }
 
-    private fun getFieldName(permission: String): String? {
-        if (permission == "android.permission.ACTIVITY_RECOGNITION") return "ACTIVITY_RECOGNITION"
-        if (permission == "android.permission.BODY_SENSORS") return "BODY_SENSORS"
-        if (permission == "android.permission.BODY_SENSORS_BACKGROUND") return "BODY_SENSORS_BACKGROUND"
-        if (permission == "android.permission.WRITE_EXTERNAL_STORAGE") return "WRITE_EXTERNAL_STORAGE"
-        if (permission == "android.permission.HIGH_SAMPLING_RATE_SENSORS") return "HIGH_SAMPLING_RATE_SENSORS"
-        return null
-    }
-
     private fun permissionNotExists(permission: String): Boolean {
         return if (permission.isNotBlank()) {
-            val fieldName = getFieldName(permission) ?: return false
+            val fieldName = permission.removePrefix("android.permission.")
             try {
                 permission::class.java.getField(fieldName)
                 return true
@@ -297,18 +292,38 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         val output = Arguments.createMap()
         val settings = Arguments.createMap()
         val enabled = NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
-        output.putString("status", if (enabled) GRANTED else BLOCKED)
+        output.putString("status", if (enabled) GRANTED.status else BLOCKED.status)
         output.putMap("settings", settings)
         promise.resolve(output)
+    }
+
+    fun parseAndroidPermissions(permissionsResponse: Map<String, PermissionsResponse>): Bundle {
+        return Bundle().apply {
+            /*
+                combined status is equal:
+                granted when all needed permissions have been granted
+                denied when all needed permissions have been denied
+                undetermined if exist permission with undetermined status
+            */
+            val permissionsStatus = when {
+                permissions.all { permissionsResponse.getValue(it).status == GRANTED.status } -> GRANTED
+                permissions.all { permissionsResponse.getValue(it).status == DENIED.status } -> DENIED
+                else -> UNDETERMINED
+            }
+
+            putString(PermissionsResponse.STATUS_KEY, permissionsStatus.status)
+            putString(PermissionsResponse.EXPIRES_KEY, PermissionsResponse.PERMISSION_EXPIRES_NEVER)
+            putBoolean(
+                PermissionsResponse.CAN_ASK_AGAIN_KEY,
+                permissions.all { permissionsResponse.getValue(it).canAskAgain },
+            )
+            putBoolean(PermissionsResponse.GRANTED_KEY, permissionsStatus == GRANTED)
+        }
     }
 
     companion object {
         @Suppress("SpellCheckingInspection")
         private const val SETTING_NAME = "@RNSNPermissions:NonRequestables"
-        private const val BLOCKED = "blocked"
-        private const val GRANTED = "granted"
-        private const val DENIED = "denied"
-        private const val UNAVAILABLE = "unavailable"
         private const val ERROR_INVALID_ACTIVITY = "E_INVALID_ACTIVITY"
     }
 }

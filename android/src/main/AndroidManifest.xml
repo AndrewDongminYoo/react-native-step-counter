@@ -37,33 +37,8 @@
         android:supportsRtl="true"
         tools:targetApi="o">
         <service
-            android:name=".step.services.StepCounterService"
+            android:name="com.stepcounter.services.StepCounterService"
             android:enabled="true" />
-
-        <receiver
-            android:name=".step.receivers.StartUpActionReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".step.receivers.UpdateReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".step.receivers.ServiceRestarter"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="@string/androidx_startup">
-            <intent-filter>
-                <action android:name="restartservice" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
