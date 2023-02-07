@@ -36,6 +36,8 @@ def getExtOrIntegerDefault(name) {
 }
 
 android {
+  namespace "com.stepcounter"
+  testNamespace 'com.stepcounterexample'
   ndkVersion ndkVersion
   buildToolsVersion buildToolsVersion
   compileSdk 33

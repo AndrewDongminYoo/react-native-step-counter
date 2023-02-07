@@ -14,7 +14,7 @@ class StepCounterService : Service(), SensorEventListener, StepListener {
     private var mBinder: IBinder = Binder()
 
     // set up things for resetting steps (to zero (most of the time) at midnight
-    private var simpleStepDetector: StepDetector = StepDetector()
+    private var simpleStepDetector = StepDetector()
     var sensorManager: SensorManager? = null
     private var stepSensor: Sensor? = null
     var isServiceRunning = false
@@ -52,12 +52,12 @@ class StepCounterService : Service(), SensorEventListener, StepListener {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         simpleStepDetector = StepDetector()
         simpleStepDetector.registerListener(this)
-        isServiceRunning = true
         stepSensor = try {
             sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         } catch (_: Error) {
             sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         }
+        isServiceRunning = true
         sensorManager?.registerListener(
             this,
             stepSensor,

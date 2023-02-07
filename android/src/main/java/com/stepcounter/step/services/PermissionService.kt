@@ -177,7 +177,6 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         }
     }
 
-    @Suppress("unused")
     fun checkMultiplePermissions(permissions: Array<String>): WritableMap {
         val output: WritableMap = WritableNativeMap()
         for (permission in permissions.iterator()) {
@@ -206,38 +205,40 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         return output
     }
 
-    fun requestMultiplePermissions(permissions: Array<String>, promise: Promise) {
+    fun requestMultiplePermissions(permissions: Array<String>, promise: Promise?) {
         val output: WritableMap = WritableNativeMap()
         val permissionsToCheck = ArrayList<String>()
         var checkedPermissionsCount = 0
         for (permission in permissions.iterator()) {
-            if (permissionNotExists(permission)) {
-                output.putString(permission, UNAVAILABLE)
-                checkedPermissionsCount++
-            } else if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
-                output.putString(
-                    permission,
-                    if (applicationContext.checkPermission(
-                            permission,
-                            Process.myPid(),
-                            Process.myUid(),
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        GRANTED
-                    } else {
-                        BLOCKED
-                    },
-                )
-                checkedPermissionsCount++
-            } else if (applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-                output.putString(permission, GRANTED)
-                checkedPermissionsCount++
-            } else {
-                permissionsToCheck.add(permission)
+            if (permission.isNotBlank()) {
+                if (permissionNotExists(permission)) {
+                    output.putString(permission, UNAVAILABLE)
+                    checkedPermissionsCount++
+                } else if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
+                    output.putString(
+                        permission,
+                        if (applicationContext.checkPermission(
+                                permission,
+                                Process.myPid(),
+                                Process.myUid(),
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            GRANTED
+                        } else {
+                            BLOCKED
+                        },
+                    )
+                    checkedPermissionsCount++
+                } else if (applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+                    output.putString(permission, GRANTED)
+                    checkedPermissionsCount++
+                } else {
+                    permissionsToCheck.add(permission)
+                }
             }
         }
         if (permissions.size == checkedPermissionsCount) {
-            promise.resolve(output)
+            promise?.resolve(output)
             return
         }
         try {
@@ -259,13 +260,13 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                             }
                         }
                     }
-                    promise.resolve(output)
+                    promise?.resolve(output)
                 },
             )
             activity.requestPermissions(permissionsToCheck.toTypedArray(), mRequestCode, this)
             mRequestCode++
         } catch (e: IllegalStateException) {
-            promise.reject(ERROR_INVALID_ACTIVITY, e)
+            promise?.reject(ERROR_INVALID_ACTIVITY, e)
         }
     }
 
@@ -279,16 +280,19 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
     }
 
     private fun permissionNotExists(permission: String): Boolean {
-        val fieldName = getFieldName(permission) ?: return true
-        return try {
-            permission::class.java.getField(fieldName)
+        return if (permission.isNotBlank()) {
+            val fieldName = getFieldName(permission) ?: return false
+            try {
+                permission::class.java.getField(fieldName)
+                return true
+            } catch (_: Exception) {
+                return false
+            }
+        } else {
             false
-        } catch (ignored: NoSuchFieldException) {
-            true
         }
     }
 
-    @Suppress("unused")
     fun checkNotifications(promise: Promise) {
         val output = Arguments.createMap()
         val settings = Arguments.createMap()

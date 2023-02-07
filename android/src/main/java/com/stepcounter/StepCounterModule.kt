@@ -7,7 +7,6 @@ import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES
-import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.core.DeviceEventManagerModule
@@ -31,46 +30,40 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     private var applicationContext = reactContext
     private var stepCounterService = StepCounterService()
     private var permissionService = PermissionService(reactContext)
-    private var status: Int = STOPPED
+    private var status = STOPPED
 
     private val bodySensorPermission = Manifest.permission.BODY_SENSORS
     private val writeDataPermission = Manifest.permission.WRITE_EXTERNAL_STORAGE
-
-    @RequiresApi(VERSION_CODES.Q)
-    private val healthPermissionKey = Manifest.permission.ACTIVITY_RECOGNITION
-
-    @RequiresApi(VERSION_CODES.S)
-    private val highRateSensorPermission = Manifest.permission.HIGH_SAMPLING_RATE_SENSORS
-
-    @RequiresApi(VERSION_CODES.TIRAMISU)
-    private val backgroundSensorPermission = Manifest.permission.BODY_SENSORS_BACKGROUND
+    private val receiveBootCompleted = Manifest.permission.RECEIVE_BOOT_COMPLETED
+    private val readExternalStorage = Manifest.permission.READ_EXTERNAL_STORAGE
+    private val healthPermissionKey =
+        if (SDK_INT >= VERSION_CODES.Q) Manifest.permission.ACTIVITY_RECOGNITION else ""
+    private val foregroundService =
+        if (SDK_INT >= VERSION_CODES.Q) Manifest.permission.FOREGROUND_SERVICE else ""
+    private val accessMediaLocation =
+        if (SDK_INT >= VERSION_CODES.Q) Manifest.permission.ACCESS_MEDIA_LOCATION else ""
+    private val highRateSensorPermission =
+        if (SDK_INT >= VERSION_CODES.S) Manifest.permission.HIGH_SAMPLING_RATE_SENSORS else ""
+    private val backgroundSensorPermission =
+        if (SDK_INT >= VERSION_CODES.TIRAMISU) Manifest.permission.BODY_SENSORS_BACKGROUND else ""
 
     private var sensorManager: SensorManager? = null
     private var stepCounter: Sensor? = null
-    private var accelerometer: Sensor? = null
 
     private var startAt = 0
     private var numSteps = 0f
 
-    private val permissionArray: Array<String>
-        get() {
-            val array = arrayOf(
-                bodySensorPermission,
-                writeDataPermission,
-            )
-            when {
-                SDK_INT >= VERSION_CODES.TIRAMISU -> array.plusElement(
-                    backgroundSensorPermission,
-                )
-                SDK_INT >= VERSION_CODES.S -> array.plusElement(
-                    highRateSensorPermission,
-                )
-                SDK_INT >= VERSION_CODES.Q -> array.plusElement(
-                    healthPermissionKey,
-                )
-            }
-            return array
-        }
+    private val permissionArray = arrayOf(
+        bodySensorPermission,
+        writeDataPermission,
+        receiveBootCompleted,
+        readExternalStorage,
+        foregroundService,
+        accessMediaLocation,
+        backgroundSensorPermission,
+        highRateSensorPermission,
+        healthPermissionKey,
+    )
 
     private val stepsParamsMap: WritableMap
         get() {
@@ -88,11 +81,14 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
             permissionArray,
             promise,
         )
+        permissionService.checkMultiplePermissions(
+            permissionArray,
+        )
     }
 
     fun checkPermission(): String {
         return permissionService.checkPermission(
-            bodySensorPermission,
+            backgroundSensorPermission,
         )
     }
 
@@ -105,9 +101,12 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         get() = checkPermission().equals(other = "granted", ignoreCase = true)
 
     private fun stepCountingSupported(): Boolean {
-        stepCounter = this.sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        accelerometer = this.sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        return if (accelerometer != null && stepCounter != null) {
+        stepCounter = try {
+            this.sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        } catch (_: Exception) {
+            this.sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        }
+        return if (stepCounter != null) {
             this.status = STARTING
             true
         } else {
@@ -118,11 +117,12 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun startStepCounterUpdate(from: Double, promise: Promise?) {
-        val service = Intent(applicationContext, StepCounterService::class.java)
-        stepCounterService.startService(service)
-        numSteps++
         try {
-            sendPedometerUpdateEvent(stepsParamsMap)
+            numSteps++
+            val stepParams: WritableMap = stepsParamsMap.copy()
+            stepParams.putInt("startDate", from.toInt())
+            sendPedometerUpdateEvent(stepParams)
+            promise?.resolve(stepParams)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -130,8 +130,6 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun stopStepCounterUpdate() {
-        val service = Intent(applicationContext, StepCounterService::class.java)
-        stepCounterService.stopService(service)
         if (status != STOPPED) {
             sensorManager?.unregisterListener(stepCounterService)
         }
@@ -147,6 +145,8 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         val stepParams: WritableMap = stepsParamsMap.copy()
         stepParams.putInt("startDate", startDate.toInt())
         stepParams.putInt("endDate", endDate.toInt())
+        applicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit("queryPedometerDataBetweenDates", stepParams)
         try {
             promise?.resolve(stepsParamsMap)
         } catch (e: Exception) {
@@ -155,8 +155,7 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     }
 
     private fun sendPedometerUpdateEvent(params: WritableMap?) {
-        applicationContext
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+        applicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
             .emit("pedometerDataDidUpdate", params)
     }
 
@@ -186,6 +185,12 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
                 val componentName = applicationContext.startService(service)
                 println(componentName?.className)
                 stepCounterService.startService(service)
+                sensorManager?.registerListener(
+                    stepCounterService,
+                    stepCounter,
+                    SensorManager.SENSOR_DELAY_FASTEST,
+                    SensorManager.SENSOR_DELAY_UI,
+                )
             }
             // set up the manager for the step counting service
             if (sensorManager == null) {
