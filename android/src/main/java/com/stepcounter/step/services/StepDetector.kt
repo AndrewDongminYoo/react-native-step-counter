@@ -6,16 +6,16 @@ import kotlin.math.min
 
 class StepDetector {
     // change this threshold according to your sensitivity preferences
-    private val stepTHRESHOLD: Float = 10f
-    private val stepDELAYNS: Int = 80000000
+    private val stepTHRESHOLD = 10f
+    private val stepDELAYNS = 80000000
+    private var velRingCounter = 0
     private var accelRingCounter = 0
+    private var oldVelocityEstimate = 0f
+    private var lastStepTimeNs = 0.toLong()
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
-    private var velRingCounter = 0
     private val velRing = FloatArray(VEL_RING_SIZE)
-    private var lastStepTimeNs: Long = 0
-    private var oldVelocityEstimate = 0f
     private var listener: StepListener? = null
     fun registerListener(listener: StepListener?) {
         this.listener = listener
@@ -45,7 +45,7 @@ class StepDetector {
         velRing[velRingCounter % VEL_RING_SIZE] = currentZ
         val velocityEstimate = SensorFilter.sum(velRing)
         if (velocityEstimate > stepTHRESHOLD && oldVelocityEstimate <= stepTHRESHOLD && timeNs - lastStepTimeNs > stepDELAYNS) {
-            listener!!.step()
+            listener?.step()
             lastStepTimeNs = timeNs
         }
         oldVelocityEstimate = velocityEstimate

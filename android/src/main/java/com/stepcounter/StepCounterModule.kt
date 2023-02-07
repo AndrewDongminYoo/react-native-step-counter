@@ -1,7 +1,6 @@
 package com.stepcounter
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
@@ -29,11 +28,10 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         const val STEP_IN_METERS = 0.762f
     }
 
-    private val applicationContext = reactContext
-    private val stepCounterService: StepCounterService = StepCounterService()
-    private val permissionService: PermissionService = PermissionService(reactContext)
-
-    private var activity: Activity? = reactContext.currentActivity
+    private var applicationContext = reactContext
+    private var stepCounterService = StepCounterService()
+    private var permissionService = PermissionService(reactContext)
+    private var status: Int = STOPPED
 
     private val bodySensorPermission = Manifest.permission.BODY_SENSORS
     private val writeDataPermission = Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -53,7 +51,6 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
 
     private var startAt = 0
     private var numSteps = 0f
-    private var status = STOPPED
 
     private val permissionArray: Array<String>
         get() {
@@ -168,20 +165,8 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     }
 
     override fun initialize() {
-        activity = this.currentActivity
-        sensorManager = stepCounterService.sensorManager
-        status = try {
-            // set up the manager for the step counting service
-            applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-            // do not start the step counting service if it is already running
-            if (!stepCounterService.isServiceRunning) {
-                val service = Intent(applicationContext, StepCounterService::class.java)
-                applicationContext.startService(service)
-            }
-            RUNNING
-        } catch (_: Exception) {
-            ERROR_FAILED_TO_START
-        }
+        super.initialize()
+        StepCounterModule(reactApplicationContext)
     }
 
     override fun canOverrideExistingModule() = false
@@ -191,4 +176,25 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     }
 
     override fun invalidate() {}
+
+    init {
+        this.sensorManager = stepCounterService.sensorManager
+        this.status = try {
+            // do not start the step counting service if it is already running
+            if (!stepCounterService.isServiceRunning) {
+                val service = Intent(reactContext, StepCounterService::class.java)
+                val componentName = applicationContext.startService(service)
+                println(componentName?.className)
+                stepCounterService.startService(service)
+            }
+            // set up the manager for the step counting service
+            if (sensorManager == null) {
+                sensorManager =
+                    applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            }
+            RUNNING
+        } catch (_: Exception) {
+            ERROR_FAILED_TO_START
+        }
+    }
 }

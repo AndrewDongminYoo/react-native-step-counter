@@ -3,7 +3,6 @@ package com.stepcounter.step.services
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -17,19 +16,17 @@ import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 
 class PermissionService(reactContext: ReactApplicationContext?) : PermissionListener {
-    private val mCallbacks: SparseArray<Callback> = SparseArray()
-    private var mSharedPrefs: SharedPreferences? = null
-    private val activity: Activity?
+    private val mCallbacks = SparseArray<Callback>()
+    private val activity = Activity()
+    private var applicationContext = reactContext ?: activity.applicationContext
+    private var mSharedPrefs = applicationContext.getSharedPreferences(
+        SETTING_NAME,
+        Context.MODE_PRIVATE,
+    )
     private var mRequestCode = 0
-
-    init {
-        applicationContext = reactContext
-        activity = Activity()
-    }
 
     private val permissionAwareActivity: PermissionAwareActivity
         get() {
-            checkNotNull(activity) { "Tried to use permissions API while not attached to an " + "Activity." }
             check(activity is PermissionAwareActivity) {
                 ("Tried to use permissions API but the host Activity doesn't" + " implement PermissionAwareActivity.")
             }
@@ -43,7 +40,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         }
         if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
             promise.resolve(
-                if (applicationContext!!.checkPermission(
+                if (applicationContext.checkPermission(
                         permission,
                         Process.myPid(),
                         Process.myUid(),
@@ -56,11 +53,11 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
             )
             return
         }
-        if (applicationContext!!.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+        if (applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
             promise.resolve(GRANTED)
             return
         }
-        if (!this.isNeedRequestPermission(permission, activity!!, promise)) {
+        if (!this.isNeedRequestPermission(permission, promise)) {
             return
         }
         try {
@@ -80,7 +77,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                             promise.resolve(DENIED)
                         } else if (boolArray[0]) {
                             promise.resolve(BLOCKED)
-                            mSharedPrefs!!.edit().putBoolean(permission, true).apply()
+                            mSharedPrefs.edit().putBoolean(permission, true).apply()
                         }
                     }
                 },
@@ -94,12 +91,14 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
 
     private fun isNeedRequestPermission(
         permission: String,
-        activity: Activity,
         promise: Promise,
     ): Boolean {
-        mSharedPrefs =
-            activity.applicationContext.getSharedPreferences(SETTING_NAME, Context.MODE_PRIVATE)
-        val notBlocked = mSharedPrefs != null && mSharedPrefs!!.getBoolean(permission, false)
+        val notBlocked = mSharedPrefs.getBoolean(permission, false)
+        if (!notBlocked) {
+            // not supporting reset the permission with "Ask me every time"
+            promise.resolve(BLOCKED)
+            return false
+        }
         val result = if (activity.applicationContext.checkPermission(
                 permission,
                 Process.myPid(),
@@ -113,10 +112,6 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         return if (result == GRANTED) {
             promise.resolve(result)
             true
-        } else if (!notBlocked) {
-            // not supporting reset the permission with "Ask me every time"
-            promise.resolve(BLOCKED)
-            false
         } else {
             promise.resolve(DENIED)
             false
@@ -126,11 +121,11 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
     fun openSettings(promise: Promise) {
         try {
             val intent = Intent()
-            val packageName = applicationContext!!.packageName
+            val packageName = applicationContext.packageName
             intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.data = Uri.fromParts("package", packageName, null)
-            applicationContext!!.startActivity(intent)
+            applicationContext.startActivity(intent)
             promise.resolve(true)
         } catch (e: Exception) {
             promise.reject(ERROR_INVALID_ACTIVITY, e)
@@ -156,7 +151,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         if ((permission == null) || permissionNotExists(permission)) {
             return UNAVAILABLE
         }
-        return if (applicationContext!!.checkPermission(
+        return if (applicationContext.checkPermission(
                 permission,
                 Process.myPid(),
                 Process.myUid(),
@@ -191,7 +186,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
             } else if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
                 output.putString(
                     permission,
-                    if (applicationContext!!.checkPermission(
+                    if (applicationContext.checkPermission(
                             permission,
                             Process.myPid(),
                             Process.myUid(),
@@ -202,7 +197,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                         BLOCKED
                     },
                 )
-            } else if (applicationContext!!.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            } else if (applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
                 output.putString(permission, GRANTED)
             } else {
                 output.putString(permission, DENIED)
@@ -222,7 +217,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
             } else if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
                 output.putString(
                     permission,
-                    if (applicationContext!!.checkPermission(
+                    if (applicationContext.checkPermission(
                             permission,
                             Process.myPid(),
                             Process.myUid(),
@@ -234,7 +229,7 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
                     },
                 )
                 checkedPermissionsCount++
-            } else if (applicationContext!!.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            } else if (applicationContext.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
                 output.putString(permission, GRANTED)
                 checkedPermissionsCount++
             } else {
@@ -295,9 +290,9 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
 
     @Suppress("unused")
     fun checkNotifications(promise: Promise) {
-        val enabled = NotificationManagerCompat.from(applicationContext!!).areNotificationsEnabled()
         val output = Arguments.createMap()
         val settings = Arguments.createMap()
+        val enabled = NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
         output.putString("status", if (enabled) GRANTED else BLOCKED)
         output.putMap("settings", settings)
         promise.resolve(output)
@@ -311,6 +306,5 @@ class PermissionService(reactContext: ReactApplicationContext?) : PermissionList
         private const val DENIED = "denied"
         private const val UNAVAILABLE = "unavailable"
         private const val ERROR_INVALID_ACTIVITY = "E_INVALID_ACTIVITY"
-        var applicationContext: Context? = null
     }
 }

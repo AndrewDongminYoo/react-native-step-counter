@@ -14,7 +14,7 @@ class StepCounterService : Service(), SensorEventListener, StepListener {
     private var mBinder: IBinder = Binder()
 
     // set up things for resetting steps (to zero (most of the time) at midnight
-    private var simpleStepDetector: StepDetector? = null
+    private var simpleStepDetector: StepDetector = StepDetector()
     var sensorManager: SensorManager? = null
     private var stepSensor: Sensor? = null
     var isServiceRunning = false
@@ -51,7 +51,7 @@ class StepCounterService : Service(), SensorEventListener, StepListener {
         super.onCreate()
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         simpleStepDetector = StepDetector()
-        simpleStepDetector!!.registerListener(this)
+        simpleStepDetector.registerListener(this)
         isServiceRunning = true
         stepSensor = try {
             sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -90,19 +90,19 @@ class StepCounterService : Service(), SensorEventListener, StepListener {
     override fun onSensorChanged(event: SensorEvent) {
         if (!isServiceRunning) return
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            simpleStepDetector!!.updateAccel(
+            simpleStepDetector.updateAccel(
                 event.timestamp,
                 event.values[0],
                 event.values[1],
                 event.values[2],
             )
             currentSteps = event.values[0].toInt()
-        } else if (stepSensor!!.type == Sensor.TYPE_STEP_COUNTER) {
+        } else if (stepSensor?.type == Sensor.TYPE_STEP_COUNTER) {
             currentSteps = event.values[0].toInt()
             if (startNumSteps == 0) startNumSteps = currentSteps
             currentSteps -= startNumSteps
             // Only look at step counter or accelerometer events
-        } else if (event.sensor.type != stepSensor!!.type) {
+        } else if (event.sensor.type != stepSensor?.type) {
             return
         }
     }
