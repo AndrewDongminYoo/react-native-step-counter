@@ -1,75 +1,145 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
-import StepCounter from 'react-native-step-counter';
-
-export default function App() {
-  const [steps, setSteps] = useState<number>(0);
-  const [allowed, setAllow] = useState(false);
-
-  useEffect(() => {
-    const askPermission = async () => {
-      await StepCounter.requestPermission().then((result) => {
-        console.debug('🚀 - file: App.tsx:29 - requestPermission', result);
-        const supported = StepCounter.isStepCountingSupported();
-        console.debug(
-          `Sensor TYPE_STEP_COUNTER is ${
-            supported ? '' : 'not '
-          }supported on this device`
-        );
-        const available = StepCounter.isWritingStepsSupported();
-        console.debug(
-          '🚀 - file: App.tsx:22 - isWritingStepsSupported',
-          available
-        );
-        let isOk = false;
-        if (isOk) {
-          const current = StepCounter.checkPermission();
-          console.debug('🚀 - file: App.tsx:28 - checkPermissionStr', current);
-          isOk = current === 'granted';
-          console.debug('🚀 - file: App.tsx:24 - checkPermissionBool', isOk);
-        }
-        setAllow(isOk && supported && available);
-      });
-    };
-    askPermission();
-  }, []);
-
-  useEffect(() => {
-    if (allowed) {
-      const today = Date.now();
-      console.debug('🚀 - startStepCounterUpdate');
-      StepCounter.startStepCounterUpdate(today).then((data) => {
-        console.debug('STEPS', data.steps);
-        setSteps(data.steps);
-      });
-    }
-    return () => {
-      StepCounter.stopStepCounterUpdate();
-    };
-  }, [allowed]);
+import * as React from 'react';
+import {
+  Button,
+  Modal,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
+} from 'react-native';
+import RNPermissions, {
+  NotificationOption,
+  Permission,
+  PERMISSIONS,
+} from 'react-native-permissions';
+const PERMISSIONS_VALUES: Permission[] = Object.values(
+  Platform.OS === 'ios' ? PERMISSIONS.IOS : PERMISSIONS.ANDROID
+);
+const App = () => {
+  const [snackbarContent, setSnackbarContent] = React.useState<string>();
+  const showSnackbar = (title: string, response: unknown) =>
+    setSnackbarContent(title + '\n\n' + JSON.stringify(response, null, 2));
+  const hideSnackbar = () => setSnackbarContent(undefined);
 
   return (
     <SafeAreaView>
-      <View style={styles.screen}>
-        <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
-        <Text style={styles.step}>걸음 수: {steps}</Text>
-      </View>
+      <StatusBar barStyle="light-content" />
+      <ScrollView>
+        {PERMISSIONS_VALUES.map((item, index) => {
+          const value = PERMISSIONS_VALUES[index] as Permission;
+          const parts = item.split('.');
+          const name = parts[parts.length - 1];
+          return (
+            <React.Fragment key={item}>
+              <View style={{ padding: 20 }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    color: 'rgba(0, 0, 0, 0.87)',
+                    fontWeight: '400',
+                    fontSize: 16,
+                    textAlign: 'left',
+                  }}
+                >
+                  {name}
+                </Text>
+                <View style={{ flexDirection: 'row', marginTop: 12 }}>
+                  <Button
+                    onPress={() => {
+                      RNPermissions.check(value)
+                        .then((status) => {
+                          showSnackbar(`check(${name})`, status);
+                        })
+                        .catch((error) => {
+                          console.error(error);
+                        });
+                    }}
+                    title="Check"
+                  />
+
+                  <View style={{ width: 8 }} />
+
+                  <Button
+                    onPress={() => {
+                      RNPermissions.request(value)
+                        .then((status) => {
+                          showSnackbar(`request(${name})`, status);
+                        })
+                        .catch((error) => {
+                          console.error(error);
+                        });
+                    }}
+                    title="Request"
+                  />
+                </View>
+              </View>
+            </React.Fragment>
+          );
+        })}
+
+        <View style={{ padding: 20, paddingBottom: 32 }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              color: 'rgba(0, 0, 0, 0.87)',
+              fontWeight: '400',
+              fontSize: 16,
+              textAlign: 'left',
+            }}
+          >
+            NOTIFICATIONS
+          </Text>
+
+          <View style={{ flexDirection: 'row', marginTop: 12 }}>
+            <Button
+              onPress={() => {
+                RNPermissions.checkNotifications()
+                  .then((response) => {
+                    showSnackbar('checkNotifications()', response);
+                  })
+                  .catch((error) => {
+                    console.error(error);
+                  });
+              }}
+              title="Check"
+            />
+
+            <View style={{ width: 8 }} />
+
+            <Button
+              onPress={() => {
+                const options: NotificationOption[] = [
+                  'alert',
+                  'badge',
+                  'sound',
+                ];
+
+                RNPermissions.requestNotifications(options)
+                  .then((response) => {
+                    showSnackbar(
+                      `requestNotifications([${options
+                        .map((option) => `"${option}"`)
+                        .join(', ')}])`,
+                      response
+                    );
+                  })
+                  .catch((error) => {
+                    console.error(error);
+                  });
+              }}
+              title="Request"
+            />
+          </View>
+        </View>
+      </ScrollView>
+
+      <Modal visible={snackbarContent != null} onDismiss={hideSnackbar}>
+        {snackbarContent}
+      </Modal>
     </SafeAreaView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  screen: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  step: {
-    fontSize: 36,
-    color: '#000',
-  },
-});
+export default App;

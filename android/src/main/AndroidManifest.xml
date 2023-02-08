@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    package="com.stepcounter"
     android:versionCode="1"
     android:versionName="1.0">
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
     <uses-permission
         android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"
         tools:ignore="HighSamplingRate" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
 
     <uses-feature
         android:name="android.hardware.sensor.stepcounter"
@@ -37,7 +31,7 @@
         android:supportsRtl="true"
         tools:targetApi="o">
         <service
-            android:name="com.stepcounter.services.StepCounterService"
+            android:name=".services.StepCounterService"
             android:enabled="true" />
     </application>
 

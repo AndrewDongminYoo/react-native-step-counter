@@ -22,6 +22,8 @@ module.exports = {
     ],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
+    'react-native/no-inline-styles': 'off',
+    'eslint/react-native/no-inline-styles': 'off',
   },
   ignorePatterns: ['node_modules/', 'lib/'],
 };
