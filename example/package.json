@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
-    "android": "react-native run-android --mode release --terminal vscode",
+    "android": "react-native run-android --terminal vscode",
     "ios": "react-native run-ios --device --terminal vscode",
     "bundle-android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/main.jsbundle --assets-dest ../android/app/src/main/res",
     "bundle-ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/StepCounterExample/main.jsbundle --assets-dest ios/StepCounterExample/Images.xcassets",
@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "react": "18.2.0",
-    "react-native": "0.71.1",
-    "react-native-permissions": "^3.6.1"
+    "react-native": "0.71.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",

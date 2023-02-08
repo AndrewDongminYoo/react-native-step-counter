@@ -1,5 +1,5 @@
-import { TurboModule, TurboModuleRegistry } from 'react-native';
-import { Platform } from 'react-native';
+import { Platform, TurboModule, TurboModuleRegistry } from 'react-native';
+import { PermissionStatus } from './NativePermissions';
 
 export const LINKING_ERROR =
   `The package 'react-native-walking-tracker' doesn't seem to be linked. Make sure: \n\n` +
@@ -17,7 +17,6 @@ export const LINKING_ERROR =
 export type StepCountData = {
   steps: number;
 };
-
 export interface Spec extends TurboModule {
   getConstants(): {
     platform: string; // 'ios'|'android'
@@ -30,16 +29,15 @@ export interface Spec extends TurboModule {
     startDate: number, // new Date()
     endDate: number
   ): Promise<StepCountData[]>;
-  requestPermission(): Promise<PermissionStatus>;
-  checkPermission(): PermissionStatus;
-}
-
-enum PermissionStatus {
-  UNAVAILABLE = 'unavailable', // no-support device
-  BLOCKED = 'blocked', // never_ask_again in Android
-  DENIED = 'denied', // disallowed
-  GRANTED = 'granted', // allowed
-  LIMITED = 'limited', // partial permission allowed
+  requestMultiplePermissions: (
+    permissions: string[]
+  ) => Promise<Record<string, PermissionStatus>>;
+  checkMultiplePermissions: (
+    permissions: string[]
+  ) => Promise<Record<string, PermissionStatus>>;
+  openSettings: () => Promise<true>;
+  checkPermission: (permission: string) => Promise<PermissionStatus>;
+  requestPermission: (permission: string) => Promise<PermissionStatus>;
 }
 
 const StepCounterModule =

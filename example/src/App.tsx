@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   Button,
-  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -17,22 +16,17 @@ import RNPermissions, {
 const PERMISSIONS_VALUES: Permission[] = Object.values(
   Platform.OS === 'ios' ? PERMISSIONS.IOS : PERMISSIONS.ANDROID
 );
-const App = () => {
-  const [snackbarContent, setSnackbarContent] = React.useState<string>();
-  const showSnackbar = (title: string, response: unknown) =>
-    setSnackbarContent(title + '\n\n' + JSON.stringify(response, null, 2));
-  const hideSnackbar = () => setSnackbarContent(undefined);
 
+const App = () => {
   return (
     <SafeAreaView>
       <StatusBar barStyle="light-content" />
       <ScrollView>
-        {PERMISSIONS_VALUES.map((item, index) => {
-          const value = PERMISSIONS_VALUES[index] as Permission;
-          const parts = item.split('.');
+        {PERMISSIONS_VALUES.map((value) => {
+          const parts = value.split('.');
           const name = parts[parts.length - 1];
           return (
-            <React.Fragment key={item}>
+            <React.Fragment key={value}>
               <View style={{ padding: 20 }}>
                 <Text
                   numberOfLines={1}
@@ -50,7 +44,7 @@ const App = () => {
                     onPress={() => {
                       RNPermissions.check(value)
                         .then((status) => {
-                          showSnackbar(`check(${name})`, status);
+                          console.debug(`check(${name})`, status);
                         })
                         .catch((error) => {
                           console.error(error);
@@ -65,7 +59,7 @@ const App = () => {
                     onPress={() => {
                       RNPermissions.request(value)
                         .then((status) => {
-                          showSnackbar(`request(${name})`, status);
+                          console.debug(`request(${name})`, status);
                         })
                         .catch((error) => {
                           console.error(error);
@@ -78,7 +72,6 @@ const App = () => {
             </React.Fragment>
           );
         })}
-
         <View style={{ padding: 20, paddingBottom: 32 }}>
           <Text
             numberOfLines={1}
@@ -97,7 +90,7 @@ const App = () => {
               onPress={() => {
                 RNPermissions.checkNotifications()
                   .then((response) => {
-                    showSnackbar('checkNotifications()', response);
+                    console.debug('checkNotifications()', response);
                   })
                   .catch((error) => {
                     console.error(error);
@@ -118,7 +111,7 @@ const App = () => {
 
                 RNPermissions.requestNotifications(options)
                   .then((response) => {
-                    showSnackbar(
+                    console.debug(
                       `requestNotifications([${options
                         .map((option) => `"${option}"`)
                         .join(', ')}])`,
@@ -134,10 +127,6 @@ const App = () => {
           </View>
         </View>
       </ScrollView>
-
-      <Modal visible={snackbarContent != null} onDismiss={hideSnackbar}>
-        {snackbarContent}
-      </Modal>
     </SafeAreaView>
   );
 };
