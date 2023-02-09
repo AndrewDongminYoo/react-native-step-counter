@@ -107,21 +107,3 @@ RCT_EXPORT_METHOD(authorizationStatus:(RCTResponseSenderBlock) callback) {
 #endif
 
 @end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
