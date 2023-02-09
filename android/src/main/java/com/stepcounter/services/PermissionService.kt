@@ -46,7 +46,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
     private val backgroundSensorPermission =
         if (SDK_INT >= VERSION_CODES.TIRAMISU) Manifest.permission.BODY_SENSORS_BACKGROUND else ""
 
-    private val permissionArray: Array<String>
+    val permissionArray: Array<String>
         get() {
             return arrayOf(
                 bodySensorPermission,
@@ -73,7 +73,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
         }
     }
 
-    fun checkPermission(permission: String?): String {
+    private fun checkPermission(permission: String?): String {
         if (permission == null || !permissionExists(permission)) {
             return UNAVAILABLE
         }
@@ -89,14 +89,15 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
             } else {
                 BLOCKED
             }
-        } else if (context.checkSelfPermission(permission) == PERMISSION_GRANTED) {
-            return GRANTED
+        }
+        return if (context.checkSelfPermission(permission) == PERMISSION_GRANTED) {
+            GRANTED
         } else {
-            return DENIED
+            DENIED
         }
     }
 
-    fun requestPermission(permission: String): String {
+    private fun requestPermission(permission: String): String {
         if (!permissionExists(permission)) {
             return UNAVAILABLE
         }
@@ -129,30 +130,10 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
     fun checkMultiplePermissions(strArr: Array<String>?): WritableMap {
         val permissions = strArr ?: permissionArray
         val output: WritableMap = WritableNativeMap()
-        val context = applicationContext.baseContext
         for (i in permissions.indices) {
             val permission = permissions[i]
-            if (!permissionExists(permission)) {
-                output.putString(permission, UNAVAILABLE)
-            } else if (SDK_INT < VERSION_CODES.M) {
-                output.putString(
-                    permission,
-                    if (context.checkPermission(
-                            permission,
-                            Process.myPid(),
-                            Process.myUid(),
-                        ) == PERMISSION_GRANTED
-                    ) {
-                        GRANTED
-                    } else {
-                        BLOCKED
-                    },
-                )
-            } else if (context.checkSelfPermission(permission) == PERMISSION_GRANTED) {
-                output.putString(permission, GRANTED)
-            } else {
-                output.putString(permission, DENIED)
-            }
+            val granted = checkPermission(permission)
+            output.putString(permission, granted)
         }
         return output
     }
@@ -161,52 +142,17 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
         val permissions: Array<String> = strArr ?: permissionArray
         val output: WritableMap = WritableNativeMap()
         var checkedPermissionsCount = 0
-        val context = applicationContext.baseContext
         for (permission in permissions.iterator()) {
-            if (!permissionExists(permission)) {
-                output.putString(permission, UNAVAILABLE)
-                checkedPermissionsCount++
-            } else if (SDK_INT < VERSION_CODES.M) {
-                output.putString(
-                    permission,
-                    if (context.checkPermission(
-                            permission,
-                            Process.myPid(),
-                            Process.myUid(),
-                        ) == PERMISSION_GRANTED
-                    ) {
-                        GRANTED
-                    } else {
-                        BLOCKED
-                    },
-                )
-                checkedPermissionsCount++
-            } else if (context.checkSelfPermission(permission) == PERMISSION_GRANTED) {
-                output.putString(permission, GRANTED)
-                checkedPermissionsCount++
-            }
+            requestPermission(permission)
+            val granted = checkPermission(permission)
+            output.putString(permission, granted)
+            checkedPermissionsCount++
         }
         if (permissions.size == checkedPermissionsCount) {
             return output
         }
         val activity = permissionAwareActivity
         activity.requestPermissions(permissions, mRequestCode, this)
-        for (permission in permissions.iterator()) {
-            if (activity.checkPermission(
-                    permission,
-                    Process.myPid(),
-                    Process.myUid(),
-                ) == PERMISSION_GRANTED
-            ) {
-                output.putString(permission, GRANTED)
-            } else {
-                if (activity.shouldShowRequestPermissionRationale(permission)) {
-                    output.putString(permission, DENIED)
-                } else {
-                    output.putString(permission, BLOCKED)
-                }
-            }
-        }
         mRequestCode++
         return output
     }

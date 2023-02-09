@@ -1,54 +1,55 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  SafeAreaView,
-  NativeEventEmitter,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { checkAvailable, loggingStop, myModuleEvt } from './pedometer';
+import { Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { PERMISSIONS } from 'react-native-permissions';
 import StepCounter from 'react-native-step-counter';
+import { askFor, checkPermission } from './permission';
 
-export default function App() {
-  const [steps, setSteps] = useState<number>(0);
-  const [supported, setSupported] = useState(false);
+const App = () => {
+  const [allowed, setAllow] = useState(false);
+  const [steps, setSteps] = useState(0);
+
+  /** get user's motion permission and check pedometer is available */
   useEffect(() => {
-    setSupported(StepCounter.isStepCountingSupported());
-    console.debug(
-      `Sensor TYPE_STEP_COUNTER is ${
-        supported ? '' : 'not '
-      }supported on this device`
-    );
-    const today = Date.now();
-    console.debug('🚀 - startStepCounterUpdate', today);
-    StepCounter.startStepCounterUpdate(today).then((data) => {
-      console.log(data);
-      console.debug('STEPS', data.steps);
-      if (typeof data.steps === 'number') {
-        setSteps(data.steps);
-      }
-    });
-
-    const evenEmitter = new NativeEventEmitter();
-    evenEmitter.addListener('pedometerDataDidUpdate', (data) => {
-      console.debug('🚀 - pedometerDataDidUpdate', data);
-    });
-    return () => {
-      StepCounter.stopStepCounterUpdate();
+    const askPermission = async () => {
+      await askFor();
+      const isOk = await (Platform.OS === 'ios'
+        ? checkPermission(PERMISSIONS.IOS.MOTION)
+        : checkPermission(PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND));
+      console.debug('🚀 - file: App.tsx:18 - isOk', isOk);
+      const possible = await checkAvailable();
+      console.debug('🚀 - file: App.tsx:21 - possible', possible);
+      setAllow(isOk && possible);
     };
-  }, [supported]);
+    askPermission();
+  }, []);
+
+  /** get user's step count change and set-state of it */
+  useEffect(() => {
+    if (allowed) {
+      myModuleEvt.addListener('StepCounter', (data) => {
+        setSteps((step) => {
+          console.log('STEPS', step);
+          return data.steps;
+        });
+      });
+      const now = Date.now();
+      StepCounter.startStepCounterUpdate(now);
+    }
+    return () => {
+      loggingStop();
+    };
+  }, [allowed]);
 
   return (
     <SafeAreaView>
       <View style={styles.screen}>
-        <Text style={styles.step}>
-          권한요청:{supported ? 'available' : 'not-available'}
-        </Text>
-        <Text style={styles.step}>걸음 수:{steps}</Text>
+        <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
+        <Text style={styles.step}>걸음 수: {steps}</Text>
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   screen: {
@@ -64,3 +65,5 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
+
+export default App;

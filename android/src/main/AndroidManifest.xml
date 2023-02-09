@@ -14,10 +14,4 @@
     <uses-feature
         android:name="android.hardware.sensor.stepdetector"
         android:required="true" />
-
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.TTS_SERVICE" />
-        </intent>
-    </queries>
 </manifest>

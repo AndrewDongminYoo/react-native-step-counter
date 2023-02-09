@@ -49,7 +49,7 @@ class StepDetector {
         velRing[velRingCounter % VEL_RING_SIZE] = currentZ
         val velocityEstimate = sum(velRing)
         if (velocityEstimate > STEP_THRESHOLD && oldVelocityEstimate <= STEP_THRESHOLD && timeNs - lastStepTimeNs > STEP_DELAY_NS) {
-            listener!!.step(timeNs)
+            listener!!.step(timeNs.toFloat())
             lastStepTimeNs = timeNs
         }
         oldVelocityEstimate = velocityEstimate
