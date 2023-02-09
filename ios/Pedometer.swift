@@ -24,8 +24,8 @@ class Pedometer: RCTEventEmitter {
     }
   }
 
-  @objc(startStepCounter)
-  func startStepCounter() {
+  @objc(startStepCounterUpdate)
+  func startStepCounterUpdate() {
     guard checkAuthStatus() else {
       fatalError("cant' auth")
     }
@@ -61,8 +61,8 @@ class Pedometer: RCTEventEmitter {
     return pedometerAuth
   }
 
-  @objc(stopStepCounter)
-  func stopStepCounter() -> Void {
+  @objc(stopStepCounterUpdate)
+  func stopStepCounterUpdate() -> Void {
     pedometer.stopUpdates()
     if #available(iOS 10.0, *) {
         pedometer.stopEventUpdates()

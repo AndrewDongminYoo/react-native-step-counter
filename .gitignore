@@ -79,3 +79,7 @@ android/app/libs
 # Bob
 dist/
 lib/
+
+# Study
+doc/*.log
+doc/*.md
