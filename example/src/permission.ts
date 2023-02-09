@@ -20,23 +20,27 @@ export const checkPermission = async (permission: Permission) => {
     .then((result) => {
       switch (result) {
         case RESULTS.UNAVAILABLE:
-          console.log(
-            'This feature is not available (on this device / in this context)'
+          console.debug(
+            '🚀 This feature is not available (on this device / in this context)',
+            permission
           );
           return false;
         case RESULTS.DENIED:
-          console.log(
-            'The permission has not been requested / is denied but request-able'
+          console.debug(
+            '🚀 The permission has not been requested / is denied but request-able',
+            permission
           );
           return false;
         case RESULTS.LIMITED:
-          console.log('The permission is limited: some actions are possible');
+          console.debug(
+            '🚀 The permission is limited: some actions are possible',
+            permission
+          );
           return true;
         case RESULTS.GRANTED:
-          console.log('The permission is granted');
+          console.debug('🚀 The permission is granted', permission);
           return true;
         case RESULTS.BLOCKED:
-          console.log('The permission is denied and not request-able anymore');
           return false;
       }
     })

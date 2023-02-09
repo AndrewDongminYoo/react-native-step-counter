@@ -20,16 +20,9 @@ export type StepCountData = {
   endDate: number;
 };
 export interface Spec extends TurboModule {
-  getConstants(): {
-    platform: string; // 'ios'|'android'
-  };
   isStepCountingSupported(): boolean;
-  startStepCounterUpdate(from: number): Promise<StepCountData>;
+  startStepCounterUpdate(from: number): boolean;
   stopStepCounterUpdate(): void;
-  queryStepCounterDataBetweenDates(
-    startDate: number, // new Date()
-    endDate: number
-  ): Promise<StepCountData[]>;
 }
 
 const StepCounterModule =

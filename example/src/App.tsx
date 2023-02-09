@@ -15,7 +15,7 @@ const App = () => {
       await askFor();
       const isOk = await (Platform.OS === 'ios'
         ? checkPermission(PERMISSIONS.IOS.MOTION)
-        : checkPermission(PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND));
+        : checkPermission(PERMISSIONS.ANDROID.BODY_SENSORS));
       console.debug('🚀 - file: App.tsx:18 - isOk', isOk);
       const possible = await checkAvailable();
       console.debug('🚀 - file: App.tsx:21 - possible', possible);
@@ -28,6 +28,8 @@ const App = () => {
   useEffect(() => {
     if (allowed) {
       myModuleEvt.addListener('StepCounter', (data) => {
+        console.debug('🚀 - file: App.tsx:31 - data', data);
+
         setSteps((step) => {
           console.log('STEPS', step);
           return data.steps;

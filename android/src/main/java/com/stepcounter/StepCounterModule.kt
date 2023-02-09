@@ -33,12 +33,13 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         return stepCounterService.isStepCountingAvailable()
     }
 
-    fun startStepCounterUpdate(from: Double) {
-        try {
-            stepCounterService.startStepCounterUpdatesFromDate(from.toInt())
+    fun startStepCounterUpdate(from: Double): Boolean {
+        return try {
             status = RUNNING
+            stepCounterService.startStepCounterUpdatesFromDate(from.toInt())
         } catch (e: Exception) {
             e.printStackTrace()
+            false
         }
     }
 
