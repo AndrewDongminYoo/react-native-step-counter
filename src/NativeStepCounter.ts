@@ -14,23 +14,22 @@ export const LINKING_ERROR =
   'If none of these fix the issue, please open an issue on the Github repository: https://github.com/AndrewDongminYoo/react-native-step-counter`';
 
 export type StepCountData = {
+  distance: number;
   steps: number;
+  startDate: number; // new Date()
+  endDate: number;
 };
 export interface Spec extends TurboModule {
   getConstants(): {
     platform: string; // 'ios'|'android'
   };
   isStepCountingSupported(): boolean;
-  isWritingStepsSupported(): boolean;
   startStepCounterUpdate(from: number): Promise<StepCountData>;
   stopStepCounterUpdate(): void;
   queryStepCounterDataBetweenDates(
     startDate: number, // new Date()
     endDate: number
   ): Promise<StepCountData[]>;
-  openSettings(): void;
-  checkPermission(permission: string): string;
-  requestPermission(permission: string): string;
 }
 
 const StepCounterModule =

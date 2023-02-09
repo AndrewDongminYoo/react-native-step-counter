@@ -80,7 +80,7 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
 
     private fun sendStepCounterUpdateEvent(params: WritableMap?) {
         applicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit("stepCounterDataDidUpdate", params)
+            .emit("pedometerDataDidUpdate", params)
     }
 
     override fun getName(): String {

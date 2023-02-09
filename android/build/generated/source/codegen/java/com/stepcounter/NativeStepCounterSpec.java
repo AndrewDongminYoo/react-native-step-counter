@@ -61,10 +61,6 @@ public abstract class NativeStepCounterSpec extends ReactContextBaseJavaModule i
   @DoNotStrip
   public abstract boolean isStepCountingSupported();
 
-  @ReactMethod(isBlockingSynchronousMethod = true)
-  @DoNotStrip
-  public abstract boolean isWritingStepsSupported();
-
   @ReactMethod
   @DoNotStrip
   public abstract void startStepCounterUpdate(double from, Promise promise);
@@ -76,16 +72,4 @@ public abstract class NativeStepCounterSpec extends ReactContextBaseJavaModule i
   @ReactMethod
   @DoNotStrip
   public abstract void queryStepCounterDataBetweenDates(double startDate, double endDate, Promise promise);
-
-  @ReactMethod
-  @DoNotStrip
-  public abstract void openSettings();
-
-  @ReactMethod(isBlockingSynchronousMethod = true)
-  @DoNotStrip
-  public abstract String checkPermission(String permission);
-
-  @ReactMethod(isBlockingSynchronousMethod = true)
-  @DoNotStrip
-  public abstract String requestPermission(String permission);
 }

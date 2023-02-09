@@ -167,7 +167,7 @@ class StepCounterService(context: ReactApplicationContext) :
 
     private fun sendStepCounterUpdateEvent(params: WritableMap?) {
         reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit("stepCounterDataDidUpdate", params)
+            .emit("pedometerDataDidUpdate", params)
     }
 
     companion object {
