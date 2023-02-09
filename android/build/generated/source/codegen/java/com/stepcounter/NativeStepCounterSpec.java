@@ -18,7 +18,6 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReactModuleWithSpec;
-import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.turbomodule.core.interfaces.TurboModule;
 import java.util.Arrays;
@@ -80,21 +79,13 @@ public abstract class NativeStepCounterSpec extends ReactContextBaseJavaModule i
 
   @ReactMethod
   @DoNotStrip
-  public abstract void requestMultiplePermissions(ReadableArray permissions, Promise promise);
+  public abstract void openSettings();
 
-  @ReactMethod
+  @ReactMethod(isBlockingSynchronousMethod = true)
   @DoNotStrip
-  public abstract void checkMultiplePermissions(ReadableArray permissions, Promise promise);
+  public abstract String checkPermission(String permission);
 
-  @ReactMethod
+  @ReactMethod(isBlockingSynchronousMethod = true)
   @DoNotStrip
-  public abstract void openSettings(Promise promise);
-
-  @ReactMethod
-  @DoNotStrip
-  public abstract void checkPermission(String permission, Promise promise);
-
-  @ReactMethod
-  @DoNotStrip
-  public abstract void requestPermission(String permission, Promise promise);
+  public abstract String requestPermission(String permission);
 }

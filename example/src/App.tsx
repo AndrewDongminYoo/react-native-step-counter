@@ -1,134 +1,83 @@
-import * as React from 'react';
-import {
-  Button,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  Text,
-  View,
-} from 'react-native';
-import RNPermissions, {
-  NotificationOption,
-  Permission,
-  PERMISSIONS,
-} from 'react-native-permissions';
-const PERMISSIONS_VALUES: Permission[] = Object.values(
-  Platform.OS === 'ios' ? PERMISSIONS.IOS : PERMISSIONS.ANDROID
-);
+/* eslint-disable react-hooks/exhaustive-deps */
+import React from 'react';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, SafeAreaView, Platform } from 'react-native';
+import StepCounter from 'react-native-step-counter';
 
-const App = () => {
+const permission =
+  Platform.OS === 'ios'
+    ? 'ios.permission.MOTION'
+    : 'android.permission.BODY_SENSORS';
+
+export default function App() {
+  const [steps, setSteps] = useState<number>(0);
+  const [allowed, setAllow] = useState(false);
+  const [checked, setChecked] = useState('');
+  const [available, setAvailable] = useState(false);
+  const [response, setResponse] = useState('');
+  const [supported, setSupported] = useState(false);
+
+  useEffect(() => {
+    setResponse(StepCounter.requestPermission(permission));
+    console.debug('🚀 - file: App.tsx:29 - requestPermission', response);
+    setSupported(StepCounter.isStepCountingSupported());
+    console.debug(
+      `Sensor TYPE_STEP_COUNTER is ${
+        supported ? '' : 'not '
+      }supported on this device`
+    );
+    setAvailable(StepCounter.isWritingStepsSupported());
+    console.debug('🚀 - file: App.tsx:22 - isWritingStepsSupported', available);
+    const current = StepCounter.checkPermission(permission);
+    setChecked(current);
+    console.debug('🚀 - file: App.tsx:28 - checkPermissionStr', current);
+    setAllow(current === 'granted');
+    console.debug('🚀 - file: App.tsx:24 - checkPermissionBool', allowed);
+  }, []);
+
+  useEffect(() => {
+    const today = Date.now();
+    console.debug('🚀 - startStepCounterUpdate');
+    StepCounter.startStepCounterUpdate(today).then((data) => {
+      console.log(data);
+      console.debug('STEPS', data.numberOfSteps);
+      if (typeof data.numberOfSteps === 'number') {
+        setSteps(data.numberOfSteps);
+      }
+    });
+    return () => {
+      StepCounter.stopStepCounterUpdate();
+    };
+  }, []);
+
   return (
     <SafeAreaView>
-      <StatusBar barStyle="light-content" />
-      <ScrollView>
-        {PERMISSIONS_VALUES.map((value) => {
-          const parts = value.split('.');
-          const name = parts[parts.length - 1];
-          return (
-            <React.Fragment key={value}>
-              <View style={{ padding: 20 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    color: 'rgba(0, 0, 0, 0.87)',
-                    fontWeight: '400',
-                    fontSize: 16,
-                    textAlign: 'left',
-                  }}
-                >
-                  {name}
-                </Text>
-                <View style={{ flexDirection: 'row', marginTop: 12 }}>
-                  <Button
-                    onPress={() => {
-                      RNPermissions.check(value)
-                        .then((status) => {
-                          console.debug(`check(${name})`, status);
-                        })
-                        .catch((error) => {
-                          console.error(error);
-                        });
-                    }}
-                    title="Check"
-                  />
-
-                  <View style={{ width: 8 }} />
-
-                  <Button
-                    onPress={() => {
-                      RNPermissions.request(value)
-                        .then((status) => {
-                          console.debug(`request(${name})`, status);
-                        })
-                        .catch((error) => {
-                          console.error(error);
-                        });
-                    }}
-                    title="Request"
-                  />
-                </View>
-              </View>
-            </React.Fragment>
-          );
-        })}
-        <View style={{ padding: 20, paddingBottom: 32 }}>
-          <Text
-            numberOfLines={1}
-            style={{
-              color: 'rgba(0, 0, 0, 0.87)',
-              fontWeight: '400',
-              fontSize: 16,
-              textAlign: 'left',
-            }}
-          >
-            NOTIFICATIONS
-          </Text>
-
-          <View style={{ flexDirection: 'row', marginTop: 12 }}>
-            <Button
-              onPress={() => {
-                RNPermissions.checkNotifications()
-                  .then((response) => {
-                    console.debug('checkNotifications()', response);
-                  })
-                  .catch((error) => {
-                    console.error(error);
-                  });
-              }}
-              title="Check"
-            />
-
-            <View style={{ width: 8 }} />
-
-            <Button
-              onPress={() => {
-                const options: NotificationOption[] = [
-                  'alert',
-                  'badge',
-                  'sound',
-                ];
-
-                RNPermissions.requestNotifications(options)
-                  .then((response) => {
-                    console.debug(
-                      `requestNotifications([${options
-                        .map((option) => `"${option}"`)
-                        .join(', ')}])`,
-                      response
-                    );
-                  })
-                  .catch((error) => {
-                    console.error(error);
-                  });
-              }}
-              title="Request"
-            />
-          </View>
-        </View>
-      </ScrollView>
+      <View style={styles.screen}>
+        <Text style={styles.step}>권한요청:{response}</Text>
+        <Text style={styles.step}>권한체크:{checked}</Text>
+        <Text style={styles.step}>
+          모션입력:{available ? 'available' : 'not-available'}
+        </Text>
+        <Text style={styles.step}>
+          쓰기가능:{available ? 'available' : 'not-available'}
+        </Text>
+        <Text style={styles.step}>걸음 수:{steps}</Text>
+      </View>
     </SafeAreaView>
   );
-};
+}
 
-export default App;
+const styles = StyleSheet.create({
+  screen: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  step: {
+    fontSize: 36,
+    color: '#000',
+  },
+});

@@ -1,5 +1,4 @@
 import { Platform, TurboModule, TurboModuleRegistry } from 'react-native';
-import { PermissionStatus } from './NativePermissions';
 
 export const LINKING_ERROR =
   `The package 'react-native-walking-tracker' doesn't seem to be linked. Make sure: \n\n` +
@@ -29,15 +28,9 @@ export interface Spec extends TurboModule {
     startDate: number, // new Date()
     endDate: number
   ): Promise<StepCountData[]>;
-  requestMultiplePermissions: (
-    permissions: string[]
-  ) => Promise<Record<string, PermissionStatus>>;
-  checkMultiplePermissions: (
-    permissions: string[]
-  ) => Promise<Record<string, PermissionStatus>>;
-  openSettings: () => Promise<true>;
-  checkPermission: (permission: string) => Promise<PermissionStatus>;
-  requestPermission: (permission: string) => Promise<PermissionStatus>;
+  openSettings(): void;
+  checkPermission(permission: string): string;
+  requestPermission(permission: string): string;
 }
 
 const StepCounterModule =

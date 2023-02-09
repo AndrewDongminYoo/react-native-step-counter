@@ -1,38 +1,39 @@
 package com.stepcounter.services
 
-import android.app.Service
-import android.content.*
-import android.hardware.*
-import android.os.Binder
-import android.os.IBinder
-import android.speech.tts.TextToSpeech.*
-import com.facebook.react.bridge.*
+import android.content.Context.SENSOR_SERVICE
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.stepcounter.models.StepperInterface
-import java.util.*
 
-class StepCounterService :
-    Service(),
+class StepCounterService(context: ReactApplicationContext) :
     SensorEventListener,
     StepperInterface {
-    private var mBinder: IBinder = Binder()
-
     // set up things for resetting steps (to zero (most of the time) at midnight
+    private val reactContext = context
     private val stepDetector = StepDetector()
     var sensorManager: SensorManager? = null
     private var stepSensor: Sensor? = null
-    private var accelometer: Sensor? = null
+    private var accelerometer: Sensor? = null
     var isServiceRunning = false
     private var startNumSteps: Float
     private var currentSteps: Float
     private var status: Int // STOPPED
     private var startAt: Long // 0.0
+    private var defaultPromise: Promise? = null
+
     private val stepsParamsMap: WritableMap
         get() {
             val map: WritableMap = Arguments.createMap()
             map.putInt("startDate", startAt.toInt())
             map.putInt("endDate", System.currentTimeMillis().toInt())
-            map.putDouble("numberOfSteps", currentSteps.toDouble())
+            map.putDouble("steps", currentSteps.toDouble())
             map.putDouble("distance", (currentSteps * STEP_IN_METERS).toDouble())
             return map
         }
@@ -42,74 +43,8 @@ class StepCounterService :
         currentSteps = 0f
         startNumSteps = 0f
         status = STOPPED
-        stepDetector.registerListener(this as StepperInterface)
-        sensorManager = reactContext.getSystemService(SENSOR_SERVICE) as SensorManager
-    }
-
-    /**
-     * Return the communication channel to the service.  May return null if
-     * clients can not bind to the service.  The returned
-     * [android.os.IBinder] is usually for a complex interface
-     * that has been [described using * aidl]({@docRoot}guide/components/aidl.html).
-     *
-     *
-     * *Note that unlike other application components, calls on to the
-     * IBinder interface returned here may not happen on the main thread
-     * of the process*.  More information about the main thread can be found in
-     * [Processes and * Threads]({@docRoot}guide/topics/fundamentals/processes-and-threads.html).
-     *
-     * @param intent The Intent that was used to bind to this service,
-     * as given to [ Context.bindService][android.content.Context.bindService].  Note that any extras that were included with
-     * the Intent at that point will *not* be seen here.
-     *
-     * @return Return an IBinder through which clients can call on to the
-     * service.
-     */
-    override fun onBind(intent: Intent?): IBinder {
-        return mBinder
-    }
-
-    /**
-     * Called by the system when the service is first created.  Do not call this method directly.
-     */
-    override fun onCreate() {
-        super.onCreate()
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         stepDetector.registerListener(this)
-        stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        accelometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        isServiceRunning = true
-        sensorManager?.registerListener(
-            this,
-            stepSensor,
-            SensorManager.SENSOR_DELAY_FASTEST,
-            SensorManager.SENSOR_DELAY_UI,
-        )
-        sensorManager?.registerListener(
-            this,
-            accelometer,
-            SensorManager.SENSOR_DELAY_FASTEST,
-            SensorManager.SENSOR_DELAY_UI,
-        )
-    }
-
-    /**
-     * Called by the system to notify a Service that it is no longer used and is being removed.  The
-     * service should clean up any resources it holds (threads, registered
-     * receivers, etc) at this point.  Upon return, there will be no more calls
-     * in to this Service object and it is effectively dead.  Do not call this method directly.
-     */
-    override fun onDestroy() {
-        // turn off step counter service
-        @Suppress("DEPRECATION")
-        stopForeground(true)
-        // turn off auto start service
-        val broadcastIntent = Intent()
-        broadcastIntent.action = "restart" + "service"
-        this.sendBroadcast(broadcastIntent)
-        // turn off auto start service
-        sensorManager?.unregisterListener(this)
-        super.onDestroy()
+        sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
     }
 
     /**
@@ -150,6 +85,7 @@ class StepCounterService :
         status = RUNNING
         try {
             sendStepCounterUpdateEvent(stepsParamsMap)
+            defaultPromise!!.resolve(stepsParamsMap)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -171,6 +107,7 @@ class StepCounterService :
 
     override fun step(timeNs: Long) {
         currentSteps++
+        stepsParamsMap.putDouble("steps", currentSteps.toDouble())
         try {
             sendStepCounterUpdateEvent(stepsParamsMap)
         } catch (e: Exception) {
@@ -180,8 +117,8 @@ class StepCounterService :
 
     fun isStepCountingAvailable(): Boolean {
         stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        accelometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        return if (accelometer != null || stepSensor != null) {
+        accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        return if (accelerometer != null || stepSensor != null) {
             status = STARTING
             true
         } else {
@@ -190,9 +127,10 @@ class StepCounterService :
         }
     }
 
-    fun startStepCounterUpdatesFromDate(date: Int?) {
+    fun startStepCounterUpdatesFromDate(date: Int?, promise: Promise?) {
         // If not running, then this is an async call, so don't worry about waiting
         // We drop the callback onto our stack, call start, and let start and the sensor callback fire off the callback down the road
+        defaultPromise = promise
         if (status == RUNNING || status == STARTING) {
             return
         }
@@ -239,9 +177,5 @@ class StepCounterService :
         var ERROR_FAILED_TO_START = 3
         var ERROR_NO_SENSOR_FOUND = 4
         var STEP_IN_METERS = 0.762f
-        private lateinit var reactContext: ReactApplicationContext
-        fun setContext(context: ReactApplicationContext) {
-            reactContext = context
-        }
     }
 }
