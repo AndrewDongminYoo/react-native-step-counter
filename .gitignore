@@ -26,6 +26,7 @@ DerivedData
 *.xcuserstate
 project.xcworkspace
 .xcode.env.local
+.env
 
 # Android/IJ
 .idea
@@ -39,6 +40,7 @@ local.properties
 android.iml
 *.iml
 *.hprof
+log/android/dumpstate-*.zip
 
 # CocoaPods
 example/ios/Pods
@@ -58,6 +60,7 @@ buck-out/
 android/app/libs
 *.keystore
 !debug.keystore
+**/release.keystore.pub
 
 # fastlane
 # It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
@@ -81,5 +84,5 @@ dist/
 lib/
 
 # Study
-doc/*.log
-doc/*.md
+doc/**/*.md
+log/**/*.log

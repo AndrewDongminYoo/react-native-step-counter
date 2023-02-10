@@ -1,1 +1,40 @@
-{}
+{
+  "version": "2023.01.23.00",
+  "config": {
+    "watchman": {
+      "roots": [
+        "./"
+      ]
+    },
+    "ignore_dirs": [
+      "node_modules",
+      "build",
+      "ios",
+      "android",
+      ".vscode"
+    ],
+    "trigger": {
+      "expression": [
+        "allof",
+        [
+          "type",
+          "f",
+          "anyof",
+          [
+            "suffix",
+            "ts",
+            "tsx"
+          ]
+        ]
+      ],
+      "stdin": [
+        "${watchman_src_file}"
+      ],
+      "command": [
+        "yarn",
+        "run",
+        "build"
+      ]
+    }
+  }
+}

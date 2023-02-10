@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
-    "android": "react-native run-android --port 8081 --mode Debug --deviceId R3CN70DHXNJ",
+    "android": "react-native run-android --port 8081 --mode Debug --deviceId \"$DEVICE_ID\"",
+    "clear": "react-native clean --include watchman,yarn,metro,android",
     "ios": "react-native run-ios --device",
-    "start": "react-native start",
     "pods": "pod-install --quiet",
-    "clear": "react-native clean --include watchman,yarn,metro,android"
+    "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
+    "start": "react-native start"
   },
   "dependencies": {
     "react": "18.2.0",

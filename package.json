@@ -27,22 +27,23 @@
     "!**/.*"
   ],
   "scripts": {
-    "test": "jest",
-    "typecheck": "tsc --noEmit",
-    "lint": "trunk check --fix && trunk fmt --all",
-    "prepack": "bob build",
-    "example": "yarn --cwd example",
     "bootstrap": "yarn install && yarn example && yarn install && yarn example pods",
-    "ios": "react-native run-ios --device",
     "bundle-android": "react-native bundle --platform android --entry-file src/index.tsx --bundle-output android/src/main/assets/main.jsbundle --assets-dest android/src/main/res",
     "bundle-ios": "react-native bundle --platform ios --dev false --entry-file src/index.tsx --bundle-output ios/StepCounter/main.jsbundle --assets-dest ios/StepCounter/Images.xcassets/",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build",
-    "release:dry": "release-it --dry-run --no-npm",
-    "release:info": "release-it --release-version",
+    "example": "yarn --cwd example",
+    "ios": "react-native run-ios --device",
+    "lint": "trunk check --fix && trunk fmt --all",
+    "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
+    "prepack": "bob build",
     "release:beta:no-npm": "release-it --preRelease=beta --no-npm",
     "release:beta": "release-it --preRelease=beta",
+    "release:dry": "release-it --dry-run --no-npm",
+    "release:info": "release-it --release-version",
     "release:no-npm": "release-it --no-npm",
-    "release": "release-it"
+    "release": "release-it",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "react-native",

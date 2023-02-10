@@ -28,8 +28,7 @@ const App = () => {
   useEffect(() => {
     if (allowed) {
       myModuleEvt.addListener('StepCounter', (data) => {
-        console.debug('🚀 - file: App.tsx:31 - data', data);
-
+        console.debug('🚀 - file: App.tsx:31 - stepData', data);
         setSteps((step) => {
           console.log('STEPS', step);
           return data.steps;
