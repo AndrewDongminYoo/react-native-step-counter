@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { checkAvailable, loggingStop, myModuleEvt } from './pedometer';
-import { Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { checkAvailable } from './pedometer';
+import {
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { PERMISSIONS } from 'react-native-permissions';
 import StepCounter from 'react-native-step-counter';
-import { askFor, checkPermission } from './permission';
+import { requestRequiredPermissions, checkPermission } from './permission';
+export const myModuleEvt = new NativeEventEmitter(NativeModules.Pedometer);
 
 const App = () => {
   const [allowed, setAllow] = useState(false);
@@ -12,7 +21,7 @@ const App = () => {
   /** get user's motion permission and check pedometer is available */
   useEffect(() => {
     const askPermission = async () => {
-      await askFor();
+      await requestRequiredPermissions();
       const isOk = await (Platform.OS === 'ios'
         ? checkPermission(PERMISSIONS.IOS.MOTION)
         : checkPermission(PERMISSIONS.ANDROID.BODY_SENSORS));
@@ -29,16 +38,14 @@ const App = () => {
     if (allowed) {
       myModuleEvt.addListener('StepCounter', (data) => {
         console.debug('🚀 - file: App.tsx:31 - stepData', data);
-        setSteps((step) => {
-          console.log('STEPS', step);
-          return data.steps;
-        });
+        setSteps(data.steps);
       });
       const now = Date.now();
       StepCounter.startStepCounterUpdate(now);
     }
     return () => {
-      loggingStop();
+      myModuleEvt.removeAllListeners('StepCounter');
+      StepCounter.stopStepCounterUpdate();
     };
   }, [allowed]);
 

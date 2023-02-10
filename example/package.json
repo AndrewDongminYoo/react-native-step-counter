@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android --port 8081 --mode Debug --deviceId \"$DEVICE_ID\"",
+    "android": "react-native run-android --mode Debug",
     "clear": "react-native clean --include watchman,yarn,metro,android",
     "ios": "react-native run-ios --device",
     "pods": "pod-install --quiet",

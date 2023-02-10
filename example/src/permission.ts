@@ -7,7 +7,7 @@ import {
   RESULTS,
 } from 'react-native-permissions';
 
-export const askFor = async () => {
+export const requestRequiredPermissions = async () => {
   await requestMultiple([
     PERMISSIONS.ANDROID.BODY_SENSORS,
     PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
@@ -18,35 +18,37 @@ export const askFor = async () => {
 export const checkPermission = async (permission: Permission) => {
   return check(permission)
     .then((result) => {
-      switch (result) {
-        case RESULTS.UNAVAILABLE:
-          console.debug(
-            '🚀 This feature is not available (on this device / in this context)',
-            permission
-          );
-          return false;
-        case RESULTS.DENIED:
-          console.debug(
-            '🚀 The permission has not been requested / is denied but request-able',
-            permission
-          );
-          return false;
-        case RESULTS.LIMITED:
-          console.debug(
-            '🚀 The permission is limited: some actions are possible',
-            permission
-          );
-          return true;
-        case RESULTS.GRANTED:
-          console.debug('🚀 The permission is granted', permission);
-          return true;
-        case RESULTS.BLOCKED:
-          return false;
+      if (result === RESULTS.UNAVAILABLE) {
+        console.debug(
+          '🚀 This feature is not available on this device',
+          permission
+        );
+        return false;
+      } else if (result === RESULTS.DENIED) {
+        console.debug(
+          '🚀 The permission is denied but request-able',
+          permission
+        );
+        openSettings();
+        return false;
+      } else if (result === RESULTS.LIMITED) {
+        console.debug(
+          '🚀 The permission is limited: some actions are possible',
+          permission
+        );
+        return true;
+      } else if (result === RESULTS.GRANTED) {
+        console.debug('🚀 The permission is granted', permission);
+        return true;
+      } else {
+        console.debug(`🚀 The permission is ${result}`, permission);
+        return false;
       }
     })
     .catch((error) => {
+      console.debug('🚀 Get Error while getting permission', error);
       console.error(error);
-      openSettings().catch(() => console.warn('cannot open settings'));
+      openSettings();
       return false;
     });
 };

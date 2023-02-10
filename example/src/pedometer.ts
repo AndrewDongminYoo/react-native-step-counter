@@ -1,9 +1,7 @@
-import { NativeModules, NativeEventEmitter } from 'react-native';
-import Pedometer from 'react-native-step-counter';
-export const myModuleEvt = new NativeEventEmitter(NativeModules.Pedometer);
+import StepCounter from 'react-native-step-counter';
 
 export const checkAvailable = async () => {
-  const supported = Pedometer.isStepCountingSupported();
+  const supported = StepCounter.isStepCountingSupported();
   if (supported) {
     console.log('Sensor TYPE_STEP_COUNTER is supported on this device');
     return true;
@@ -12,8 +10,3 @@ export const checkAvailable = async () => {
     return false;
   }
 };
-
-export function loggingStop() {
-  myModuleEvt.removeAllListeners('StepCounter');
-  Pedometer.stopStepCounterUpdate();
-}
