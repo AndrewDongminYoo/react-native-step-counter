@@ -2169,15 +2169,6 @@
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
-"@types/react@18.0.27":
-  version "18.0.27"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.0.27.tgz#d9425abe187a00f8a5ec182b010d4fd9da703b71"
-  integrity sha512-3vtRKHgVxu3Jp9t718R9BuzoD4NcQ8YJ5XRzsSKxNDiDonD2MXIT1TmSkenxuCycZJoQT5d2vE8LwWJxBC1gmA==
-  dependencies:
-    "@types/prop-types" "*"
-    "@types/scheduler" "*"
-    csstype "^3.0.2"
-
 "@types/scheduler@*":
   version "0.16.2"
   resolved "https://registry.yarnpkg.com/@types/scheduler/-/scheduler-0.16.2.tgz#1a62f89525723dde24ba1b01b092bf5df8ad4d39"
@@ -5249,11 +5240,6 @@ invariant@*, invariant@^2.2.4:
   integrity sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==
   dependencies:
     loose-envify "^1.0.0"
-
-ios-deploy@^1.12.1:
-  version "1.12.1"
-  resolved "https://registry.yarnpkg.com/ios-deploy/-/ios-deploy-1.12.1.tgz#a288f9028c08aae98ae5d0533338c2f7637f4fd6"
-  integrity sha512-xK+oinl5DvsoFZRG0WsuOkzXblbw30xD90eboVszeHoEp8l5len9QIy74XD+/6EAop3/tA52KMdVPp5/TZLrlw==
 
 ip@^1.1.5:
   version "1.1.8"
