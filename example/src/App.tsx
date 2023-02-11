@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { checkAvailable } from './pedometer';
 import {
   Button,
-  EmitterSubscription,
   NativeEventEmitter,
   NativeModules,
   Platform,
@@ -19,14 +18,13 @@ export const myModuleEvt = new NativeEventEmitter(NativeModules.Pedometer);
 const App = () => {
   const [allowed, setAllow] = useState(false);
   const [steps, setSteps] = useState(0);
-  const [subscription, setSubscription] = useState<EmitterSubscription>();
 
   /** get user's motion permission and check pedometer is available */
   const askPermission = async () => {
     await requestRequiredPermissions();
     const isOk = await (Platform.OS === 'ios'
       ? checkPermission(PERMISSIONS.IOS.MOTION)
-      : checkPermission(PERMISSIONS.ANDROID.BODY_SENSORS));
+      : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
     console.debug('🚀 - file: App.tsx:18 - isOk', isOk);
     const possible = await checkAvailable();
     console.debug('🚀 - file: App.tsx:21 - possible', possible);
@@ -38,22 +36,19 @@ const App = () => {
   }, []);
 
   const startStepCounter = () => {
-    const sub = myModuleEvt.addListener('StepCounter', (data) => {
+    myModuleEvt.addListener('StepCounter', (data) => {
       console.debug('🚀 - file: App.tsx:31 - stepData', data);
       setSteps(data.steps);
     });
-    setSubscription(sub);
     const now = Date.now();
     StepCounter.startStepCounterUpdate(now);
   };
 
   const stopStepCounter = useCallback(() => {
-    if (subscription) {
-      myModuleEvt.removeAllListeners('StepCounter');
-      myModuleEvt.removeSubscription(subscription);
-      StepCounter.stopStepCounterUpdate();
-    }
-  }, [subscription]);
+    myModuleEvt.removeAllListeners('StepCounter');
+    StepCounter.stopStepCounterUpdate();
+    setSteps(0);
+  }, []);
 
   const restartStepCounter = () => {
     stopStepCounter();

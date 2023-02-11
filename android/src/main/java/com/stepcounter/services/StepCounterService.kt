@@ -24,7 +24,6 @@ class StepCounterService(context: ReactApplicationContext) :
     private var currentSteps: Double
     private var status = STOPPED // Int
     private var lastUpdate: Long // 0.0
-
     private var i = 0
     private var delay: Int = 0
 
@@ -60,17 +59,17 @@ class StepCounterService(context: ReactApplicationContext) :
     override fun onSensorChanged(event: SensorEvent) {
         if (status == STOPPED) return
         status = RUNNING
-        val stepSensor = event.sensor
-        val steps: Float = event.values[0]
-        if (stepSensor.type == Sensor.TYPE_ACCELEROMETER) {
+        stepSensor = event.sensor ?: stepSensor
+        if (stepSensor?.type == Sensor.TYPE_ACCELEROMETER) {
             stepDetector.updateAccel(
-                event.timestamp,
-                event.values[0],
-                event.values[1],
-                event.values[2],
+                event.timestamp, // currentTime
+                event.values[0], // accelerometer X
+                event.values[1], // accelerometer Y
+                event.values[2], // accelerometer Z
             )
         }
-        if (stepSensor.type == Sensor.TYPE_STEP_COUNTER) {
+        if (stepSensor?.type == Sensor.TYPE_STEP_COUNTER) {
+            val steps: Float = event.values[0]
             val endDate = System.currentTimeMillis()
             i++
             if ((endDate - lastUpdate) > delay) {
@@ -102,6 +101,8 @@ class StepCounterService(context: ReactApplicationContext) :
         val endDate = System.currentTimeMillis()
         currentSteps = steps.toDouble().minus(startNumSteps!!)
         val stepsParamsMap = Arguments.createMap()
+        stepsParamsMap.putInt("endDate", endDate.toInt())
+        stepsParamsMap.putInt("lastUpdate", lastUpdate.toInt())
         stepsParamsMap.putDouble("steps", currentSteps)
         stepsParamsMap.putDouble("distance", (currentSteps * STEP_IN_METERS))
         try {
@@ -157,9 +158,8 @@ class StepCounterService(context: ReactApplicationContext) :
     fun stopStepCounterUpdates() {
         if (status != STOPPED) {
             sensorManager.unregisterListener(this)
+            status = STOPPED
         }
-        startNumSteps = null
-        status = STOPPED
     }
 
     private fun sendStepCounterUpdateEvent(params: WritableMap?) {

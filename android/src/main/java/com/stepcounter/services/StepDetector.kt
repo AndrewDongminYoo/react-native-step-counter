@@ -23,11 +23,7 @@ class StepDetector {
     }
 
     fun updateAccel(timeNs: Long, x: Float, y: Float, z: Float) {
-        val currentAccel = FloatArray(3)
-        currentAccel[0] = x
-        currentAccel[1] = y
-        currentAccel[2] = z
-
+        val currentAccel = floatArrayOf(x, y, z)
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
         accelRingX[accelRingCounter % ACCEL_RING_SIZE] = currentAccel[0]

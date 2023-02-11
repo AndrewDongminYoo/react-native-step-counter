@@ -11,6 +11,7 @@ object SensorFusionMath {
         return returnVal
     }
 
+    @Suppress("unused")
     fun cross(arrayA: FloatArray, arrayB: FloatArray): FloatArray {
         val retArray = FloatArray(3)
         retArray[0] = arrayA[1] * arrayB[2] - arrayA[2] * arrayB[1]

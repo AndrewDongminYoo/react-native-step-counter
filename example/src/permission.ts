@@ -9,6 +9,7 @@ import {
 
 export const requestRequiredPermissions = async () => {
   await requestMultiple([
+    PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
     PERMISSIONS.ANDROID.BODY_SENSORS,
     PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
     PERMISSIONS.IOS.MOTION,
