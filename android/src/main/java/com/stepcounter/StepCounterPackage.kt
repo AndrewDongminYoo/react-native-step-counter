@@ -21,11 +21,11 @@ class StepCounterPackage : TurboReactPackage() {
             moduleInfo[StepCounterModule.NAME] = ReactModuleInfo(
                 StepCounterModule.NAME,
                 StepCounterModule.NAME,
-                /* canOverrideExistingModule = */ false,
-                /* needsEagerInit = */ false,
-                /* hasConstants = */ true,
-                /* isCxxModule = */ false,
-                /* isTurboModule = */ true,
+                /* canOverrideExistingModule */ false,
+                /* needsEagerInit */ false,
+                /* hasConstants */ true,
+                /* isCxxModule */ false,
+                /* isTurboModule */ true,
             )
             moduleInfo
         }

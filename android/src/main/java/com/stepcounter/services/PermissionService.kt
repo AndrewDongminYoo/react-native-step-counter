@@ -90,16 +90,16 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * Check if a permission is available on the current device.
      *
      * @param permission The permission to check.
-     * @return true if the permission is NOT available or NON-EXISTS, false otherwise.
+     * @return true if the permission is available, false otherwise.
      */
-    private fun permissionNotExists(permission: String): Boolean {
-        if (permission.isBlank()) return true
-        val fieldName = getFieldName(permission) ?: return true
+    private fun permissionExists(permission: String): Boolean {
+        if (permission.isBlank()) return false
+        val fieldName = getFieldName(permission) ?: return false
         return try {
             permission::class.java.getField(fieldName)
-            false
-        } catch (_: NoSuchFieldException) {
             true
+        } catch (_: NoSuchFieldException) {
+            false
         }
     }
 
@@ -110,7 +110,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * one of [GRANTED], [DENIED], [UNAVAILABLE]
      */
     private fun checkPermission(permission: String): String {
-        if (permissionNotExists(permission)) {
+        if (!permissionExists(permission)) {
             return UNAVAILABLE
         }
         val context = applicationContext.baseContext
@@ -135,7 +135,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * one of [GRANTED], [BLOCKED], [DENIED], [UNAVAILABLE]
      */
     private fun requestPermission(permission: String): String {
-        if (permissionNotExists(permission)) return UNAVAILABLE
+        if (!permissionExists(permission)) return UNAVAILABLE
         val baseContext = applicationContext.baseContext
         if (SDK_INT < VERSION_CODES.M) {
             if (baseContext.checkPermission(
@@ -145,9 +145,9 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
                 ) == PERMISSION_DENIED
             ) return GRANTED
         } else if (baseContext.checkSelfPermission(
-                permission
-            ) == PERMISSION_GRANTED
-        ) return GRANTED
+                    permission
+                ) == PERMISSION_GRANTED
+            ) return GRANTED
         permissionActivity.requestPermissions(
             arrayOf(
                 permission
@@ -167,7 +167,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * the each values are one of [GRANTED], [DENIED], [UNAVAILABLE]
      */
     fun checkMultiplePermissions(strArr: Array<String>?): WritableMap {
-        val permissions: Array<String> = strArr ?: permissionArray
+        val permissions = strArr ?: permissionArray
         val output = WritableNativeMap()
         for (permission in permissions) {
             val granted = checkPermission(permission)
@@ -185,9 +185,14 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
     fun requestMultiplePermissions(strArr: Array<String>?): WritableMap {
         val permissions: Array<String> = strArr ?: permissionArray
         val output = WritableNativeMap()
+        var checkedPermissionsCount = 0
         for (permission in permissions) {
             val granted = requestPermission(permission)
             output.putString(permission, granted)
+            checkedPermissionsCount++
+        }
+        if (permissions.size == checkedPermissionsCount) {
+            return output
         }
         permissionActivity.requestPermissions(
             permissions, mRequestCode, this

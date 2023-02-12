@@ -11,8 +11,7 @@ import com.stepcounter.services.StepCounterService
 @Suppress("unused")
 @ReactModule(name = StepCounterModule.NAME)
 class StepCounterModule(reactContext: ReactApplicationContext) :
-//    NativeStepCounterSpec(reactContext) {
-    ReactContextBaseJavaModule(reactContext), ReactModuleWithSpec, TurboModule {
+   ReactContextBaseJavaModule(reactContext), ReactModuleWithSpec, TurboModule {
     companion object {
         const val NAME = "RNStepCounter"
         const val STOPPED = 0
@@ -26,14 +25,15 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     private var permissionService = PermissionService(reactContext)
     private var status = STOPPED
 
-    fun isStepCountingSupported(): Boolean {
-        permissionService.requestMultiplePermissions(
-            permissionService.permissionArray,
-        )
-        return stepCounterService.isStepCountingAvailable()
+    val isSupported: Boolean
+        get() {
+            permissionService.requestMultiplePermissions(
+                permissionService.permissionArray,
+            )
+            return stepCounterService.isStepCountingAvailable()
     }
 
-    fun startStepCounterUpdate(from: Double): Boolean {
+    fun startStepCounter(from: Double): Boolean {
         return try {
             status = RUNNING
             stepCounterService.startStepCounterUpdatesFromDate(from.toInt())
@@ -43,7 +43,7 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    fun stopStepCounterUpdate() {
+    fun stopStepCounter() {
         stepCounterService.stopStepCounterUpdates()
         status = STOPPED
     }

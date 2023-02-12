@@ -9,7 +9,7 @@ import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.stepcounter.models.StepperInterface
 
 class StepCounterService(context: ReactApplicationContext) :
@@ -59,8 +59,8 @@ class StepCounterService(context: ReactApplicationContext) :
     override fun onSensorChanged(event: SensorEvent) {
         if (status == STOPPED) return
         status = RUNNING
-        stepSensor = event.sensor ?: stepSensor
-        if (stepSensor?.type == Sensor.TYPE_ACCELEROMETER) {
+        val stepSensor = event.sensor
+        if (stepSensor.type == Sensor.TYPE_ACCELEROMETER) {
             stepDetector.updateAccel(
                 event.timestamp, // currentTime
                 event.values[0], // accelerometer X
@@ -68,7 +68,7 @@ class StepCounterService(context: ReactApplicationContext) :
                 event.values[2], // accelerometer Z
             )
         }
-        if (stepSensor?.type == Sensor.TYPE_STEP_COUNTER) {
+        if (stepSensor.type == Sensor.TYPE_STEP_COUNTER) {
             val steps: Float = event.values[0]
             val endDate = System.currentTimeMillis()
             i++
@@ -101,8 +101,6 @@ class StepCounterService(context: ReactApplicationContext) :
         val endDate = System.currentTimeMillis()
         currentSteps = steps.toDouble().minus(startNumSteps!!)
         val stepsParamsMap = Arguments.createMap()
-        stepsParamsMap.putInt("endDate", endDate.toInt())
-        stepsParamsMap.putInt("lastUpdate", lastUpdate.toInt())
         stepsParamsMap.putDouble("steps", currentSteps)
         stepsParamsMap.putDouble("distance", (currentSteps * STEP_IN_METERS))
         try {
@@ -158,14 +156,15 @@ class StepCounterService(context: ReactApplicationContext) :
     fun stopStepCounterUpdates() {
         if (status != STOPPED) {
             sensorManager.unregisterListener(this)
-            status = STOPPED
         }
+        startNumSteps = null
+        status = STOPPED
     }
 
     private fun sendStepCounterUpdateEvent(params: WritableMap?) {
         try {
             reactContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .getJSModule(RCTDeviceEventEmitter::class.java)
                 .emit("StepCounter", params)
         } catch (e: RuntimeException) {
             Log.e("ERROR", "java.lang.RuntimeException: Trying to invoke JS before CatalystInstance has been set!")
