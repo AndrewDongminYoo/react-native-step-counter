@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { checkAvailable } from './pedometer';
 import {
   Button,
-  NativeEventEmitter,
-  NativeModules,
+  EmitterSubscription,
   Platform,
   SafeAreaView,
   StyleSheet,
@@ -11,13 +9,17 @@ import {
   View,
 } from 'react-native';
 import { PERMISSIONS } from 'react-native-permissions';
-import StepCounter from 'react-native-step-counter';
+import {
+  isStepCountingSupported,
+  startStepCounterUpdate,
+  stopStepCounterUpdate,
+} from 'react-native-step-counter';
 import { requestRequiredPermissions, checkPermission } from './permission';
-export const myModuleEvt = new NativeEventEmitter(NativeModules.Pedometer);
 
 const App = () => {
   const [allowed, setAllow] = useState(false);
   const [steps, setSteps] = useState(0);
+  const [subscription, setSubscription] = useState<EmitterSubscription>();
 
   /** get user's motion permission and check pedometer is available */
   const askPermission = async () => {
@@ -25,8 +27,9 @@ const App = () => {
     const isOk = await (Platform.OS === 'ios'
       ? checkPermission(PERMISSIONS.IOS.MOTION)
       : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
+
     console.debug('🚀 - file: App.tsx:18 - isOk', isOk);
-    const possible = await checkAvailable();
+    const possible = isStepCountingSupported();
     console.debug('🚀 - file: App.tsx:21 - possible', possible);
     setAllow(isOk && possible);
   };
@@ -36,18 +39,18 @@ const App = () => {
   }, []);
 
   const startStepCounter = () => {
-    myModuleEvt.addListener('StepCounter', (data) => {
-      console.debug('🚀 - file: App.tsx:31 - stepData', data);
+    const now = Date.now();
+    const sub = startStepCounterUpdate(now, (data) => {
+      console.debug('🚀 - file: App.tsx:37 - data', data);
       setSteps(data.steps);
     });
-    const now = Date.now();
-    StepCounter.startStepCounterUpdate(now);
+    setSubscription(sub);
   };
 
   const stopStepCounter = useCallback(() => {
-    myModuleEvt.removeAllListeners('StepCounter');
-    StepCounter.stopStepCounterUpdate();
     setSteps(0);
+    stopStepCounterUpdate(subscription);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const restartStepCounter = () => {
@@ -60,8 +63,7 @@ const App = () => {
     if (allowed) {
       startStepCounter();
     }
-    return () => stopStepCounter();
-  }, [allowed, stopStepCounter]);
+  }, [allowed]);
 
   return (
     <SafeAreaView>

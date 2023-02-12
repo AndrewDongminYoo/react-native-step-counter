@@ -20,35 +20,25 @@ export const checkPermission = async (permission: Permission) => {
   return check(permission)
     .then((result) => {
       if (result === RESULTS.UNAVAILABLE) {
-        console.debug(
-          '🚀 This feature is not available on this device',
-          permission
-        );
+        console.debug(`🚀 ${permission} is not available on this device`);
         return false;
       } else if (result === RESULTS.DENIED) {
-        console.debug(
-          '🚀 The permission is denied but request-able',
-          permission
-        );
+        console.debug(`🚀 ${permission} is denied but request-able`);
         openSettings();
         return false;
       } else if (result === RESULTS.LIMITED) {
-        console.debug(
-          '🚀 The permission is limited: some actions are possible',
-          permission
-        );
+        console.debug(`🚀 ${permission} is limited: some actions are possible`);
         return true;
       } else if (result === RESULTS.GRANTED) {
-        console.debug('🚀 The permission is granted', permission);
+        console.debug(`🚀 ${permission} is granted`);
         return true;
       } else {
-        console.debug(`🚀 The permission is ${result}`, permission);
+        console.debug(`🚀 ${permission} is ${result}`);
         return false;
       }
     })
     .catch((error) => {
-      console.debug('🚀 Get Error while getting permission', error);
-      console.error(error);
+      console.debug(`🚀 Get ${error} while getting ${permission}`);
       openSettings();
       return false;
     });

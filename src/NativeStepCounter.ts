@@ -24,17 +24,17 @@ export const LINKING_ERROR =
  * @property {number} endDate - The end date of the data.
  */
 export type StepCountData = {
-  distance: number;
+  distance?: number;
   steps: number;
-  startDate: number; // new Date()
-  endDate: number;
+  startDate?: number; // new Date()
+  endDate?: number;
 };
 
 /* Defining the interface of the module. */
 export interface Spec extends TurboModule {
-  isStepCountingSupported(): boolean;
-  startStepCounterUpdate(from: number): boolean;
-  stopStepCounterUpdate(): void;
+  isSupported(): boolean;
+  startStepCounter(from: number): boolean;
+  stopStepCounter(): void;
 }
 
 /* Getting enforcing the module from the registry. */
