@@ -24,8 +24,8 @@ class StepCounter: RCTEventEmitter {
     }
   }
 
-  @objc(startStepCounter)
-  func startStepCounter() {
+  @objc(startStepCounterUpdate)
+  func startStepCounterUpdate() {
     guard checkAuthStatus() else {
       fatalError("cant' auth")
     }

@@ -7,7 +7,7 @@ RCT_EXTERN_METHOD(isStepCountingSupported:
                  (RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(startStepCounter)
+RCT_EXTERN_METHOD(startStepCounterUpdate)
 
 RCT_EXTERN_METHOD(stopStepCounterUpdate)
 

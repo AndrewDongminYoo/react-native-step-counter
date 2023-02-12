@@ -32,9 +32,13 @@ export type StepCountData = {
 
 /* Defining the interface of the module. */
 export interface Spec extends TurboModule {
-  isSupported(): boolean;
-  startStepCounter(from: number): boolean;
-  stopStepCounter(): void;
+  isStepCountingSupported(): boolean;
+  startStepCounterUpdate(from: number): boolean;
+  stopStepCounterUpdate(): void;
+
+  /* Required Methods for NativeEventEmitter */
+  addListener(eventName: string): void;
+  removeListeners(count: number): void;
 }
 
 /* Getting enforcing the module from the registry. */

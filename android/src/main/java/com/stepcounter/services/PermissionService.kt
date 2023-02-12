@@ -31,7 +31,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * [BODY_SENSORS|BODY_SENSORS_BACKGROUND][Manifest.permission_group.SENSORS],
      * [ACTIVITY_RECOGNITION][Manifest.permission.ACTIVITY_RECOGNITION],
      */
-    val permissionArray: Array<String>
+    private val permissionArray: Array<String>
         get() {
             return arrayOf(
                 bodySensorPermission,
@@ -120,12 +120,20 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
                     Process.myPid(),
                     Process.myUid(),
                 ) == PERMISSION_GRANTED
-            ) GRANTED else DENIED
+            ) {
+                GRANTED
+            } else {
+                DENIED
+            }
         }
         return if (context.checkSelfPermission(
-                permission
+                permission,
             ) == PERMISSION_GRANTED
-        ) GRANTED else DENIED
+        ) {
+            GRANTED
+        } else {
+            DENIED
+        }
     }
 
     /**
@@ -143,21 +151,31 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
                     Process.myPid(),
                     Process.myUid(),
                 ) == PERMISSION_DENIED
-            ) return GRANTED
+            ) {
+                return GRANTED
+            }
         } else if (baseContext.checkSelfPermission(
-                    permission
-                ) == PERMISSION_GRANTED
-            ) return GRANTED
+                permission,
+            ) == PERMISSION_GRANTED
+        ) {
+            return GRANTED
+        }
         permissionActivity.requestPermissions(
             arrayOf(
-                permission
-            ), mRequestCode, this
+                permission,
+            ),
+            mRequestCode,
+            this,
         )
         mRequestCode++
         return if (permissionActivity.shouldShowRequestPermissionRationale(
-                permission
+                permission,
             )
-        ) DENIED else BLOCKED
+        ) {
+            DENIED
+        } else {
+            BLOCKED
+        }
     }
 
     /**
@@ -166,7 +184,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * @return writable map of permissions and their status.
      * the each values are one of [GRANTED], [DENIED], [UNAVAILABLE]
      */
-    fun checkMultiplePermissions(strArr: Array<String>?): WritableMap {
+    private fun checkMultiplePermissions(strArr: Array<String>?): WritableMap {
         val permissions = strArr ?: permissionArray
         val output = WritableNativeMap()
         for (permission in permissions) {
@@ -182,7 +200,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * @return writable map of permissions and their status.
      * the each values are one of [GRANTED], [DENIED], [BLOCKED], [UNAVAILABLE]
      */
-    fun requestMultiplePermissions(strArr: Array<String>?): WritableMap {
+    private fun requestMultiplePermissions(strArr: Array<String>?): WritableMap {
         val permissions: Array<String> = strArr ?: permissionArray
         val output = WritableNativeMap()
         var checkedPermissionsCount = 0
@@ -195,7 +213,9 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
             return output
         }
         permissionActivity.requestPermissions(
-            permissions, mRequestCode, this
+            permissions,
+            mRequestCode,
+            this,
         )
         mRequestCode++
         return output
@@ -219,6 +239,11 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
         } catch (_: Exception) {
             false
         }
+    }
+
+    fun checkRequiredPermission() {
+        requestMultiplePermissions(permissionArray)
+        checkMultiplePermissions(permissionArray)
     }
 
     companion object {

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   Button,
   EmitterSubscription,
+  NativeEventEmitter,
   Platform,
   SafeAreaView,
   StyleSheet,
@@ -9,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { PERMISSIONS } from 'react-native-permissions';
-import {
+import RNStepCounter, {
   isStepCountingSupported,
   startStepCounterUpdate,
   stopStepCounterUpdate,
@@ -20,6 +21,7 @@ const App = () => {
   const [allowed, setAllow] = useState(false);
   const [steps, setSteps] = useState(0);
   const [subscription, setSubscription] = useState<EmitterSubscription>();
+  const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
 
   /** get user's motion permission and check pedometer is available */
   const askPermission = async () => {
@@ -36,12 +38,18 @@ const App = () => {
 
   useEffect(() => {
     askPermission();
-  }, []);
+    if (allowed) {
+      startStepCounter();
+    }
+    return () => stopStepCounter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowed]);
 
   const startStepCounter = () => {
     const now = Date.now();
-    const sub = startStepCounterUpdate(now, (data) => {
-      console.debug('🚀 - file: App.tsx:37 - data', data);
+    startStepCounterUpdate(now);
+    const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
+      console.debug('🚀 nativeEventEmitter.stepCounterUpdate', data);
       setSteps(data.steps);
     });
     setSubscription(sub);
@@ -49,28 +57,18 @@ const App = () => {
 
   const stopStepCounter = useCallback(() => {
     setSteps(0);
-    stopStepCounterUpdate(subscription);
+    stopStepCounterUpdate();
+    subscription && nativeEventEmitter.removeSubscription(subscription);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const restartStepCounter = () => {
-    stopStepCounter();
-    startStepCounter();
-  };
-
-  /** get user's step count change and set-state of it */
-  useEffect(() => {
-    if (allowed) {
-      startStepCounter();
-    }
-  }, [allowed]);
 
   return (
     <SafeAreaView>
       <View style={styles.screen}>
         <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
         <Text style={styles.step}>걸음 수: {steps}</Text>
-        <Button title="restart" onPress={() => restartStepCounter()} />
+        <Button title="stop" onPress={() => stopStepCounter()} />
+        <Button title="start" onPress={() => startStepCounter()} />
       </View>
     </SafeAreaView>
   );
