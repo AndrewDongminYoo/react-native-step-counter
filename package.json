@@ -31,6 +31,7 @@
     "bundle-android": "react-native bundle --platform android --entry-file src/index.tsx --bundle-output android/src/main/assets/main.jsbundle --assets-dest android/src/main/res",
     "bundle-ios": "react-native bundle --platform ios --dev false --entry-file src/index.tsx --bundle-output ios/StepCounter/main.jsbundle --assets-dest ios/StepCounter/Images.xcassets/",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build",
+    "clear": "react-native clean --include watchman,yarn,metro,android",
     "example": "yarn --cwd example",
     "ios": "react-native run-ios --device",
     "lint": "eslint . --fix --plugin @typescript-eslint",
@@ -68,6 +69,7 @@
     "@react-native-community/eslint-config": "^3.2.0",
     "@release-it/conventional-changelog": "^5.1.1",
     "@types/jest": "^29.4.0",
+    "@types/react": "18.0.28",
     "@types/react-native": "0.71.2",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
@@ -92,7 +94,6 @@
   },
   "peerDependencies": {
     "@commitlint/load": "17.4.2",
-    "@types/react": "18.0.27",
     "argparse": "2.0.1",
     "cosmiconfig": "^8.0.0",
     "cosmiconfig-typescript-loader": "^4.3.0",

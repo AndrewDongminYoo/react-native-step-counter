@@ -26,14 +26,14 @@ const App = () => {
   /** get user's motion permission and check pedometer is available */
   const askPermission = async () => {
     await requestRequiredPermissions();
-    const isOk = await (Platform.OS === 'ios'
+    const granted = await (Platform.OS === 'ios'
       ? checkPermission(PERMISSIONS.IOS.MOTION)
       : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
 
-    console.debug('🚀 - file: App.tsx:18 - isOk', isOk);
-    const possible = isStepCountingSupported();
-    console.debug('🚀 - file: App.tsx:21 - possible', possible);
-    setAllow(isOk && possible);
+    console.debug('🚀 - file: App.tsx:18 - granted', granted);
+    const supported = isStepCountingSupported();
+    console.debug('🚀 - file: App.tsx:21 - supported', supported);
+    setAllow(granted && supported);
   };
 
   useEffect(() => {

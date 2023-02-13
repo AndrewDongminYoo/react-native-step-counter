@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android --mode Debug --port 8081 --deviceId=R3CN70DHXNJ",
+    "android": "react-native run-android --mode Debug --port 8081",
     "clear": "react-native clean --include watchman,yarn,metro,android",
     "ios": "react-native run-ios --device",
     "pods": "pod-install --quiet",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "react": "18.2.0",
-    "react-native": "0.71.1",
+    "react-native": "0.71.2",
     "react-native-permissions": "^3.6.1"
   },
   "devDependencies": {
@@ -20,6 +20,6 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/runtime": "^7.20.13",
     "babel-plugin-module-resolver": "^5.0.0",
-    "metro-react-native-babel-preset": "0.74.1"
+    "metro-react-native-babel-preset": "0.75.0"
   }
 }

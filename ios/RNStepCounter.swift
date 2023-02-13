@@ -3,7 +3,7 @@ import Foundation
 import React
 
 @objc(RNStepCounter)
-class RNStepCounter: RCTEventEmitter {
+class RNStepCounter: RCTEventEmitter, NativeStepCounterSpec {
     private let stepCounter: CMPedometer = .init()
 
     var numberOfSteps: Int! = 0
@@ -62,7 +62,7 @@ class RNStepCounter: RCTEventEmitter {
             "steps": data.numberOfSteps ?? NSNull(),
             "distance": data.distance ?? NSNull(),
             "floorsAscended": data.floorsAscended ?? NSNull(),
-            "floorsDescended": data.floorsDescended ?? NSNull()
+            "floorsDescended": data.floorsDescended ?? NSNull(),
         ]
     }
 
