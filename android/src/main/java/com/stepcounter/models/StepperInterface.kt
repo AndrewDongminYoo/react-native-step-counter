@@ -23,5 +23,5 @@ interface StepperInterface {
      * Called when a step has been detected.  Given the time in nanoseconds at
      * which the step was detected.
      */
-    fun step(steps: Float)
+    fun step(timeNs: Long)
 }

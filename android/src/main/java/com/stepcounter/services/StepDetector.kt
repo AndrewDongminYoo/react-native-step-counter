@@ -1,8 +1,8 @@
 package com.stepcounter.services
 
 import com.stepcounter.models.StepperInterface
-import com.stepcounter.utils.SensorFusionMath
 import com.stepcounter.utils.SensorFusionMath.dot
+import com.stepcounter.utils.SensorFusionMath.norm
 import com.stepcounter.utils.SensorFusionMath.sum
 import kotlin.math.min
 
@@ -11,7 +11,7 @@ class StepDetector {
     private var velRingCounter = 0
     private var accelRingCounter = 0
     private var oldVelocityEstimate = 0f
-    private var lastStepTimeNs = 0.toLong()
+    private var lastStepTimeNs = 0L
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
@@ -33,19 +33,21 @@ class StepDetector {
         worldZ[0] = sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE)
         worldZ[1] = sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE)
         worldZ[2] = sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
-        val normalizationFactor = SensorFusionMath.norm(worldZ)
-        worldZ[0] = worldZ[0] / normalizationFactor
-        worldZ[1] = worldZ[1] / normalizationFactor
-        worldZ[2] = worldZ[2] / normalizationFactor
-
+        val normalizationFactor = norm(worldZ)
+        for (i in worldZ.indices) {
+            worldZ[i] = worldZ[i] / normalizationFactor
+        }
         // Next step is to figure out the component of the current acceleration
         // in the direction of world_z and subtract gravity's contribution
         val currentZ = dot(worldZ, currentAccel) - normalizationFactor
         velRingCounter++
         velRing[velRingCounter % VEL_RING_SIZE] = currentZ
         val velocityEstimate = sum(velRing)
-        if (velocityEstimate > STEP_THRESHOLD && oldVelocityEstimate <= STEP_THRESHOLD && timeNs - lastStepTimeNs > STEP_DELAY_NS) {
-            listener!!.step(timeNs.toFloat())
+        if (velocityEstimate > STEP_THRESHOLD &&
+            oldVelocityEstimate <= STEP_THRESHOLD &&
+            timeNs - lastStepTimeNs > STEP_DELAY_NS
+        ) {
+            listener!!.step(timeNs)
             lastStepTimeNs = timeNs
         }
         oldVelocityEstimate = velocityEstimate

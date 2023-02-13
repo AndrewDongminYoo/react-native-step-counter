@@ -11,7 +11,9 @@ class StepCounterPackage : TurboReactPackage() {
     override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
         return if (name == StepCounterModule.NAME) {
             StepCounterModule(reactContext)
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {

@@ -1,9 +1,10 @@
 package com.stepcounter
 
 import android.Manifest.permission.*
-import android.content.Context
+import android.content.Context.*
 import android.content.Intent
 import android.hardware.Sensor
+import android.hardware.Sensor.*
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
@@ -18,8 +19,8 @@ import com.stepcounter.services.StepDetector
 
 @Suppress("MemberVisibilityCanBePrivate", "UNUSED_PARAMETER", "unused")
 @ReactModule(name = StepCounterModule.NAME)
-class StepCounterModule(reactContext: ReactApplicationContext) :
-    ReactContextBaseJavaModule(reactContext),
+class StepCounterModule(context: ReactApplicationContext) :
+    ReactContextBaseJavaModule(context),
     SensorEventListener,
     StepperInterface,
     ReactModuleWithSpec,
@@ -34,15 +35,15 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         const val STEP_IN_METERS = 0.762f
     }
 
-    private val applicationContext = reactContext
-    private var permissionService = PermissionService(reactContext)
+    private val applicationContext = context
+    private var permissionService = PermissionService(context)
     private var status = STOPPED
 
     // set up things for resetting steps (to zero (most of the time) at midnight
     private val stepDetector = StepDetector()
-    private val sensorManager: SensorManager = reactContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
     private var stepSensor: Sensor? = null
-    private var startNumSteps: Double? = 0.0
+    private var initialSteps: Double? = 0.0
     private var currentSteps: Double = 0.0
     private var lastUpdate: Long = 0L
     private var i = 0
@@ -59,8 +60,8 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     val isStepCountingSupported: Boolean
         get() {
             permissionService.checkRequiredPermission()
-            stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-            stepSensor = stepSensor ?: sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            stepSensor = sensorManager.getDefaultSensor(TYPE_STEP_COUNTER)
+            stepSensor = stepSensor ?: sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
             return if (stepSensor != null) {
                 status = STARTING
                 true
@@ -76,6 +77,13 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
      * register as listener for [stepSensor] to receive sensor events.
      * @param from the time in milliseconds when the step counting service is started.
      * @return true if the [stepSensor] is not null. false otherwise.
+     * @see android.Manifest.permission#HIGH_SAMPLING_RATE_SENSORS
+     * In order to access sensor data at high sampling rates
+     * (i.e. greater than 200 Hz for [SensorEventListener] and greater than
+     * [RATE_NORMAL(50Hz)][android.hardware.SensorDirectChannel.RATE_NORMAL]
+     * for [SensorDirectChannel][android.hardware.SensorDirectChannel]),
+     * apps must declare the [android.Manifest.permission.HIGH_SAMPLING_RATE_SENSORS]
+     * permission in their {@link AndroidManifest.xml} file.
      */
     fun startStepCounterUpdate(from: Double): Boolean {
         stepDetector.registerListener(this)
@@ -84,21 +92,26 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         }
         lastUpdate = from.toLong()
         currentSteps = 0.0
-        startNumSteps = 0.0
+        initialSteps = 0.0
         status = RUNNING
         // Get stepCounter or accelerometer from sensor manager
-        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        stepSensor = sensorManager.getDefaultSensor(TYPE_STEP_COUNTER)
         if (stepSensor == null) {
             stepSensor =
-                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+                sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         }
         // If found, then register as listener
         return if (stepSensor != null) {
+            val sensorDelay = if (stepSensor?.type == TYPE_ACCELEROMETER) {
+                SensorManager.SENSOR_DELAY_FASTEST
+            } else {
+                SensorManager.SENSOR_DELAY_NORMAL
+            }
             sensorManager.registerListener(
                 this,
                 stepSensor,
-                SensorManager.SENSOR_DELAY_FASTEST,
-                SensorManager.SENSOR_DELAY_UI,
+                sensorDelay,
+                sensorDelay,
             )
         } else {
             status = ERROR_FAILED_TO_START
@@ -113,7 +126,7 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     fun stopStepCounterUpdate() {
         sensorManager.unregisterListener(this)
         stepSensor = null
-        startNumSteps = null
+        initialSteps = null
         currentSteps = 0.0
         val stepsParamsMap = Arguments.createMap()
         stepsParamsMap.putDouble("steps", currentSteps)
@@ -132,7 +145,6 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
      */
     fun addListener(eventName: String) {
         // Keep: Required for RN built in Event Emitter Support
-        startStepCounterUpdate(System.currentTimeMillis().toDouble())
     }
 
     /**
@@ -142,7 +154,6 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
      */
     fun removeListeners(count: Int) {
         // Keep: Required for RN built in Event Emitter Support
-        stopStepCounterUpdate()
     }
 
     override fun getName(): String {
@@ -160,7 +171,7 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
     init {
         status = try {
             if (status != RUNNING) {
-                val service = Intent(reactContext, StepCounterModule::class.java)
+                val service = Intent(context, StepCounterModule::class.java)
                 applicationContext.startService(service)
                 STARTING
             } else {
@@ -196,24 +207,34 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
         if (status == STOPPED) return
         status = RUNNING
         val stepSensor = event.sensor
-        if (stepSensor.type == Sensor.TYPE_ACCELEROMETER) {
-            stepDetector.updateAccel(
-                event.timestamp, // currentTime
-                event.values[0], // accelerometer X
-                event.values[1], // accelerometer Y
-                event.values[2], // accelerometer Z
-            )
-        }
-        if (stepSensor.type == Sensor.TYPE_STEP_COUNTER) {
-            val steps: Float = event.values[0]
-            val endDate = System.currentTimeMillis()
-            i++
-            if ((endDate - lastUpdate) > delay) {
-                i = 0
-                if (startNumSteps == null) {
-                    startNumSteps = steps.toDouble()
-                } else {
-                    step(steps)
+        when (stepSensor.type) {
+            TYPE_ACCELEROMETER -> {
+                stepDetector.updateAccel(
+                    event.timestamp, // currentTime: time in UTC
+                    event.values[0], // x축의 가속력(중력 포함). m/s^2
+                    event.values[1], // y축의 가속력(중력 포함). m/s^2
+                    event.values[2], // z축의 가속력(중력 포함). m/s^2
+                )
+            }
+            TYPE_STEP_COUNTER -> {
+                // the difference between current time and UTC in milliseconds.
+                val curTime = System.currentTimeMillis()
+                i++
+                if ((curTime - lastUpdate) > delay) {
+                    i = 0
+                    if (initialSteps == null) {
+                        // 센서가 활성화되어 있는 동안 마지막 재부팅 이후로 사용자가 걸은 걸음 수.
+                        initialSteps = event.values[0].toDouble()
+                    } else {
+                        currentSteps = event.values[0].toDouble().minus(initialSteps!!)
+                        if (currentSteps > 0.0) {
+                            val map = Arguments.createMap()
+                            map.putDouble("steps", currentSteps)
+                            map.putDouble("distance", distance)
+                            sendStepCounterUpdateEvent(map)
+                            lastUpdate = curTime
+                        }
+                    }
                 }
             }
         }
@@ -221,20 +242,20 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
 
     /**
      * Implemented method from [StepperInterface]
-     * @param steps [Float] number of steps
+     * @param timeNs [Long] timestamp of the sensor event.
      * sends step counter update event (map data) to JS module
      * @sample {steps: 10, distance: 0.5}
      * @throws RuntimeException if the [applicationContext] is null.
      */
-    override fun step(steps: Float) {
-        val endDate = System.currentTimeMillis()
-        currentSteps = steps.toDouble().minus(startNumSteps!!)
+    override fun step(timeNs: Long) {
+        val curTime = System.currentTimeMillis()
+        currentSteps++
         val stepsParamsMap = Arguments.createMap()
         stepsParamsMap.putDouble("steps", currentSteps)
         stepsParamsMap.putDouble("distance", distance)
         try {
             sendStepCounterUpdateEvent(stepsParamsMap)
-            lastUpdate = endDate
+            lastUpdate = curTime
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -264,9 +285,9 @@ class StepCounterModule(reactContext: ReactApplicationContext) :
      *
      * @param sensor [Sensor] The sensor the that has accuracy changed.
      * @param accuracy [Int] the new accuracy of this sensor, value is one of
-     * [SensorManager.SENSOR_STATUS_ACCURACY_LOW]: 1,
-     * [SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM]: 2, or
-     * [SensorManager.SENSOR_STATUS_ACCURACY_HIGH]: 3.
+     * [1] [SensorManager.SENSOR_STATUS_ACCURACY_LOW] |
+     * [2] [SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM] |
+     * [3] [SensorManager.SENSOR_STATUS_ACCURACY_HIGH]
      */
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
