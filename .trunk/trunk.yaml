@@ -4,7 +4,7 @@ cli:
 plugins:
   sources:
     - id: trunk
-      ref: v0.0.9
+      ref: v0.0.10
       uri: https://github.com/trunk-io/plugins
 lint:
   disabled:
@@ -13,32 +13,36 @@ lint:
     - git-diff-check
     - gitleaks
   enabled:
+    - swiftformat@0.50.8
+    - swiftlint@0.50.3
+    - yamllint@1.29.0
     - dotenv-linter@3.3.0
     - markdownlint@0.33.0
     - shellcheck@0.9.0
-    - prettier@2.8.3
+    - prettier@2.8.4
     - ktlint@0.48.2
-    - eslint@8.33.0
+    - eslint@8.34.0
     - actionlint@1.6.23
   ignore:
     - linters:
         - ALL
       paths:
-        - "**/.trunk/**"
+        - '**/.trunk/**'
     - linters:
         - shellcheck
       paths:
-        - "**/gradlew"
+        - '**/gradlew'
     - linters:
         - ALL
       paths:
-        - "**/trunk"
-        - "**/.trunk"
-        - "**/package-lock.json"
-        - "**/yarn.lock"
-        - "**/vendor/**"
+        - '**/trunk'
+        - '**/.trunk'
+        - '**/package-lock.json'
+        - '**/yarn.lock'
+        - '**/vendor/**'
 runtimes:
   enabled:
+    - python@3.10.8
     - go@1.18.3
     - java@11.0.13
     - node@18.12.1
