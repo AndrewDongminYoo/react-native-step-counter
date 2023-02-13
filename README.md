@@ -1,133 +1,242 @@
-# react-native-step-counter
+# React-Native Step Counter Library
 
-리액트네이티브 모바일 애플리케이션을 위한 걸음 측정 라이브러리입니다.
+This library provides an interface for tracking the number of steps taken by the user in a React Native app.
 
 ## Installation
 
-```sh
+```zsh
 npm install react-native-step-counter
 
 # or if you use Yarn,
 yarn add react-native-step-counter
 ```
 
+## Requirements
+
+### ANDROID
+
+```xml
+// android/src/main/AndroidManifest.xml
+// 최신 기종 (스텝 카운터 센서가 기본적으로 있는 경우)
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+// 일부 기종 스텝 카운터 센서 없어 가속도계의 움직임을 추적해 계산 (기록 빈도수가 높은 센서 사용)
+<uses-permission android:name="android.permission.BODY_SENSORS" />
+<uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+
+<uses-feature
+    android:name="android.hardware.sensor.step_counter"
+    android:required="true" />
+<uses-feature
+    android:name="android.hardware.sensor.step_detector"
+    android:required="true" />
+<uses-feature
+    android:name="android.hardware.sensor.accelerometer"
+    android:required="true" />
+```
+
+### iOS
+
+```plist
+  // ios/<APP_PROJECT_NAME>/Info.plist
+  // 모션 사용에 대한 권한을 요청할 때 나타날 메세지를 Info.plist에 입력해야 함
+  <key>NSMotionUsageDescription</key>
+  <string>We need to access your motion data to count your steps.</string>
+```
+
 ## Interface
 
-- `requestPermission`: Asynchronously requests motion tracking permission from the user. Returns a promise that resolves with the permission status.
+- `isStepCountingSupported`: method to check if the device has a step counter or accelerometer sensor.
 
-- `checkPermission`: Synchronously retrieves the current motion tracking permission status. Returns the permission status.
+  - request permission for the required sensors and check if the device has a step counter or accelerometer sensor.
+  - if accelerometer sensor is found, then register as listener.
+  - else if step counter sensor is found, then register as listener.
+  - returns true if the device has a step counter or accelerometer sensor. false otherwise.
 
-- `startStepCounterUpdate`: Starts updating StepCounter data. Returns a listener that should be passed to stopStepCounterUpdates to stop the updates.
+- `startStepCounterUpdate(Date.now())`:
 
-- `stopStepCounterUpdate`: Stops updating stepCounter data. Accepts a listener returned by startStepCounterUpdates.
+  - set module status to `RUNNING`.
+  - `stepSensor` is set to step counter sensor or accelerometer sensor.
+  - register as listener for `stepSensor` to receive sensor events.
+  - In order to access sensor data at high sampling rates
+  - (i.e. greater than 200 Hz for `SensorEventListener` and greater than
+    `RATE_NORMAL`50Hz)`android.hardware.SensorDirectChannel.RATE_NORMAL`
+  - for `android.hardware.SensorDirectChannel`, apps must declare the
+    `android.Manifest.permission.HIGH_SAMPLING_RATE_SENSORS`
+    permission in their {@link AndroidManifest.xml} file.
 
-- `PermissionStatus`: An enumeration of possible permission statuses.
+- `stopStepCounterUpdate(): void`:
+
+  - set module status to `STOPPED`.
+  - unregister as listener for `stepSensor`.
+
+- `StepCountData`:
+  - The Object that contains the step count data.
+  - with four properties: `distance`, `steps`, `startDate`, and `endDate`.
+  - `distance` - The distance in meters that the user has walked or run.
+  - `steps` - The number of steps taken during the time period.
+  - `startDate` - The start date of the data.
+  - `endDate` - The end date of the data.
+  - `floorsAscended` - The number of floors ascended during the time period.
+  - `floorsDescended` - The number of floors descended during the time period.
 
 ## Usage
 
-To use the module, first import it in your React component:
+To use the Step Counter Library in your Android app, follow these steps:
+
+Import the library into your React Native app.
 
 ```typescript
-import {
-  requestMotionTrackingPermission,
-  queryMotionTrackingPermission,
-  startStepCounterUpdates,
-  stopStepCounterUpdates,
-  PermissionStatus,
+import RNStepCounter, {
+  isStepCountingSupported,
+  startStepCounterUpdate,
+  stopStepCounterUpdate,
+  StepCountData,
 } from 'react-native-step-counter';
 ```
 
-Then, you can use the requestMotionTrackingPermission function to request permission from the user:
+Use the `isStepCountingSupported` method to check if the device has a step counter or accelerometer sensor.
 
 ```typescript
-const status = await requestMotionTrackingPermission();
+const [supported, setSupported] = useState(false);
+const OK = isStepCountingSupported();
+setSupported(OK);
 ```
 
-You can use the queryMotionTrackingPermission function to retrieve the current permission status:
+Call the `startStepCounterUpdate` method from the `StepCounterModule` class to start the step counter service.
 
 ```typescript
-const status = await queryMotionTrackingPermission();
-```
-
-Once you have permission, you can start and stop stepCounter updates:
-
-```typescript
-const stepCounterListener = startStepCounterUpdates();
-
-stopStepCounterUpdates(stepCounterListener);
+const now = Date.now();
+startStepCounterUpdate(now);
 ```
 
 Here's an example of a complete React component that uses the NativeStepCounter:
 
 ```typescript
 import React, { Component } from 'react';
-import { View, Text, Button } from 'react-native';
 import {
-  requestMotionTrackingPermission,
-  queryMotionTrackingPermission,
-  startStepCounterUpdates,
-  stopStepCounterUpdates,
-  PermissionStatus,
-} from './NativeStepCounter';
+  Button,
+  EmitterSubscription,
+  NativeEventEmitter,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import RNStepCounter, {
+  isStepCountingSupported,
+  startStepCounterUpdate,
+  StepCountData,
+  stopStepCounterUpdate,
+} from 'react-native-step-counter';
+import {
+  check,
+  openSettings,
+  Permission,
+  PERMISSIONS,
+  requestMultiple,
+  RESULTS,
+} from 'react-native-permissions';
 
-class App extends Component {
+export async function requestRequiredPermissions() {
+  await requestMultiple([
+    PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
+    PERMISSIONS.ANDROID.BODY_SENSORS,
+    PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
+    PERMISSIONS.IOS.MOTION,
+  ]);
+}
+
+export async function checkPermission(permission: Permission) {
+  return check(permission)
+    .then((result) => {
+      switch (result) {
+        case RESULTS.UNAVAILABLE:
+          return false;
+        case RESULTS.DENIED:
+          return false;
+        case RESULTS.LIMITED:
+          return true;
+        case RESULTS.GRANTED:
+          return true;
+        default:
+          throw Error(result);
+      }
+    })
+    .catch((_err) => {
+      openSettings();
+      return false;
+    });
+}
+
+type StepCountState = {
+  allowed: boolean;
+  stepData: StepCountData;
+  subscription: EmitterSubscription | null;
+};
+
+export default class App extends Component<never, StepCountState> {
   state = {
-    permissionStatus: PermissionStatus.UNDETERMINED,
-    stepCounterListener: null,
+    allowed: false,
+    subscription: null as EmitterSubscription | null,
+    stepData: {
+      steps: 0,
+      distance: 0,
+      startDate: 0,
+      endDate: 0,
+    },
   };
+  nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
 
   componentDidMount() {
-    queryMotionTrackingPermission()
-      .then((status) => this.setState({ permissionStatus: status }))
-      .catch((error) => console.error(error));
+    const askPermission = async () => {
+      await requestRequiredPermissions();
+      const granted = await (Platform.OS === 'ios'
+        ? checkPermission(PERMISSIONS.IOS.MOTION)
+        : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
+      const supported = isStepCountingSupported();
+      this.setState({ allowed: granted && supported });
+    };
+    askPermission();
+    if (this.state.allowed) {
+      this.startStepCounter();
+    }
   }
 
-  requestPermission = async () => {
-    try {
-      const status = await requestMotionTrackingPermission();
-      this.setState({ permissionStatus: status });
-    } catch (error) {
-      console.error(error);
+  startStepCounter() {
+    const now = Date.now();
+    startStepCounterUpdate(now);
+    const sub = this.nativeEventEmitter.addListener(
+      'stepCounterUpdate',
+      (data) => {
+        this.setState({ stepData: data });
+      }
+    );
+    this.setState({ subscription: sub });
+  }
+
+  componentWillUnmount() {
+    this.setState({ stepData: { steps: 0 } });
+    stopStepCounterUpdate();
+    if (this.state.subscription) {
+      this.nativeEventEmitter.removeSubscription(this.state.subscription);
     }
-  };
-
-  startUpdates = () => {
-    const stepCounterListener = startStepCounterUpdates();
-    this.setState({ stepCounterListener });
-  };
-
-  stopUpdates = () => {
-    stopStepCounterUpdates(this.state.stepCounterListener);
-    this.setState({ stepCounterListener: null });
-  };
+  }
 
   render() {
-    const { permissionStatus, stepCounterListener } = this.state;
-
+    const { allowed, stepData } = this.state;
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Motion Tracking Permission: {permissionStatus}</Text>
-        {permissionStatus === PermissionStatus.UNDETERMINED ? (
-          <Button title="Request Permission" onPress={this.requestPermission} />
-        ) : null}
-        {permissionStatus === PermissionStatus.GRANTED ? (
-          <>
-            <Button
-              title="Start StepCounter Updates"
-              onPress={this.startUpdates}
-            />
-            <Button
-              title="Stop StepCounter Updates"
-              onPress={this.stopUpdates}
-            />
-          </>
-        ) : null}
-      </View>
+      <SafeAreaView>
+        <View style={styles.screen}>
+          <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
+          <Text style={styles.step}>걸음 수: {stepData.steps}</Text>
+          <Button title="stop" onPress={stopStepCounterUpdate} />
+          <Button title="start" onPress={this.startStepCounter} />
+        </View>
+      </SafeAreaView>
     );
   }
 }
-
-export default App;
 ```
 
 ## Contributing

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Component } from 'react';
 import {
   Button,
   EmitterSubscription,
@@ -9,70 +9,119 @@ import {
   Text,
   View,
 } from 'react-native';
-import { PERMISSIONS } from 'react-native-permissions';
 import RNStepCounter, {
   isStepCountingSupported,
   startStepCounterUpdate,
+  StepCountData,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-import { requestRequiredPermissions, checkPermission } from './permission';
+import {
+  check,
+  openSettings,
+  Permission,
+  PERMISSIONS,
+  requestMultiple,
+  RESULTS,
+} from 'react-native-permissions';
 
-const App = () => {
-  const [allowed, setAllow] = useState(false);
-  const [steps, setSteps] = useState(0);
-  const [subscription, setSubscription] = useState<EmitterSubscription>();
-  const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
+export async function requestRequiredPermissions() {
+  await requestMultiple([
+    PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
+    PERMISSIONS.ANDROID.BODY_SENSORS,
+    PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
+    PERMISSIONS.IOS.MOTION,
+  ]);
+}
 
-  /** get user's motion permission and check pedometer is available */
-  const askPermission = async () => {
-    await requestRequiredPermissions();
-    const granted = await (Platform.OS === 'ios'
-      ? checkPermission(PERMISSIONS.IOS.MOTION)
-      : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
+export async function checkPermission(permission: Permission) {
+  return check(permission)
+    .then((result) => {
+      switch (result) {
+        case RESULTS.GRANTED:
+          return true;
+        case RESULTS.LIMITED:
+          return true;
+        case RESULTS.UNAVAILABLE:
+          return false;
+        case RESULTS.DENIED:
+          return false;
+        default:
+          throw Error(result);
+      }
+    })
+    .catch((_err) => {
+      openSettings();
+      return false;
+    });
+}
 
-    console.debug('🚀 - file: App.tsx:18 - granted', granted);
-    const supported = isStepCountingSupported();
-    console.debug('🚀 - file: App.tsx:21 - supported', supported);
-    setAllow(granted && supported);
+type StepCountState = {
+  allowed: boolean;
+  stepData: StepCountData;
+  subscription: EmitterSubscription | null;
+};
+
+export default class App extends Component<never, StepCountState> {
+  state = {
+    allowed: false,
+    subscription: null as EmitterSubscription | null,
+    stepData: {
+      steps: 0,
+      distance: 0,
+      startDate: 0,
+      endDate: 0,
+    },
   };
+  nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
 
-  useEffect(() => {
+  componentDidMount() {
+    const askPermission = async () => {
+      await requestRequiredPermissions();
+      const granted = await (Platform.OS === 'ios'
+        ? checkPermission(PERMISSIONS.IOS.MOTION)
+        : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
+      const supported = isStepCountingSupported();
+      this.setState({ allowed: granted && supported });
+    };
     askPermission();
-    if (allowed) {
-      startStepCounter();
+    if (this.state.allowed) {
+      this.startStepCounter();
     }
-    return () => stopStepCounter();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allowed]);
+  }
 
-  const startStepCounter = () => {
+  startStepCounter() {
     const now = Date.now();
     startStepCounterUpdate(now);
-    const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
-      console.debug('🚀 nativeEventEmitter.stepCounterUpdate', data);
-      setSteps(data.steps);
-    });
-    setSubscription(sub);
-  };
+    const sub = this.nativeEventEmitter.addListener(
+      'stepCounterUpdate',
+      (data) => {
+        this.setState({ stepData: data });
+      }
+    );
+    this.setState({ subscription: sub });
+  }
 
-  const stopStepCounter = useCallback(() => {
-    setSteps(0);
+  componentWillUnmount() {
+    this.setState({ stepData: { steps: 0 } });
     stopStepCounterUpdate();
-    subscription && nativeEventEmitter.removeSubscription(subscription);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <SafeAreaView>
-      <View style={styles.screen}>
-        <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
-        <Text style={styles.step}>걸음 수: {steps}</Text>
-        <Button title="stop" onPress={() => stopStepCounter()} />
-        <Button title="start" onPress={() => startStepCounter()} />
-      </View>
-    </SafeAreaView>
-  );
-};
+    if (this.state.subscription) {
+      this.nativeEventEmitter.removeSubscription(this.state.subscription);
+    }
+  }
+  render() {
+    const { allowed, stepData } = this.state;
+    return (
+      <SafeAreaView>
+        <View style={styles.screen}>
+          <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
+          <Text style={styles.step}>걸음 수: {stepData.steps}</Text>
+          <Button title="stop" onPress={stopStepCounterUpdate} />
+          <Button title="start" onPress={this.startStepCounter} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   screen: {
@@ -88,5 +137,3 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
-
-export default App;
