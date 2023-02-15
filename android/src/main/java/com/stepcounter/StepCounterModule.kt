@@ -122,7 +122,7 @@ class StepCounterModule(context: ReactApplicationContext) :
         if (status == STATUS.RUNNING || status == STATUS.STARTING) {
             return true
         }
-        lastUpdate = from.toLong() as Milliseconds
+        lastUpdate = from.toLong() // Milliseconds
         currentSteps = 0.0
         initialSteps = 0.0
         setStatus(STATUS.STARTING)
@@ -223,7 +223,12 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @param event the [SensorEvent][android.hardware.SensorEvent].
      */
     override fun onSensorChanged(event: SensorEvent) {
-        if (DEBUG) Log.d("stepSensor", "onSensorChanged: $event")
+        if (DEBUG) {
+            Log.d("stepSensor", "onSensorChanged:sensor ${event.sensor}")
+            Log.d("stepSensor", "onSensorChanged:accuracy ${event.accuracy}")
+            Log.d("stepSensor", "onSensorChanged:values ${event.values}")
+            Log.d("stepSensor", "onSensorChanged:timestamp ${event.timestamp}")
+        }
         if (status == STATUS.STOPPED) return
         setStatus(STATUS.RUNNING)
         val stepSensor = event.sensor
