@@ -23,5 +23,8 @@ interface StepperInterface {
      * Called when a step has been detected.  Given the time in nanoseconds at
      * which the step was detected.
      */
-    fun step(timeNs: Long)
+    fun step(timeNs: Nanoseconds)
 }
+
+typealias Nanoseconds = Long
+typealias Milliseconds = Long

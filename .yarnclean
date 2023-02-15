@@ -1,0 +1,42 @@
+# trunk logs
+.trunk/logs
+
+#android configure files
+android/.idea/jarRepositories.xml
+android/.idea/gradle.xml
+android/.idea/misc.xml
+android/.idea/workspace.xml
+android/build
+
+# example workspace files
+example/.vscode
+example/android/build
+example/android/app/build
+example/ios/build
+example/ios/DerivedData
+
+# unsupport platform
+web
+linux
+windows
+macos
+
+# asset directories
+docs
+images
+assets
+
+# code coverage directories
+coverage
+.nyc_output
+
+# configs
+.gitattributes
+.flowconfig
+.yarn-metadata.json
+.yarn-error.log
+.package-lock.json
+.travis.yml
+
+# misc
+*.md

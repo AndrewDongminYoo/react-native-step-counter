@@ -8,10 +8,12 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES
 import android.os.Process
 import android.provider.Settings
+import android.util.Log
 import android.util.SparseArray
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
+import com.stepcounter.BuildConfig.DEBUG
 
 class PermissionService(reactContext: ReactApplicationContext) : PermissionListener {
     private val mCallbacks: SparseArray<Callback> = SparseArray()
@@ -32,13 +34,11 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * [ACTIVITY_RECOGNITION][Manifest.permission.ACTIVITY_RECOGNITION],
      */
     private val permissionArray: Array<String>
-        get() {
-            return arrayOf(
-                bodySensorPermission,
-                activityReconPermission,
-                backgroundSensorPermission,
-            )
-        }
+        get() = arrayOf(
+            bodySensorPermission,
+            activityReconPermission,
+            backgroundSensorPermission,
+        )
 
     /**
      * the value of function getPermissionAwareActivity returns.
@@ -49,10 +49,8 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
     private val permissionActivity: PermissionAwareActivity
         get() {
             val activity = applicationContext.currentActivity
-            checkNotNull(activity) { "Tried to use permissions API while not attached to an " + "Activity." }
-            check(activity is PermissionAwareActivity) {
-                ("Tried to use permissions API but the host Activity doesn't" + " implement PermissionAwareActivity.")
-            }
+            checkNotNull(activity) { "To use permissions API while attached to an Activity." }
+            check(activity is PermissionAwareActivity) { ("To use permissions API, implement PermissionAwareActivity.") }
             return activity
         }
 
@@ -75,14 +73,15 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
     }
 
     /**
-     * Request multiple permissions.
      * @param permission The permission to get field name.
      * @return The field name of the permission.
      */
     private fun getFieldName(permission: String): String? {
         if (permission == "android.permission.ACTIVITY_RECOGNITION") return "ACTIVITY_RECOGNITION"
         if (permission == "android.permission.BODY_SENSORS") return "BODY_SENSORS"
-        if (permission == "android.permission.BODY_SENSORS_BACKGROUND") return "BODY_SENSORS_BACKGROUND"
+        if (permission == "android.permission.BODY_SENSORS_BACKGROUND") {
+            return "BODY_SENSORS_BACKGROUND"
+        }
         return if (permission.startsWith("android.permission")) permission.removePrefix("android.permission") else null
     }
 
@@ -92,6 +91,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * @param permission The permission to check.
      * @return true if the permission is available, false otherwise.
      */
+    @Suppress("BooleanMethodIsAlwaysInverted")
     private fun permissionExists(permission: String): Boolean {
         if (permission.isBlank()) return false
         val fieldName = getFieldName(permission) ?: return false
@@ -110,9 +110,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * one of [GRANTED], [DENIED], [UNAVAILABLE]
      */
     private fun checkPermission(permission: String): String {
-        if (!permissionExists(permission)) {
-            return UNAVAILABLE
-        }
+        if (!permissionExists(permission)) return UNAVAILABLE
         val context = applicationContext.baseContext
         if (SDK_INT < VERSION_CODES.M) {
             return if (context.checkPermission(
@@ -242,8 +240,10 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
     }
 
     fun checkRequiredPermission() {
-        requestMultiplePermissions(permissionArray)
-        checkMultiplePermissions(permissionArray)
+        val required = requestMultiplePermissions(permissionArray)
+        if (DEBUG) Log.i("required", required.toString())
+        val checked = checkMultiplePermissions(permissionArray)
+        if (DEBUG) Log.i("checked", checked.toString())
     }
 
     companion object {

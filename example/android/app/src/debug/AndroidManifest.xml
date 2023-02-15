@@ -14,11 +14,11 @@
     android:name="android.hardware.sensor.step_counter"
     android:required="true" />
   <uses-feature
-    android:name="android.hardware.sensor.android.hardware.sensor.step_detector"
+    android:name="android.hardware.sensor.step_detector"
     android:required="true" />
   <uses-feature
     android:name="android.hardware.sensor.accelerometer"
-    android:required="true" />
+    android:required="false" />
 
     <application
         android:usesCleartextTraffic="true"

@@ -6,7 +6,6 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 
-@Suppress("unused")
 class StepCounterPackage : TurboReactPackage() {
     override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
         return if (name == StepCounterModule.NAME) {
@@ -23,11 +22,11 @@ class StepCounterPackage : TurboReactPackage() {
             moduleInfo[StepCounterModule.NAME] = ReactModuleInfo(
                 StepCounterModule.NAME,
                 StepCounterModule.NAME,
-                /* canOverrideExistingModule */ false,
-                /* needsEagerInit */ false,
-                /* hasConstants */ true,
-                /* isCxxModule */ false,
-                /* isTurboModule */ true,
+                false,
+                false,
+                true,
+                false,
+                true,
             )
             moduleInfo
         }

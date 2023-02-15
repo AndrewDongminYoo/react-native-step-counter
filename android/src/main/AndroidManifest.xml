@@ -2,19 +2,17 @@
 <manifest xmlns:tools="http://schemas.android.com/tools"
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
-    <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
-    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"
-      tools:ignore="HighSamplingRate" />
+  <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+  <uses-permission android:name="android.permission.BODY_SENSORS" />
+  <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
+  <uses-permission
+    android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"
+    tools:ignore="HighSamplingRate" />
 
-    <uses-feature
-        android:name="android.hardware.sensor.step_counter"
-        android:required="true" />
-    <uses-feature
-        android:name="android.hardware.sensor.step_detector"
-        android:required="true" />
-    <uses-feature
-        android:name="android.hardware.sensor.accelerometer"
-        android:required="true" />
+  <uses-feature
+    android:name="android.hardware.sensor.step_counter"
+    android:required="true" />
+  <uses-feature
+    android:name="android.hardware.sensor.step_detector"
+    android:required="true" />
 </manifest>
