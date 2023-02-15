@@ -2,7 +2,6 @@ package com.stepcounter.utils
 
 import kotlin.math.sqrt
 
-@Suppress("unused")
 object SensorFusionMath {
     fun sum(array: FloatArray): Float {
         var returnVal = 0f

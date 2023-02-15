@@ -3,6 +3,7 @@ package com.stepcounter
 import android.Manifest.permission.*
 import android.content.Context.*
 import android.content.Intent
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.Sensor.*
 import android.hardware.SensorEvent
@@ -11,20 +12,20 @@ import android.hardware.SensorManager
 import android.util.Log
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.facebook.react.turbomodule.core.interfaces.TurboModule
-import com.stepcounter.BuildConfig.DEBUG
 import com.stepcounter.models.Milliseconds
 import com.stepcounter.models.Nanoseconds
 import com.stepcounter.models.STATUS
 import com.stepcounter.models.StepperInterface
 import com.stepcounter.services.PermissionService
 import com.stepcounter.services.StepDetector
+import java.util.concurrent.TimeUnit.NANOSECONDS
 
 /**
  * This class is the native module for the StepCounter package.
  */
-@Suppress("MemberVisibilityCanBePrivate", "UNUSED_PARAMETER", "unused")
+@Suppress("MemberVisibilityCanBePrivate", "UNUSED_PARAMETER", "unused", "EmptyMethod")
 @ReactModule(name = StepCounterModule.NAME)
 class StepCounterModule(context: ReactApplicationContext) :
     ReactContextBaseJavaModule(context),
@@ -49,17 +50,19 @@ class StepCounterModule(context: ReactApplicationContext) :
     private var permissionService = PermissionService(context)
     private val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
     private val stepDetector = StepDetector()
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("stepCounter", MODE_PRIVATE)
     private val distance: Double
         get() = currentSteps * STEP_IN_METERS
+    private var jsModule: RCTDeviceEventEmitter? = null
 
     // not constants
     private var status: STATUS = STATUS.STOPPED
     private var stepSensor: Sensor? = null
-    private var initialSteps: Double? = 0.0
+    private var previousSteps: Double = 0.0
     private var currentSteps: Double = 0.0
     private var lastUpdate: Milliseconds = 0L
     private var delay: Milliseconds = 0L
-    private var i: Int = 0
 
     private fun setStatus(status: STATUS) {
         this.status = status
@@ -82,24 +85,14 @@ class StepCounterModule(context: ReactApplicationContext) :
             if (stepSensor == null) {
                 stepSensor = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
             }
-            // debug all the properties of step sensors
-            Arguments.createMap().apply {
-                putString("name", stepSensor!!.name)
-                putString("vendor", stepSensor!!.vendor)
-                putString("version", stepSensor!!.version.toString())
-                putString("type", stepSensor!!.type.toString())
-                putString("maxRange", stepSensor!!.maximumRange.toString())
-                putString("resolution", stepSensor!!.resolution.toString())
-                putString("power", stepSensor!!.power.toString())
-                putString("minDelay", stepSensor!!.minDelay.toString())
-                putString("maxDelay", stepSensor!!.maxDelay.toString())
-                putString("fifoResEventCount", stepSensor!!.fifoReservedEventCount.toString())
-                putString("fifoMaxEventCount", stepSensor!!.fifoMaxEventCount.toString())
-                putString("stringType", stepSensor!!.stringType)
-            }.let { if (DEBUG) Log.d("stepSensor", it.toString()) }
             // usually, TYPE_ACCELEROMETER is supported on all devices so this value may return true
-            setStatus(if (stepSensor != null) STATUS.STARTING else STATUS.ERROR_NO_SENSOR_FOUND)
-            return stepSensor !== null
+            return if (stepSensor != null) {
+                status = STATUS.STARTING
+                true
+            } else {
+                status = STATUS.ERROR_NO_SENSOR_FOUND
+                false
+            }
         }
 
     /**
@@ -124,7 +117,7 @@ class StepCounterModule(context: ReactApplicationContext) :
         }
         lastUpdate = from.toLong() // Milliseconds
         currentSteps = 0.0
-        initialSteps = 0.0
+        previousSteps = 0.0
         setStatus(STATUS.STARTING)
         // Get stepCounter or accelerometer from sensor manager
         stepSensor = sensorManager.getDefaultSensor(TYPE_STEP_COUNTER)
@@ -134,8 +127,10 @@ class StepCounterModule(context: ReactApplicationContext) :
         // If found, then register as listener
         return if (stepSensor != null) {
             val sensorDelay = if (stepSensor?.type != TYPE_STEP_COUNTER) {
+                // Accelerometer need High Sampling Rate
                 SensorManager.SENSOR_DELAY_FASTEST
             } else {
+                // Step Counter need Normal Sampling Rate
                 SensorManager.SENSOR_DELAY_NORMAL
             }
             sensorManager.registerListener(
@@ -156,8 +151,13 @@ class StepCounterModule(context: ReactApplicationContext) :
      */
     fun stopStepCounterUpdate() {
         sensorManager.unregisterListener(this)
+        sharedPreferences.edit()
+            .putLong("lastUpdate", lastUpdate)
+            .putLong("initialSteps", currentSteps.toLong())
+            .putLong("distance", distance.toLong())
+            .apply()
         stepSensor = null
-        initialSteps = null
+        previousSteps = 0.0
         currentSteps = 0.0
         val stepsParamsMap = Arguments.createMap()
         stepsParamsMap.putDouble("steps", currentSteps)
@@ -174,7 +174,6 @@ class StepCounterModule(context: ReactApplicationContext) :
      * Keep: Required for RN built in Event Emitter Support.
      * @param eventName the name of the event. usually "stepCounterUpdate".
      */
-    @Suppress("EmptyMethod", "EmptyMethod")
     fun addListener(eventName: String) {}
 
     /**
@@ -193,11 +192,10 @@ class StepCounterModule(context: ReactApplicationContext) :
 
     init {
         try {
-            if (status == STATUS.STOPPED) {
-                val service = Intent(context, StepCounterModule::class.java)
-                applicationContext.startService(service)
-                setStatus(STATUS.STARTING)
-            }
+            jsModule = context.getJSModule(RCTDeviceEventEmitter::class.java)
+            val service = Intent(context, StepCounterModule::class.java)
+            applicationContext.startService(service)
+            setStatus(STATUS.STARTING)
         } catch (_: Exception) {
             setStatus(STATUS.ERROR_FAILED_TO_START)
         }
@@ -223,43 +221,28 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @param event the [SensorEvent][android.hardware.SensorEvent].
      */
     override fun onSensorChanged(event: SensorEvent) {
-        if (DEBUG) {
-            Log.d("stepSensor", "onSensorChanged:sensor ${event.sensor}")
-            Log.d("stepSensor", "onSensorChanged:accuracy ${event.accuracy}")
-            Log.d("stepSensor", "onSensorChanged:values ${event.values}")
-            Log.d("stepSensor", "onSensorChanged:timestamp ${event.timestamp}")
-        }
         if (status == STATUS.STOPPED) return
         setStatus(STATUS.RUNNING)
-        val stepSensor = event.sensor
-        when (stepSensor.type) {
+        // Accelerometer or StepCounter
+        when (event.sensor.type) {
             TYPE_ACCELEROMETER -> {
                 if (event.values.size < 3) return
                 stepDetector.updateAccel(
-                    event.timestamp, // currentTime: UTC timestamp in **nanoseconds**.
+                    event.timestamp, // UTC timestamp in **nanoseconds**.
                     event.values[0], // x축의 가속력(중력 포함). m/s^2
                     event.values[1], // y축의 가속력(중력 포함). m/s^2
                     event.values[2], // z축의 가속력(중력 포함). m/s^2
                 )
             }
             TYPE_STEP_COUNTER -> {
-                /* [curTime] the difference between current time and UTC in **milliseconds**. */
-                val curTime: Long = System.currentTimeMillis()
-                i++
-                if ((curTime - lastUpdate) > delay) {
-                    i = 0
-                    if (initialSteps == null) {
-                        // The number of steps the user has taken since the last reboot.
-                        initialSteps = event.values[0].toDouble()
-                    } else {
-                        currentSteps = event.values[0].toDouble().minus(initialSteps!!)
-                        if (currentSteps > 0.0) {
-                            val map = Arguments.createMap()
-                            map.putDouble("steps", currentSteps)
-                            map.putDouble("distance", distance)
-                            sendStepCounterUpdateEvent(map)
-                            lastUpdate = curTime
-                        }
+                /* current time in UTC **milliseconds** */
+                val timeMs: Milliseconds = System.currentTimeMillis()
+                val eventValue = event.values[0]
+                if ((timeMs - lastUpdate) > delay) {
+                    currentSteps = eventValue.toDouble().minus(previousSteps)
+                    if (currentSteps > 0.0) {
+                        lastUpdate = timeMs
+                        previousSteps = currentSteps
                     }
                 }
             }
@@ -268,7 +251,7 @@ class StepCounterModule(context: ReactApplicationContext) :
 
     /**
      * Implemented method from [StepperInterface]
-     * @param timeNs [Long] timestamp of the sensor event in **nanoseconds**
+     * @param timeNs [Nanoseconds] timestamp of the sensor event in **nanoseconds**
      * sends step counter update event (map data) to JS module
      * @sample {steps: 10, distance: 0.5}
      * @throws RuntimeException if the [applicationContext] is null.
@@ -280,7 +263,8 @@ class StepCounterModule(context: ReactApplicationContext) :
         stepsParamsMap.putDouble("distance", distance)
         try {
             sendStepCounterUpdateEvent(stepsParamsMap)
-            lastUpdate = timeNs
+            lastUpdate = NANOSECONDS.toMillis(timeNs)
+            setStatus(STATUS.RUNNING)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -294,9 +278,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      */
     private fun sendStepCounterUpdateEvent(params: WritableMap?) {
         try {
-            applicationContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                .emit("stepCounterUpdate", params)
+            (jsModule ?: return).emit("stepCounterUpdate", params)
         } catch (e: RuntimeException) {
             Log.e(
                 "ERROR",

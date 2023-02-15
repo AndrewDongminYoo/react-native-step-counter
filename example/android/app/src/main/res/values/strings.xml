@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">StepCounterExample</string>
+  <string name="app_name">StepCounterExample</string>
+  <string name="app_name_long">Privacy Friendly StepCounter</string>
 </resources>

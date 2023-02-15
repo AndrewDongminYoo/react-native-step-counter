@@ -73,16 +73,21 @@ const App = () => {
     const supported = isStepCountingSupported();
     console.debug('🚀 - file: App.tsx:21 - supported', supported);
     setAllow(granted && supported);
+    return granted && supported;
   };
 
   useEffect(() => {
-    askPermission();
-    if (allowed) {
-      startStepCounter();
-    }
-    return () => stopStepCounter();
+    askPermission().then((result) => {
+      if (result) {
+        startStepCounter();
+      }
+    });
+
+    return () => {
+      stopStepCounter();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allowed]);
+  }, []);
 
   const startStepCounter = () => {
     const now = Date.now();

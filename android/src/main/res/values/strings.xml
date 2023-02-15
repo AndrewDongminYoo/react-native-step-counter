@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name" translatable="false">StepCounter</string>
+  <string name="permissionAwareActivityIsNull">To use permissions API while attached to an Activity.</string>
+  <string name="isNotPermissionAwareActivity">To use permissions API, implement PermissionAwareActivity.</string>
+</resources>
