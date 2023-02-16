@@ -12,11 +12,11 @@
     tools:ignore="HighSamplingRate" />
 
   <uses-feature
-    android:name="android.hardware.sensor.step_counter"
-    android:required="true" />
+    android:name="android.hardware.sensor.stepcounter"
+    android:required="false" />
   <uses-feature
-    android:name="android.hardware.sensor.step_detector"
-    android:required="true" />
+    android:name="android.hardware.sensor.stepdetector"
+    android:required="false" />
   <uses-feature
     android:name="android.hardware.sensor.accelerometer"
     android:required="false" />

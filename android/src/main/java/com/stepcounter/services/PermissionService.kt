@@ -93,7 +93,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * @return true if the permission is available, false otherwise.
      */
     @Suppress("BooleanMethodIsAlwaysInverted")
-    private fun permissionExists(permission: String): Boolean {
+    fun permissionExists(permission: String): Boolean {
         if (permission.isBlank()) return false
         val fieldName = getFieldName(permission) ?: return false
         return try {
@@ -151,7 +151,9 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
                     Process.myUid(),
                 ) == PERMISSION_DENIED
             ) {
-                return GRANTED
+                GRANTED
+            } else {
+                DENIED
             }
         } else if (baseContext.checkSelfPermission(
                 permission,

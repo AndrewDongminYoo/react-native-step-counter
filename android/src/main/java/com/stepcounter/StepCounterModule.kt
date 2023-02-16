@@ -1,19 +1,21 @@
 package com.stepcounter
 
-import android.Manifest.permission.*
-import android.content.Context.*
+import android.content.Context.MODE_PRIVATE
+import android.content.Context.SENSOR_SERVICE
 import android.content.Intent
 import android.content.SharedPreferences
 import android.hardware.Sensor
-import android.hardware.Sensor.*
+import android.hardware.Sensor.TYPE_ACCELEROMETER
+import android.hardware.Sensor.TYPE_STEP_COUNTER
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
-import com.facebook.react.bridge.*
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
-import com.facebook.react.turbomodule.core.interfaces.TurboModule
 import com.stepcounter.models.Milliseconds
 import com.stepcounter.models.Nanoseconds
 import com.stepcounter.models.STATUS
@@ -22,41 +24,33 @@ import com.stepcounter.services.PermissionService
 import com.stepcounter.services.StepDetector
 import java.util.concurrent.TimeUnit.NANOSECONDS
 
-/**
- * This class is the native module for the StepCounter package.
- */
-@Suppress("MemberVisibilityCanBePrivate", "UNUSED_PARAMETER", "unused", "EmptyMethod")
 @ReactModule(name = StepCounterModule.NAME)
 class StepCounterModule(context: ReactApplicationContext) :
-    ReactContextBaseJavaModule(context),
+    NativeStepCounterSpec(context),
     SensorEventListener,
-    StepperInterface,
-    ReactModuleWithSpec,
-    TurboModule {
+    StepperInterface {
     /**
      * **Companion Constants**
      * @property NAME The name of the native module.
      *   when it fails to find a sensor.
-     * @property STEP_IN_METERS The number of meters in a step.
      */
     companion object {
-        // Simply calculated distance traveled per step
-        const val STEP_IN_METERS: Float = 0.762f
+        const val STEP_IN_METERS: Double = 0.762
         const val NAME: String = "RNStepCounter"
     }
 
     // constants
     private val applicationContext = context
-    private var permissionService = PermissionService(context)
+    private val permissionService = PermissionService(context)
     private val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
     private val stepDetector = StepDetector()
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("stepCounter", MODE_PRIVATE)
     private val distance: Double
         get() = currentSteps * STEP_IN_METERS
-    private var jsModule: RCTDeviceEventEmitter? = null
 
     // not constants
+    private var jsModule: RCTDeviceEventEmitter? = null
     private var status: STATUS = STATUS.STOPPED
     private var stepSensor: Sensor? = null
     private var previousSteps: Double = 0.0
@@ -75,25 +69,24 @@ class StepCounterModule(context: ReactApplicationContext) :
      * else if accelerometer sensor is found, then register as listener.
      * @return true if the device has a step counter or accelerometer sensor. false otherwise.
      */
-    val isStepCountingSupported: Boolean
-        get() {
-            // check if the app has permission to access the required activity sensor
-            permissionService.checkRequiredPermission()
-            // STEP_COUNTER is based on ACCELEROMETER
-            stepSensor = sensorManager.getDefaultSensor(TYPE_STEP_COUNTER)
-            // if STEP_COUNTER is not supported on current device, then use basic ACCELEROMETER
-            if (stepSensor == null) {
-                stepSensor = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
-            }
-            // usually, TYPE_ACCELEROMETER is supported on all devices so this value may return true
-            return if (stepSensor != null) {
-                status = STATUS.STARTING
-                true
-            } else {
-                status = STATUS.ERROR_NO_SENSOR_FOUND
-                false
-            }
+    override fun isStepCountingSupported(): Boolean {
+        // check if the app has permission to access the required activity sensor
+        permissionService.checkRequiredPermission()
+        // STEP_COUNTER is based on ACCELEROMETER
+        stepSensor = sensorManager.getDefaultSensor(TYPE_STEP_COUNTER)
+        // if STEP_COUNTER is not supported on current device, then use basic ACCELEROMETER
+        if (stepSensor == null) {
+            stepSensor = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         }
+        // usually, TYPE_ACCELEROMETER is supported on all devices so this value may return true
+        return if (stepSensor != null) {
+            status = STATUS.STARTING
+            true
+        } else {
+            status = STATUS.ERROR_NO_SENSOR_FOUND
+            false
+        }
+    }
 
     /**
      * set module status to [STATUS.RUNNING].
@@ -109,7 +102,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * apps must declare the [android.Manifest.permission.HIGH_SAMPLING_RATE_SENSORS]
      * permission in their {@link AndroidManifest.xml} file.
      */
-    fun startStepCounterUpdate(from: Double): Boolean {
+    override fun startStepCounterUpdate(from: Double): Boolean {
         // stepDetector is used to detect steps from accelerometer sensor
         stepDetector.registerListener(this)
         if (status == STATUS.RUNNING || status == STATUS.STARTING) {
@@ -149,7 +142,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * set module status to [STATUS.STOPPED].
      * unregister as listener for [stepSensor].
      */
-    fun stopStepCounterUpdate() {
+    override fun stopStepCounterUpdate() {
         sensorManager.unregisterListener(this)
         sharedPreferences.edit()
             .putLong("lastUpdate", lastUpdate)
@@ -174,21 +167,15 @@ class StepCounterModule(context: ReactApplicationContext) :
      * Keep: Required for RN built in Event Emitter Support.
      * @param eventName the name of the event. usually "stepCounterUpdate".
      */
-    fun addListener(eventName: String) {}
+    override fun addListener(eventName: String) {}
 
     /**
      * Keep: Required for RN built in Event Emitter Support.
      * @param count the number of listeners to remove.
      * not implemented.
      */
-    fun removeListeners(count: Int) {}
+    override fun removeListeners(count: Double) {}
     override fun getName(): String = NAME
-    override fun invalidate() {}
-    override fun canOverrideExistingModule(): Boolean = false
-
-    @Deprecated("Deprecated in Java")
-    override fun onCatalystInstanceDestroy() {
-    }
 
     init {
         try {

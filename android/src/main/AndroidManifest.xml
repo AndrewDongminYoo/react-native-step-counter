@@ -10,9 +10,14 @@
     tools:ignore="HighSamplingRate" />
 
   <uses-feature
-    android:name="android.hardware.sensor.step_counter"
+    android:name="android.hardware.sensor.stepcounter"
     android:required="true" />
   <uses-feature
-    android:name="android.hardware.sensor.step_detector"
+    android:name="android.hardware.sensor.stepdetector"
     android:required="true" />
+
+  <application>
+    <service android:name="com.stepcounter.services.StepCounterService" />
+    <service android:name="com.stepcounter.services.AccelerometerService" />
+  </application>
 </manifest>
