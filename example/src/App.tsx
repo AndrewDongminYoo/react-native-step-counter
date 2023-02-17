@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   Button,
   EmitterSubscription,
+  GestureResponderEvent,
   NativeEventEmitter,
   Platform,
   SafeAreaView,
@@ -14,33 +15,27 @@ import RNStepCounter, {
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-import { check, openSettings, Permission, PERMISSIONS, requestMultiple, RESULTS } from 'react-native-permissions';
+import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
+
+type OnPress = (event?: GestureResponderEvent) => void;
 
 export async function requestRequiredPermissions() {
-  await requestMultiple([
-    PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
-    PERMISSIONS.ANDROID.BODY_SENSORS,
-    PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
-    PERMISSIONS.IOS.MOTION,
-  ]).then((permissions) => {
-    Object.entries(permissions).forEach(([key, value]) => {
-      console.log('Permission', key, value);
-      if (value === RESULTS.BLOCKED) {
-        openSettings();
-      }
-    });
-  });
-}
-
-export async function checkPermission(permission: Permission) {
-  return check(permission)
-    .then((result) => {
-      return result === RESULTS.GRANTED;
+  return await requestMultiple(
+    Platform.select({
+      ios: [PERMISSIONS.IOS.MOTION],
+      android: [
+        PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
+        PERMISSIONS.ANDROID.BODY_SENSORS,
+        PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
+      ],
+      default: [],
     })
-    .catch((_) => {
-      openSettings();
-      return false;
+  ).then((permissions) => {
+    Object.entries(permissions).forEach(([key, value]) => {
+      console.log('requestPermission', key, value);
     });
+    return true;
+  });
 }
 
 const App = () => {
@@ -52,31 +47,28 @@ const App = () => {
   /** get user's motion permission and check pedometer is available */
   const askPermission = async () => {
     await requestRequiredPermissions();
-    const granted = await (Platform.OS === 'ios'
-      ? checkPermission(PERMISSIONS.IOS.MOTION)
-      : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
-
-    console.debug('🚀 - file: App.tsx:18 - granted', granted);
     const supported = isStepCountingSupported();
-    console.debug('🚀 - file: App.tsx:21 - supported', supported);
-    setAllow(granted && supported);
-    return granted && supported;
+    console.debug('🚀 - isStepCountingSupported', supported);
+    setAllow(supported);
+    return supported;
   };
 
   useEffect(() => {
-    askPermission().then((result) => {
-      if (result) {
+    askPermission().then((granted) => {
+      if (granted) {
         startStepCounter();
       }
     });
 
     return () => {
-      stopStepCounter();
+      if (allowed) {
+        stopStepCounter();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const startStepCounter = () => {
+  const startStepCounter: OnPress = () => {
     const now = Date.now();
     startStepCounterUpdate(now);
     const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
@@ -86,7 +78,7 @@ const App = () => {
     setSubscription(sub);
   };
 
-  const stopStepCounter = useCallback(() => {
+  const stopStepCounter: OnPress = useCallback(() => {
     setSteps(0);
     stopStepCounterUpdate();
     subscription && nativeEventEmitter.removeSubscription(subscription);
@@ -98,8 +90,8 @@ const App = () => {
       <View style={styles.screen}>
         <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
         <Text style={styles.step}>걸음 수: {steps}</Text>
-        <Button title="stop" onPress={() => stopStepCounter()} />
-        <Button title="start" onPress={() => startStepCounter()} />
+        <Button title="stop" onPress={stopStepCounter} />
+        <Button title="start" onPress={startStepCounter} />
       </View>
     </SafeAreaView>
   );

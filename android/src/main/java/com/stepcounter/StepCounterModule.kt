@@ -9,14 +9,14 @@ import android.hardware.Sensor.TYPE_STEP_COUNTER
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build.VERSION.SDK_INT
+import android.os.Build.VERSION_CODES
 import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
-
 import com.stepcounter.models.StepperInterface
-import com.stepcounter.services.PermissionService
 import com.stepcounter.services.StepDetector
 import java.util.concurrent.TimeUnit.NANOSECONDS
 
@@ -46,7 +46,6 @@ class StepCounterModule(context: ReactApplicationContext) :
 
     // constants
     private val appContext = context
-    private val permissionService = PermissionService(appContext)
     private val sensorManager = appContext.getSystemService(SENSOR_SERVICE) as SensorManager
     private val stepDetector = StepDetector()
     private val sharedPreferences: SharedPreferences =
@@ -60,7 +59,6 @@ class StepCounterModule(context: ReactApplicationContext) :
     private var previousSteps: Double = 0.0
     private var currentSteps: Double = 0.0
     private var lastUpdate: Long = 0L
-    private var delay: Long = 0L
     private var sensorTypeString: String = ""
 
     override fun initialize() {
@@ -87,11 +85,6 @@ class StepCounterModule(context: ReactApplicationContext) :
         }
     }
 
-    override fun invalidate() {
-        super.invalidate()
-        this.stopStepCounterUpdate()
-    }
-
     /**
      * request permission for the sensor and check
      * if the device has a step counter or accelerometer sensor.
@@ -100,8 +93,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @return true if the device has a step counter or accelerometer sensor. false otherwise.
      */
     override fun isStepCountingSupported(): Boolean {
-        // check if the app has permission to access the required activity sensor
-        permissionService.checkRequiredPermission()
+        Log.d("StepCounter", "isStepCountingSupported ${SDK_INT >= VERSION_CODES.TIRAMISU}")
         // usually, TYPE_ACCELEROMETER is supported on all devices so this value may return true
         return stepSensor != null
     }
@@ -121,13 +113,15 @@ class StepCounterModule(context: ReactApplicationContext) :
      * permission in their {@link AndroidManifest.xml} file.
      */
     override fun startStepCounterUpdate(from: Double): Boolean {
+        Log.d("StepCounter", "startStepCounterUpdate from $from")
+        Log.d("StepCounter", "startStepCounterUpdate step $currentSteps")
         if (status == RUNNING) return true
         if (status == STARTING) return true
         lastUpdate = from.toLong() // Long
         status = STARTING
         // If found, then register as listener
         return if (stepSensor != null) {
-            val sensorDelay = if (stepSensor?.type == TYPE_STEP_COUNTER) {
+            val sensorDelay = if (stepSensor!!.type == TYPE_STEP_COUNTER) {
                 // Step Counter need low Sampling Rate
                 SensorManager.SENSOR_DELAY_UI
             } else {
@@ -151,6 +145,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * unregister as listener for [stepSensor].
      */
     override fun stopStepCounterUpdate() {
+        Log.d("StepCounter", "stopStepCounterUpdate")
         sensorManager.unregisterListener(this)
         stepDetector.unregisterListener()
         sharedPreferences.edit()
@@ -158,7 +153,6 @@ class StepCounterModule(context: ReactApplicationContext) :
             .putLong("initialSteps", currentSteps.toLong())
             .putLong("distance", distance.toLong())
             .apply()
-        stepSensor = null
         previousSteps = 0.0
         currentSteps = 0.0
         try {
@@ -203,14 +197,13 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @param event the [SensorEvent][android.hardware.SensorEvent].
      */
     override fun onSensorChanged(event: SensorEvent) {
+        Log.d("StepCounter", "sensorType: $sensorTypeString")
+        Log.d("StepCounter", "eventValue: ${event.values}")
         if (status == STOPPED) return
         status = RUNNING
         // Accelerometer or StepCounter
         when (event.sensor.type) {
             TYPE_ACCELEROMETER -> {
-                check(event.values.size == 3) {
-                    appContext.getString(R.string.shouldBeThree)
-                }
                 stepDetector.updateAccel(
                     event.timestamp, // UTC timestamp in **nanoseconds**.
                     event.values[0], // x축의 가속력(중력 포함). m/s^2
@@ -219,16 +212,7 @@ class StepCounterModule(context: ReactApplicationContext) :
                 )
             }
             TYPE_STEP_COUNTER -> {
-                check(event.values.size == 1) {
-                    appContext.getString(R.string.shouldBeSingle)
-                }
-                /* current time in UTC **milliseconds** */
-                if ((System.currentTimeMillis() - lastUpdate) > delay) {
-                    currentSteps = event.values[0].minus(previousSteps)
-                    if (currentSteps > 0.0) {
-                        step(event.timestamp, currentSteps)
-                    }
-                }
+                step(event.timestamp, event.values[0].toDouble())
             }
         }
     }
@@ -258,6 +242,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @throws RuntimeException
      */
     private fun sendStepCounterUpdateEvent() {
+        Log.d("StepCounter", "sendStepCounterUpdateEvent: $currentSteps")
         try {
             val stepsParamsMap = Arguments.createMap()
             stepsParamsMap.putDouble("steps", currentSteps)

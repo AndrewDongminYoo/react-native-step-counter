@@ -11,10 +11,10 @@ import android.os.Process
 import android.provider.Settings
 import android.util.Log
 import android.util.SparseArray
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.stepcounter.R
@@ -23,43 +23,42 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
     private val mCallbacks: SparseArray<Callback> = SparseArray()
     private val context = reactContext
     private var mRequestCode = 0
+
     /**
      * The permission array that will be requested and checked.
      * values of [permissionString][Manifest.permission] are:
      * [BODY_SENSORS|BODY_SENSORS_BACKGROUND][Manifest.permission_group.SENSORS],
      * [ACTIVITY_RECOGNITION][Manifest.permission.ACTIVITY_RECOGNITION],
      */
-    private val permissionArray: Array<String>
-        get() {
-            Log.d("StepCounter", "permissionArray")
-            val array = arrayOf<String>()
-            array.plus(Manifest.permission.BODY_SENSORS)
-            if (SDK_INT >= VERSION_CODES.Q) {
-                array.plus(Manifest.permission.ACTIVITY_RECOGNITION)
-            }
-            if (SDK_INT >= VERSION_CODES.TIRAMISU) {
-                array.plus(Manifest.permission.BODY_SENSORS_BACKGROUND)
-            }
-            return array
+    private fun getPermissionArray(): Array<String> {
+        val array: Array<String> = emptyArray()
+        array.plusElement(Manifest.permission.BODY_SENSORS)
+        if (SDK_INT >= VERSION_CODES.Q) {
+            array.plusElement(Manifest.permission.ACTIVITY_RECOGNITION)
         }
+        if (SDK_INT >= VERSION_CODES.TIRAMISU) {
+            array.plusElement(Manifest.permission.BODY_SENSORS_BACKGROUND)
+        }
+        Log.d("StepCounter", "permissionArray: ${array.size}")
+        return array
+    }
 
     /**
      * the value of function getPermissionAwareActivity returns.
      * @throws IllegalStateException if the current activity is null.
      * @throws IllegalStateException if the current activity is not a [PermissionAwareActivity].
      */
-    private val permissionActivity: PermissionAwareActivity
-        get() {
-            Log.d("StepCounter", "permissionActivity")
-            val activity = context.currentActivity
-            checkNotNull(activity) {
-                context.getString(R.string.permissionAwareActivityIsNull)
-            }
-            check(activity is PermissionAwareActivity) {
-                context.getString(R.string.isNotPermissionAwareActivity)
-            }
-            return activity
+    private fun getPermissionActivity(): PermissionAwareActivity {
+        val activity = context.currentActivity
+        checkNotNull(activity) {
+            context.getString(R.string.permissionAwareActivityIsNull)
         }
+        check(activity is PermissionAwareActivity) {
+            context.getString(R.string.isNotPermissionAwareActivity)
+        }
+        Log.d("StepCounter", "permissionActivity: $activity")
+        return activity
+    }
 
     /**
      * PermissionListener interface override
@@ -75,7 +74,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
         grantResults: IntArray,
     ): Boolean {
         Log.d("StepCounter", "onRequestPermissionsResult")
-        mCallbacks[requestCode].invoke(grantResults, permissionActivity)
+        mCallbacks[requestCode].invoke(grantResults, this.getPermissionActivity())
         mCallbacks.remove(requestCode)
         return mCallbacks.size() == 0
     }
@@ -89,9 +88,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
         if (permission.isBlank()) return null
         return if (permission.startsWith("android.permission")) {
             permission.removePrefix("android.permission")
-        } else {
-            null
-        }
+        } else null
     }
 
     /**
@@ -101,9 +98,9 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * @return true if the permission is available, false otherwise.
      */
     private fun permissionExists(permission: String): Boolean {
-        Log.d("StepCounter", "permissionExists")
         if (permission.isBlank()) return false
         val fieldName = getFieldName(permission) ?: return false
+        Log.d("StepCounter", "permissionExists: $fieldName")
         return try {
             Manifest.permission::class.java.getField(fieldName)
             true
@@ -119,7 +116,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * one of [GRANTED], [DENIED], [UNAVAILABLE]
      */
     private fun checkPermission(permission: String): String {
-        Log.d("StepCounter", "checkPermission")
+        Log.d("StepCounter", "checkPermission: $permission")
         if (!permissionExists(permission)) return UNAVAILABLE
         val context = context.baseContext
         if (SDK_INT < VERSION_CODES.M) {
@@ -143,7 +140,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * one of [GRANTED], [BLOCKED], [DENIED], [UNAVAILABLE]
      */
     private fun requestPermission(permission: String): String {
-        Log.d("StepCounter", "requestPermission")
+        Log.d("StepCounter", "requestPermission: $permission")
         if (!permissionExists(permission)) return UNAVAILABLE
         val baseContext = context.baseContext
         if (SDK_INT < VERSION_CODES.M) {
@@ -157,7 +154,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
                 permission,
             ) == PERMISSION_GRANTED
         ) return GRANTED
-        permissionActivity.requestPermissions(
+        getPermissionActivity().requestPermissions(
             arrayOf(
                 permission,
             ),
@@ -165,7 +162,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
             this,
         )
         mRequestCode++
-        return if (permissionActivity
+        return if (getPermissionActivity()
                 .shouldShowRequestPermissionRationale(
                     permission,
                 )
@@ -179,12 +176,12 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * the each values are one of [GRANTED], [DENIED], [UNAVAILABLE]
      */
     private fun checkMultiplePermissions(strArr: Array<String>?): WritableMap {
-        Log.d("StepCounter", "checkMultiplePermissions")
-        val permissions = strArr ?: permissionArray
-        val output = WritableNativeMap()
+        val permissions: Array<String> = strArr ?: getPermissionArray()
+        val output = Arguments.createMap()
         for (permission in permissions) {
             val granted = checkPermission(permission)
             output.putString(permission, granted)
+            Log.d("StepCounter", "checkMultiplePermissions: $output")
         }
         return output
     }
@@ -196,9 +193,8 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * the each values are one of [GRANTED], [DENIED], [BLOCKED], [UNAVAILABLE]
      */
     private fun requestMultiplePermissions(strArr: Array<String>?): WritableMap {
-        Log.d("StepCounter", "requestMultiplePermissions")
-        val permissions: Array<String> = strArr ?: permissionArray
-        val output = WritableNativeMap()
+        val permissions: Array<String> = strArr ?: getPermissionArray()
+        val output = Arguments.createMap()
         var checkedPermissionsCount = 0
         for (permission in permissions) {
             val granted = requestPermission(permission)
@@ -208,12 +204,13 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
         if (permissions.size == checkedPermissionsCount) {
             return output
         }
-        permissionActivity.requestPermissions(
+        getPermissionActivity().requestPermissions(
             permissions,
             mRequestCode,
             this,
         )
         mRequestCode++
+        Log.d("StepCounter", "requestMultiplePermissions:$output")
         return output
     }
 
@@ -223,7 +220,6 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
      * @return true if the settings page is opened, false otherwise.
      */
     private fun openSettings(): Boolean {
-        Log.d("StepCounter", "openSettings")
         return try {
             val intent = Intent()
             val packageName = context.packageName
@@ -231,6 +227,7 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.data = Uri.fromParts("package", packageName, null)
             context.startActivity(intent)
+        Log.d("StepCounter", "openSettings: $context")
             true
         } catch (_: Exception) {
             false
@@ -239,11 +236,10 @@ class PermissionService(reactContext: ReactApplicationContext) : PermissionListe
 
     fun checkRequiredPermission() {
         try {
-            requestMultiplePermissions(permissionArray)
-            checkMultiplePermissions(permissionArray)
+            requestMultiplePermissions(getPermissionArray())
+            checkMultiplePermissions(getPermissionArray())
         } catch (e: Exception) {
-            openSettings()
-            e.printStackTrace()
+            Log.e("StepCounter", "checkRequiredPermission: ${getPermissionArray()}", e)
         }
     }
 
