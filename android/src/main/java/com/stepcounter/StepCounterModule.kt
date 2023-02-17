@@ -71,8 +71,8 @@ class StepCounterModule(context: ReactApplicationContext) :
             sensorTypeString = "STEP_COUNTER"
             // if STEP_COUNTER is not supported on current device, then use basic ACCELEROMETER
             if (stepSensor == null) {
-                stepSensor = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
-                sensorTypeString = "ACCELEROMETER"
+            stepSensor = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
+            sensorTypeString = "ACCELEROMETER"
             }
             if (stepSensor == null) {
                 status = ERROR_NO_SENSOR_FOUND
@@ -115,8 +115,6 @@ class StepCounterModule(context: ReactApplicationContext) :
     override fun startStepCounterUpdate(from: Double): Boolean {
         Log.d("StepCounter", "startStepCounterUpdate from $from")
         Log.d("StepCounter", "startStepCounterUpdate step $currentSteps")
-        if (status == RUNNING) return true
-        if (status == STARTING) return true
         lastUpdate = from.toLong() // Long
         status = STARTING
         // If found, then register as listener
@@ -199,10 +197,12 @@ class StepCounterModule(context: ReactApplicationContext) :
     override fun onSensorChanged(event: SensorEvent) {
         Log.d("StepCounter", "sensorType: $sensorTypeString")
         Log.d("StepCounter", "eventValue: ${event.values}")
-        if (status == STOPPED) return
         status = RUNNING
         // Accelerometer or StepCounter
-        when (event.sensor.type) {
+        when (stepSensor!!.type) {
+            TYPE_STEP_COUNTER -> {
+                step(event.timestamp, event.values[0].toDouble())
+            }
             TYPE_ACCELEROMETER -> {
                 stepDetector.updateAccel(
                     event.timestamp, // UTC timestamp in **nanoseconds**.
@@ -210,9 +210,6 @@ class StepCounterModule(context: ReactApplicationContext) :
                     event.values[1], // y축의 가속력(중력 포함). m/s^2
                     event.values[2], // z축의 가속력(중력 포함). m/s^2
                 )
-            }
-            TYPE_STEP_COUNTER -> {
-                step(event.timestamp, event.values[0].toDouble())
             }
         }
     }

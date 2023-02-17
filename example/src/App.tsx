@@ -59,12 +59,6 @@ const App = () => {
         startStepCounter();
       }
     });
-
-    return () => {
-      if (allowed) {
-        stopStepCounter();
-      }
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

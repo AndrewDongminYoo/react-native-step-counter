@@ -116,6 +116,7 @@ import React, { Component } from 'react';
 import {
   Button,
   EmitterSubscription,
+  GestureResponderEvent,
   NativeEventEmitter,
   Platform,
   SafeAreaView,
@@ -126,40 +127,29 @@ import {
 import RNStepCounter, {
   isStepCountingSupported,
   startStepCounterUpdate,
-  StepCountData,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-import { check, openSettings, Permission, PERMISSIONS, requestMultiple, RESULTS } from 'react-native-permissions';
+import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
+
+type OnPress = (event?: GestureResponderEvent) => void;
 
 export async function requestRequiredPermissions() {
-  await requestMultiple([
-    PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
-    PERMISSIONS.ANDROID.BODY_SENSORS,
-    PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
-    PERMISSIONS.IOS.MOTION,
-  ]);
-}
-
-export async function checkPermission(permission: Permission) {
-  return check(permission)
-    .then((result) => {
-      switch (result) {
-        case RESULTS.UNAVAILABLE:
-          return false;
-        case RESULTS.DENIED:
-          return false;
-        case RESULTS.LIMITED:
-          return true;
-        case RESULTS.GRANTED:
-          return true;
-        default:
-          throw Error(result);
-      }
+  return await requestMultiple(
+    Platform.select({
+      ios: [PERMISSIONS.IOS.MOTION],
+      android: [
+        PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
+        PERMISSIONS.ANDROID.BODY_SENSORS,
+        PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
+      ],
+      default: [],
     })
-    .catch((_err) => {
-      openSettings();
-      return false;
+  ).then((permissions) => {
+    Object.entries(permissions).forEach(([key, value]) => {
+      console.log('requestPermission', key, value);
     });
+    return true;
+  });
 }
 
 type StepCountState = {
@@ -179,16 +169,15 @@ export default class App extends Component<never, StepCountState> {
       endDate: 0,
     },
   };
+
   nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
 
   componentDidMount() {
     const askPermission = async () => {
       await requestRequiredPermissions();
-      const granted = await (Platform.OS === 'ios'
-        ? checkPermission(PERMISSIONS.IOS.MOTION)
-        : checkPermission(PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION));
       const supported = isStepCountingSupported();
-      this.setState({ allowed: granted && supported });
+      console.debug('🚀 - isStepCountingSupported', supported);
+      this.setState({ allowed: supported });
     };
     askPermission();
     if (this.state.allowed) {

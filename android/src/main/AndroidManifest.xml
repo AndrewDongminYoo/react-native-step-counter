@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:tools="http://schemas.android.com/tools"
-  xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
 
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+  <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
   <uses-permission android:name="android.permission.BODY_SENSORS" />
   <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
@@ -11,10 +13,13 @@
 
   <uses-feature
     android:name="android.hardware.sensor.stepcounter"
-    android:required="true" />
+    android:required="false" />
   <uses-feature
     android:name="android.hardware.sensor.stepdetector"
-    android:required="true" />
+    android:required="false" />
+  <uses-feature
+    android:name="android.hardware.sensor.accelerometer"
+    android:required="false" />
 
   <application>
     <service android:name="com.stepcounter.services.StepCounterService" />
