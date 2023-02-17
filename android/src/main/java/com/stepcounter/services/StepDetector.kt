@@ -1,7 +1,6 @@
 package com.stepcounter.services
 
 import android.util.Log
-import com.stepcounter.models.Nanoseconds
 import com.stepcounter.models.StepperInterface
 import com.stepcounter.utils.SensorFusionMath.dot
 import com.stepcounter.utils.SensorFusionMath.norm
@@ -13,7 +12,7 @@ class StepDetector {
     private var velRingCounter = 0
     private var accelRingCounter = 0
     private var oldVelocityEstimate = 0f
-    private var lastStepTimeNs: Nanoseconds = 0L
+    private var lastStepTimeNs: Long = 0L
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
@@ -24,12 +23,14 @@ class StepDetector {
         this.listener = listener
     }
 
-    fun updateAccel(timeNs: Nanoseconds, x: Float, y: Float, z: Float) {
+    fun unregisterListener() {
+        listener = null
+    }
+
+    fun updateAccel(timeNs: Long, x: Float, y: Float, z: Float) {
         val currentAccel = floatArrayOf(x, y, z)
-        if (Log.isLoggable("StepDetector", Log.DEBUG)) {
-            Log.d("StepDetector", "accelerometer values: $currentAccel")
-            Log.d("StepDetector", "accelerometer timestamp: $timeNs")
-        }
+        Log.d("StepCounter", "accelerometer values: $currentAccel")
+        Log.d("StepCounter", "accelerometer timestamp: $timeNs")
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
         accelRingX[accelRingCounter % ACCEL_RING_SIZE] = currentAccel[0]
@@ -53,7 +54,7 @@ class StepDetector {
             oldVelocityEstimate <= STEP_THRESHOLD &&
             timeNs - lastStepTimeNs > STEP_DELAY_NS
         ) {
-            (listener ?: return).step(timeNs)
+            (listener ?: return).step(timeNs, null)
             lastStepTimeNs = timeNs
         }
         oldVelocityEstimate = velocityEstimate

@@ -14,14 +14,7 @@ import RNStepCounter, {
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-import {
-  check,
-  openSettings,
-  Permission,
-  PERMISSIONS,
-  requestMultiple,
-  RESULTS,
-} from 'react-native-permissions';
+import { check, openSettings, Permission, PERMISSIONS, requestMultiple, RESULTS } from 'react-native-permissions';
 
 export async function requestRequiredPermissions() {
   await requestMultiple([
@@ -29,26 +22,20 @@ export async function requestRequiredPermissions() {
     PERMISSIONS.ANDROID.BODY_SENSORS,
     PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
     PERMISSIONS.IOS.MOTION,
-  ]).then((statuses) => {
-    console.log('RequiredPermissions', statuses);
+  ]).then((permissions) => {
+    Object.entries(permissions).forEach(([key, value]) => {
+      console.log('Permission', key, value);
+      if (value === RESULTS.BLOCKED) {
+        openSettings();
+      }
+    });
   });
 }
 
 export async function checkPermission(permission: Permission) {
   return check(permission)
     .then((result) => {
-      switch (result) {
-        case RESULTS.GRANTED:
-          return true;
-        case RESULTS.LIMITED:
-          return true;
-        case RESULTS.UNAVAILABLE:
-          return false;
-        case RESULTS.DENIED:
-          return false;
-        default:
-          throw Error(result);
-      }
+      return result === RESULTS.GRANTED;
     })
     .catch((_) => {
       openSettings();

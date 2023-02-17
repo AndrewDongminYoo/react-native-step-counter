@@ -3,4 +3,7 @@
   <string name="app_name" translatable="false">StepCounter</string>
   <string name="permissionAwareActivityIsNull">To use permissions API while attached to an Activity.</string>
   <string name="isNotPermissionAwareActivity">To use permissions API, implement PermissionAwareActivity.</string>
+  <string name="sendStepCounterFailure">java.lang.RuntimeException: Trying to invoke JS before CatalystInstance has been set!</string>
+  <string name="shouldBeThree">Accelerometer sensorEvent should have 3 values.</string>
+  <string name="shouldBeSingle">Step counter sensorEvent should have a single value.</string>
 </resources>

@@ -129,14 +129,7 @@ import RNStepCounter, {
   StepCountData,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-import {
-  check,
-  openSettings,
-  Permission,
-  PERMISSIONS,
-  requestMultiple,
-  RESULTS,
-} from 'react-native-permissions';
+import { check, openSettings, Permission, PERMISSIONS, requestMultiple, RESULTS } from 'react-native-permissions';
 
 export async function requestRequiredPermissions() {
   await requestMultiple([
@@ -206,12 +199,9 @@ export default class App extends Component<never, StepCountState> {
   startStepCounter() {
     const now = Date.now();
     startStepCounterUpdate(now);
-    const sub = this.nativeEventEmitter.addListener(
-      'stepCounterUpdate',
-      (data) => {
-        this.setState({ stepData: data });
-      }
-    );
+    const sub = this.nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
+      this.setState({ stepData: data });
+    });
     this.setState({ subscription: sub });
   }
 
