@@ -1,16 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Button,
-  EmitterSubscription,
-  GestureResponderEvent,
-  NativeEventEmitter,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import RNStepCounter, {
+import type { EmitterSubscription, GestureResponderEvent } from 'react-native';
+import { Button, NativeEventEmitter, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import StepCounter, {
   isStepCountingSupported,
   startStepCounterUpdate,
   stopStepCounterUpdate,
@@ -38,29 +29,20 @@ export async function requestRequiredPermissions() {
   });
 }
 
-const App = () => {
+export default function App() {
   const [allowed, setAllow] = useState(false);
   const [steps, setSteps] = useState(0);
   const [subscription, setSubscription] = useState<EmitterSubscription>();
-  const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
+  const nativeEventEmitter = new NativeEventEmitter(StepCounter);
 
   /** get user's motion permission and check pedometer is available */
-  const askPermission = async () => {
+  async function askPermission() {
     await requestRequiredPermissions();
     const supported = isStepCountingSupported();
     console.debug('🚀 - isStepCountingSupported', supported);
     setAllow(supported);
     return supported;
-  };
-
-  useEffect(() => {
-    askPermission().then((granted) => {
-      if (granted) {
-        startStepCounter();
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
 
   const startStepCounter: OnPress = () => {
     const now = Date.now();
@@ -79,17 +61,26 @@ const App = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    askPermission().then((granted) => {
+      if (granted) {
+        startStepCounter();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <SafeAreaView>
       <View style={styles.screen}>
-        <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
+        <Text style={styles.step}>사용가능:{allowed ? '🅾️' : '️❎'}</Text>
         <Text style={styles.step}>걸음 수: {steps}</Text>
         <Button title="stop" onPress={stopStepCounter} />
         <Button title="start" onPress={startStepCounter} />
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   screen: {
@@ -105,5 +96,3 @@ const styles = StyleSheet.create({
     fontSize: 36,
   },
 });
-
-export default App;

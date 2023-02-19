@@ -1,13 +1,13 @@
 enable=all
 source-path=SCRIPTDIR
-# disable=SC2034  # VARIABLE appears unused. Verify it or export it.
+# disable=SC2034  # VARIABLE appears unused. Verify it or export it
 # disable=SC2154  # var is referenced but not assigned.
-# disable=SC2230  # which is non-standard. Use builtin command -v instead.
-# disable=SC2249  # Consider adding a default *) case, even if it just exits with error.
-# disable=SC2250  # Prefer putting braces around variable references even when not strictly required.
-# disable=SC2312  # Consider invoking this command separately to avoid masking its return value (or use '|| true' to ignore).
-# disable=SC3045  # In POSIX sh, some-command-with-flag is undefined.
+# disable=SC2230  # which is non-standard. Use builtin command -v instead
+# disable=SC2249  # Consider adding a default *) case, even if it just exits with error
+# disable=SC2250  # Prefer putting braces around variable references even when not strictly required
+# disable=SC2312  # Consider invoking this command separately to avoid masking its return value (or use '|| true' to ignore)
+# disable=SC3045  # In POSIX sh, some-command-with-flag is undefined
 
-# If you're having issues with shellcheck following source, disable the errors via:
-# disable=SC1090  # Can't follow non-constant source. Use a directive to specify location.
-# disable=SC1091  # Reasons include: file not found, no permissions, not included on the command line, not allowing shellcheck to follow files with -x, etc.
+# If you're having issues with shellcheck following source, disable the errors via
+# disable=SC1090  # Can't follow non-constant source. Use a directive to specify location
+# disable=SC1091  # Reasons include: file not found, no permissions, not included on the command line, not allowing shellcheck to follow files with -x, etc

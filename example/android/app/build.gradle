@@ -1,7 +1,4 @@
-plugins {
-  id "org.jetbrains.kotlin.android" version "1.8.0" apply false
-}
-
+//file:noinspection GrDeprecatedAPIUsage
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 
@@ -139,7 +136,7 @@ android {
     }
     buildToolsVersion buildToolsVersion
 
-    // applicationVariants are e.g. debug, release
+  // applicationVariants are e.g. debug, release
   applicationVariants.all { variant ->
     variant.outputs.each { output ->
       // For each separate APK per architecture, set a unique version code as described here:
@@ -157,6 +154,7 @@ android {
 
 dependencies {
   // The version of react-native is set by the React Native Gradle Plugin
+  //noinspection GradleDependency
   implementation("com.facebook.react:react-android:0.71.2")
   implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
   debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")

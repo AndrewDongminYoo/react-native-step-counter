@@ -17,9 +17,7 @@ if (os.type() === 'Windows_NT') {
   options.shell = true;
 }
 
-/**
- * @type {child_process.SpawnSyncReturns<string>}
- */
+/** @type {child_process.SpawnSyncReturns<string>} */
 let result;
 
 if (process.cwd() !== root || args.length) {
@@ -31,4 +29,4 @@ if (process.cwd() !== root || args.length) {
   result = child_process.spawnSync('yarn', ['bootstrap'], options);
 }
 
-process.exitCode = result.status ? result.status : undefined;
+process.exitCode = result.status;

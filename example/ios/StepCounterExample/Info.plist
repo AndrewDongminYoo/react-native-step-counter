@@ -35,10 +35,12 @@
 			</dict>
 		</dict>
 	</dict>
-  <key>NSMotionUsageDescription</key>
-  <string>We need to access your motion data to count your steps.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need to access your location to count your steps.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>We need to access your motion data to count your steps.</string>
 	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+	<string>LaunchScreen.storyboard</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

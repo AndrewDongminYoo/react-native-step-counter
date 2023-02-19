@@ -1,13 +1,16 @@
+require "json"
+
+package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
 
 Pod::Spec.new do |s|
   s.name         = "RNStepCounter"
-  s.version      = "1.0.0"
-  s.summary      = "step-counter implement as react-native module"
-  s.homepage     = "https://github.com/AndrewDongminYoo/react-native-step-counter"
-  s.license      = "MIT"
-  s.authors      = "Dongmin,Yoo <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)"
-  s.description  = "It is a multi-platform library that combines MotionSensor from iOS's Core Module with SensorEventListener from Android."
+  s.version      = package["version"]
+  s.summary      = package["summary"]
+  s.homepage     = package["homepage"]
+  s.license      = package["license"]
+  s.authors      = package["author"]
+  s.description  = package["description"]
   s.platforms    = { :ios => "11.0" }
   s.source       = { :git => "https://github.com/AndrewDongminYoo/react-native-step-counter.git", :tag => "#{s.version}" }
 
