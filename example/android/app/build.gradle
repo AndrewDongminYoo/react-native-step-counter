@@ -94,12 +94,15 @@ android {
   compileSdkVersion rootProject.ext.compileSdkVersion
 
   namespace "com.stepcounterexample"
+  testNamespace "com.stepcounterexample.test"
+
   defaultConfig {
     applicationId "com.stepcounterexample"
     minSdkVersion rootProject.ext.minSdkVersion
     targetSdkVersion rootProject.ext.targetSdkVersion
     versionCode 1
     versionName "1.0"
+    signingConfig signingConfigs.debug
   }
 
   splits {
@@ -154,7 +157,7 @@ android {
 dependencies {
   // The version of react-native is set by the React Native Gradle Plugin
   //noinspection GradleDependency
-  implementation("com.facebook.react:react-android:0.71.2")
+  implementation('com.facebook.react:react-android:0.71.3')
   implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
   debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
   debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {

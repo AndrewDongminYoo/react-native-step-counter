@@ -1,11 +1,17 @@
 package com.stepcounter.services
 
+import android.Manifest.permission
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.os.Build
+import android.os.Process
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.stepcounter.utils.SensorFusionMath.dot
 import com.stepcounter.utils.SensorFusionMath.norm
 import com.stepcounter.utils.SensorFusionMath.sum
+import java.util.jar.Manifest
 import kotlin.math.min
 
 class AccelerometerService: SensorListenService() {
@@ -22,6 +28,15 @@ class AccelerometerService: SensorListenService() {
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
     private val velocityRing = FloatArray(VELOCITY_RING_SIZE)
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        this.enforcePermission(
+            permission.BODY_SENSORS,
+            Process.myPid(),
+            Process.myUid(),
+            "Permission denied"
+        )
+        return super.onStartCommand(intent, flags, startId)
+    }
     override fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double {
         Log.d(TAG_NAME, "accelerometer values: $eventData")
         Log.d(TAG_NAME, "accelerometer timestamp: $timeNs")

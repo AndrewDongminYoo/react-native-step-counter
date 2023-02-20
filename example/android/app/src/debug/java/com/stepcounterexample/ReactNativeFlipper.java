@@ -6,6 +6,7 @@
  */
 package com.stepcounterexample;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import com.facebook.flipper.android.AndroidFlipperClient;
 import com.facebook.flipper.android.utils.FlipperUtils;
@@ -51,6 +52,7 @@ public class ReactNativeFlipper {
 
       // Fresco Plugin needs to ensure that ImagePipelineFactory is initialized
       // Hence we run if after all native modules have been initialized
+      @SuppressLint("VisibleForTests")
       ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
       if (reactContext == null) {
         reactInstanceManager.addReactInstanceEventListener(

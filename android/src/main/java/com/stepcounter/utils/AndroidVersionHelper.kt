@@ -8,24 +8,33 @@ import android.content.pm.PackageManager.FEATURE_SENSOR_STEP_COUNTER
 import android.content.pm.PackageManager.FEATURE_SENSOR_STEP_DETECTOR
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.util.Log
+import androidx.annotation.ChecksSdkIntAtLeast
+import androidx.annotation.RequiresFeature
 
 object AndroidVersionHelper {
+    private val TAG_NAME: String = AndroidVersionHelper::class.java.name
     private const val PREF_NAME = "pref.com.stepcounter.stepcounter"
+    private const val USE_SENSOR = "pref.com.stepcounter.use_step_hardware"
     /**
      * Decides whether the current soft- and hardware setup allows using hardware step detection
      * @param pm An instance of the android PackageManager
      * @return true, if hardware step detection can be used otherwise false
      */
     @SuppressLint("ObsoleteSdkInt")
+    @ChecksSdkIntAtLeast(api = VERSION_CODES.KITKAT)
+    @RequiresFeature(name = FEATURE_SENSOR_STEP_COUNTER, enforcement = "1")
     private fun supportsStepDetector(pm: PackageManager): Boolean {
         // (Hardware) step detection was introduced in KitKat (4.4 / API 19)
         // https://developer.android.com/about/versions/android-4.4.html
         // In addition to the system version
         // the hardware step detection is not supported on every device,
         // let's check the device's ability.
-        return (VERSION.SDK_INT >= VERSION_CODES.KITKAT
-                && pm.hasSystemFeature(FEATURE_SENSOR_STEP_COUNTER)
-                && pm.hasSystemFeature(FEATURE_SENSOR_STEP_DETECTOR))
+        val newerThanKitKat = VERSION.SDK_INT >= VERSION_CODES.KITKAT
+        val hasStepDetector = pm.hasSystemFeature(FEATURE_SENSOR_STEP_DETECTOR)
+        val hasStepCounter = pm.hasSystemFeature(FEATURE_SENSOR_STEP_COUNTER)
+        Log.d(TAG_NAME, "supportsStepDetector: $newerThanKitKat, $hasStepDetector, $hasStepCounter")
+        return (newerThanKitKat && hasStepCounter && hasStepDetector)
     }
 
     /**
@@ -39,7 +48,8 @@ object AndroidVersionHelper {
      */
     fun isHardwareStepCounterEnabled(context: Context): Boolean {
         val sharedPref = context.getSharedPreferences(PREF_NAME, MODE_PRIVATE)
-        return supportsStepDetector(context.packageManager) && sharedPref.getBoolean(
-            "com.stepcounter.pref.use_step_hardware", false)
+        val useHardWare = sharedPref.getBoolean(USE_SENSOR, true)
+        Log.d(TAG_NAME, "useHardWare: $useHardWare")
+        return supportsStepDetector(context.packageManager) && useHardWare
     }
 }
