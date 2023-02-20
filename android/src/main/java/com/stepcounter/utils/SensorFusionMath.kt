@@ -2,6 +2,7 @@ package com.stepcounter.utils
 
 import kotlin.math.sqrt
 
+@Suppress("unused")
 object SensorFusionMath {
     fun sum(array: FloatArray): Float {
         var returnVal = 0f
@@ -24,10 +25,20 @@ object SensorFusionMath {
         for (v in array) {
             returnVal += v * v
         }
-        return sqrt(returnVal.toDouble()).toFloat()
+        return sqrt(returnVal)
     }
 
+    // Note: only works with 3D vectors.
     fun dot(a: FloatArray, b: FloatArray): Float {
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+    }
+
+    fun normalize(a: FloatArray): FloatArray {
+        val value = FloatArray(a.size)
+        val norm = norm(a)
+        for (i in a.indices) {
+            value[i] = a[i] / norm
+        }
+        return value
     }
 }

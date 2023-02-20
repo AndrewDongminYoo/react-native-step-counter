@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  package="com.stepcounter">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.stepcounter">
 
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
   <uses-permission android:name="android.permission.INTERNET" />
@@ -9,16 +9,30 @@
   <uses-permission android:name="android.permission.BODY_SENSORS" />
   <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
   <uses-permission
-    android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"
-    tools:ignore="HighSamplingRate" />
+      android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"
+      tools:ignore="HighSamplingRate" />
 
   <uses-feature
-    android:name="android.hardware.sensor.stepcounter"
-    android:required="false" />
+      android:name="android.hardware.sensor.stepcounter"
+      android:required="false" />
   <uses-feature
-    android:name="android.hardware.sensor.stepdetector"
-    android:required="false" />
+      android:name="android.hardware.sensor.stepdetector"
+      android:required="false" />
   <uses-feature
-    android:name="android.hardware.sensor.accelerometer"
-    android:required="false" />
+      android:name="android.hardware.sensor.accelerometer"
+      android:required="false" />
+
+  <application>
+    <service
+        android:name=".services.SensorListenService"
+        android:enabled="false"
+        android:exported="false" />
+    <service
+        android:name=".services.StepCounterService"
+        android:exported="false" />
+    <service
+        android:name=".services.AccelerometerService"
+        android:exported="false" />
+  </application>
+
 </manifest>
