@@ -12,6 +12,7 @@ import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
 import com.stepcounter.utils.AndroidVersionHelper
 
+@SuppressLint("ObsoleteSdkInt")
 @ReactModule(name = StepCounterModule.NAME)
 class StepCounterModule(context: ReactApplicationContext) :
     NativeStepCounterSpec(context) {
@@ -19,18 +20,18 @@ class StepCounterModule(context: ReactApplicationContext) :
         const val NAME: String = "RNStepCounter"
         val TAG_NAME: String = StepCounterModule::class.java.name
     }
-    private val appContext = context
+    private val appContext: ReactApplicationContext = context
     private var currentSteps: Double = 0.0
     private var stepService: SensorListenService? = null
+    private val serviceIntent = Intent(appContext, SensorListenService::class.java)
 
     override fun initialize() {
         super.initialize()
-        stepService = if (isStepCountingSupported) {
+        stepService = if (SDK_INT >= VERSION_CODES.LOLLIPOP) {
             StepCounterService()
         } else AccelerometerService()
+        stepService!!.setContext(appContext)
     }
-
-    @SuppressLint("ObsoleteSdkInt")
     override fun isStepCountingSupported(): Boolean {
         Log.d(TAG_NAME, "step_counter supported? ${SDK_INT >= VERSION_CODES.KITKAT}")
         Log.d(TAG_NAME, "accelerometer supported? ${SDK_INT >= VERSION_CODES.ECLAIR}")
@@ -40,15 +41,13 @@ class StepCounterModule(context: ReactApplicationContext) :
     override fun startStepCounterUpdate(from: Double): Boolean {
         Log.d(TAG_NAME, "startStepCounterUpdate from $from")
         Log.d(TAG_NAME, "startStepCounterUpdate step $currentSteps")
-        val intent = Intent(appContext, stepService!!.javaClass)
-        val componentName = appContext.startService(intent)
-        return componentName != null
+        appContext.startService(serviceIntent)
+        return stepService != null
     }
 
     override fun stopStepCounterUpdate() {
         Log.d(TAG_NAME, "stopStepCounterUpdate")
-        val intent = Intent(appContext, stepService!!.javaClass)
-        appContext.stopService(intent)
+        stepService!!.stopService(serviceIntent)
     }
     /**
      * Keep: Required for RN built in Event Emitter Support.

@@ -1,11 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { EmitterSubscription, GestureResponderEvent } from 'react-native';
-import { Button, NativeEventEmitter, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import StepCounter, {
-  isStepCountingSupported,
-  startStepCounterUpdate,
-  stopStepCounterUpdate,
-} from 'react-native-step-counter';
+import { NativeEventEmitter, NativeModules, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { isStepCountingSupported, startStepCounterUpdate, stopStepCounterUpdate } from 'react-native-step-counter';
 import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
 
 type OnPress = (event?: GestureResponderEvent) => void;
@@ -33,7 +29,12 @@ export default function App() {
   const [allowed, setAllow] = useState(false);
   const [steps, setSteps] = useState(0);
   const [subscription, setSubscription] = useState<EmitterSubscription>();
-  const nativeEventEmitter = new NativeEventEmitter(StepCounter);
+  const RNStepCounter = NativeModules.RNStepCounter;
+  console.log('🚀 ~ file: App.tsx:37 ~ App ~ RNStepCounter:', RNStepCounter);
+  console.log('🚀 ~ file: App.tsx:37 ~ App ~ NativeModules:', NativeModules);
+  const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
+  console.log('🚀 ~ file: App.tsx:40 ~ App ~ nativeEventEmitter:', nativeEventEmitter);
+  console.log('🚀 ~ file: App.tsx:40 ~ App ~ RNStepCounter:', RNStepCounter);
 
   /** get user's motion permission and check pedometer is available */
   async function askPermission() {
@@ -63,7 +64,10 @@ export default function App() {
 
   useEffect(() => {
     askPermission().then((granted) => {
+      console.log('🚀 ~ file: App.tsx:73 ~ askPermission ~ granted:', granted);
       if (granted) {
+        startStepCounter();
+      } else {
         startStepCounter();
       }
     });
@@ -75,8 +79,6 @@ export default function App() {
       <View style={styles.screen}>
         <Text style={styles.step}>사용가능:{allowed ? '🅾️' : '️❎'}</Text>
         <Text style={styles.step}>걸음 수: {steps}</Text>
-        <Button title="stop" onPress={stopStepCounter} />
-        <Button title="start" onPress={startStepCounter} />
       </View>
     </SafeAreaView>
   );

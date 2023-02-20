@@ -21,9 +21,7 @@ abstract class SensorListenService : Service(), SensorEventListener {
     abstract val sensorType: Int
     abstract val sensorDelay: Int
     abstract val sensorTypeString: String
-    private val sensorManager: SensorManager by lazy {
-        getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    }
+    private var sensorManager: SensorManager? = null
     private val binder: Binder = LocalBinder()
     private val stepsParamsMap: WritableMap
         get() {
@@ -35,7 +33,7 @@ abstract class SensorListenService : Service(), SensorEventListener {
             map.putInt("dailyGoal", dailyGoal)
             return map
         }
-    private val reactApplicationContext = applicationContext as ReactApplicationContext
+    private var appContext: ReactApplicationContext? = null
     /**
      * Number of steps the user wants to walk every day
      */
@@ -69,17 +67,29 @@ abstract class SensorListenService : Service(), SensorEventListener {
         }
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG_NAME, "onStartCommand.intent: $intent")
+        Log.d(TAG_NAME, "onStartCommand.flags: $flags")
+        Log.d(TAG_NAME, "onStartCommand.startId: $startId")
+        return super.onStartCommand(intent, flags, startId)
+    }
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG_NAME, "onCreate: ")
-        val sensor = sensorManager.getDefaultSensor(sensorType)
-        sensorManager.registerListener(this, sensor, sensorDelay)
+        sensorManager = appContext!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager!!.getDefaultSensor(sensorType)
+        sensorManager!!.registerListener(this, sensor, sensorDelay)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG_NAME, "onDestroy: ")
-        sensorManager.unregisterListener(this)
+        sensorManager?.unregisterListener(this)
+        this.unregisterReceiver(broadcastReceiver)
+    }
+
+    fun setContext(context: ReactApplicationContext) {
+        this.appContext = context
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -133,7 +143,7 @@ abstract class SensorListenService : Service(), SensorEventListener {
     private fun sendStepCounterUpdateEvent() {
         Log.d(TAG_NAME, "sendStepCounterUpdateEvent: $currentSteps")
         try {
-            reactApplicationContext.getJSModule(RCTDeviceEventEmitter::class.java)
+            appContext!!.getJSModule(RCTDeviceEventEmitter::class.java)
                 .emit("stepCounterUpdate", stepsParamsMap)
         } catch (e: RuntimeException) {
             Log.e(TAG_NAME, "sendStepCounterUpdateEvent: ", e)

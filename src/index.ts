@@ -22,7 +22,7 @@ const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
 const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
 
-const StepCounter = StepCounterModule
+const RNStepCounter = StepCounterModule
   ? StepCounterModule
   : new Proxy(
       {},
@@ -33,16 +33,16 @@ const StepCounter = StepCounterModule
       }
     );
 
-export function isStepCountingSupported() {
-  return StepCounter.isStepCountingSupported();
+export function isStepCountingSupported(): boolean {
+  return RNStepCounter.isStepCountingSupported();
 }
 
-export function startStepCounterUpdate(from: number) {
-  return StepCounter.startStepCounterUpdate(from);
+export function startStepCounterUpdate(from: number): boolean {
+  return RNStepCounter.startStepCounterUpdate(from);
 }
 
-export function stopStepCounterUpdate() {
-  StepCounter.stopStepCounterUpdate();
+export function stopStepCounterUpdate(): void {
+  RNStepCounter.stopStepCounterUpdate();
 }
 
-export default StepCounter;
+export default RNStepCounter;

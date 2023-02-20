@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B2BF4B7029992B2C006A4EB2 /* StepCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BF4B6E29992B2C006A4EB2 /* StepCounter.swift */; };
+		B2BF4B7029992B2C006A4EB2 /* RNStepCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BF4B6E29992B2C006A4EB2 /* RNStepCounter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,9 +24,9 @@
 
 /* Begin PBXFileReference section */
 		B2BF4AAF29991F05006A4EB2 /* libStepCounter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libStepCounter.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2BF4B6D29992B2C006A4EB2 /* StepCounter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StepCounter.h; sourceTree = "<group>"; };
-		B2BF4B6E29992B2C006A4EB2 /* StepCounter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StepCounter.swift; sourceTree = "<group>"; };
-		B2BF4C842999387B006A4EB2 /* StepCounter-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "StepCounter-Bridging-Header.h"; sourceTree = "<group>"; };
+		B2BF4B6D29992B2C006A4EB2 /* RNStepCounter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNStepCounter.h; sourceTree = "<group>"; };
+		B2BF4B6E29992B2C006A4EB2 /* RNStepCounter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RNStepCounter.swift; sourceTree = "<group>"; };
+		B2BF4C842999387B006A4EB2 /* RNStepCounter-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RNStepCounter-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,9 +44,9 @@
 			isa = PBXGroup;
 			children = (
 				B2BF4B7E29993733006A4EB2 /* React */,
-				B2BF4C842999387B006A4EB2 /* StepCounter-Bridging-Header.h */,
-				B2BF4B6D29992B2C006A4EB2 /* StepCounter.h */,
-				B2BF4B6E29992B2C006A4EB2 /* StepCounter.swift */,
+				B2BF4C842999387B006A4EB2 /* RNStepCounter-Bridging-Header.h */,
+				B2BF4B6D29992B2C006A4EB2 /* RNStepCounter.h */,
+				B2BF4B6E29992B2C006A4EB2 /* RNStepCounter.swift */,
 				B2BF4AB029991F05006A4EB2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -73,9 +73,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B2BF4AAE29991F05006A4EB2 /* StepCounter */ = {
+		B2BF4AAE29991F05006A4EB2 /* RNStepCounter */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B2BF4AB629991F05006A4EB2 /* Build configuration list for PBXNativeTarget "StepCounter" */;
+			buildConfigurationList = B2BF4AB629991F05006A4EB2 /* Build configuration list for PBXNativeTarget "RNStepCounter" */;
 			buildPhases = (
 				B2BF4AAB29991F05006A4EB2 /* Sources */,
 				B2BF4AAC29991F05006A4EB2 /* Frameworks */,
@@ -85,8 +85,8 @@
 			);
 			dependencies = (
 			);
-			name = StepCounter;
-			productName = StepCounter;
+			name = RNStepCounter;
+			productName = RNStepCounter;
 			productReference = B2BF4AAF29991F05006A4EB2 /* libStepCounter.a */;
 			productType = "com.apple.product-type.library.static";
 		};
@@ -106,7 +106,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B2BF4AAA29991F05006A4EB2 /* Build configuration list for PBXProject "StepCounter" */;
+			buildConfigurationList = B2BF4AAA29991F05006A4EB2 /* Build configuration list for PBXProject "RNStepCounter" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -119,7 +119,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B2BF4AAE29991F05006A4EB2 /* StepCounter */,
+				B2BF4AAE29991F05006A4EB2 /* RNStepCounter */,
 			);
 		};
 /* End PBXProject section */
@@ -129,7 +129,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2BF4B7029992B2C006A4EB2 /* StepCounter.swift in Sources */,
+				B2BF4B7029992B2C006A4EB2 /* RNStepCounter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,7 +264,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "StepCounter-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "RNStepCounter-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -285,7 +285,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "StepCounter-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "RNStepCounter-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -294,7 +294,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B2BF4AAA29991F05006A4EB2 /* Build configuration list for PBXProject "StepCounter" */ = {
+		B2BF4AAA29991F05006A4EB2 /* Build configuration list for PBXProject "RNStepCounter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B2BF4AB429991F05006A4EB2 /* Debug */,
@@ -303,7 +303,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B2BF4AB629991F05006A4EB2 /* Build configuration list for PBXNativeTarget "StepCounter" */ = {
+		B2BF4AB629991F05006A4EB2 /* Build configuration list for PBXNativeTarget "RNStepCounter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B2BF4AB729991F05006A4EB2 /* Debug */,
