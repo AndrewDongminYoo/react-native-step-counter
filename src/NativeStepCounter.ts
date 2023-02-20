@@ -35,4 +35,4 @@ export interface Spec extends TurboModule {
 }
 
 /* Getting enforcing the module from the registry. */
-export default TurboModuleRegistry.getEnforcing<Spec>('StepCounter');
+export default TurboModuleRegistry.getEnforcing<Spec>('RNStepCounter');

@@ -112,14 +112,8 @@ class App extends Component {
         ) : null}
         {permissionStatus === PermissionStatus.GRANTED ? (
           <>
-            <Button
-              title="Start StepCounter Updates"
-              onPress={this.startUpdates}
-            />
-            <Button
-              title="Stop StepCounter Updates"
-              onPress={this.stopUpdates}
-            />
+            <Button title="Start StepCounter Updates" onPress={this.startUpdates} />
+            <Button title="Stop StepCounter Updates" onPress={this.stopUpdates} />
           </>
         ) : null}
       </View>

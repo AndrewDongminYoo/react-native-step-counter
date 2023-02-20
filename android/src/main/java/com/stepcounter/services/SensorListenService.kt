@@ -122,8 +122,8 @@ abstract class SensorListenService : Service(), SensorEventListener {
      * `SensorManager.SENSOR_STATUS_*`
      */
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d("SensorListenService", "onAccuracyChanged.accuracy $accuracy")
-        Log.d("SensorListenService", "onAccuracyChanged.sensor: $sensor")
+        Log.d(TAG_NAME, "onAccuracyChanged.accuracy $accuracy")
+        Log.d(TAG_NAME, "onAccuracyChanged.sensor: $sensor")
     }
 
     /**
@@ -131,12 +131,12 @@ abstract class SensorListenService : Service(), SensorEventListener {
      * @throws RuntimeException
      */
     private fun sendStepCounterUpdateEvent() {
-        Log.d("StepCounter", "sendStepCounterUpdateEvent: $currentSteps")
+        Log.d(TAG_NAME, "sendStepCounterUpdateEvent: $currentSteps")
         try {
             reactApplicationContext.getJSModule(RCTDeviceEventEmitter::class.java)
                 .emit("stepCounterUpdate", stepsParamsMap)
         } catch (e: RuntimeException) {
-            Log.e("StepCounter", "sendStepCounterUpdateEvent: ", e)
+            Log.e(TAG_NAME, "sendStepCounterUpdateEvent: ", e)
         }
     }
 

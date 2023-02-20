@@ -20,7 +20,7 @@ export type StepCountData = Data;
 // @ts-expect-error: global.__turboModuleProxy may not defined
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
-const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.StepCounter;
+const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
 
 const StepCounter = StepCounterModule
   ? StepCounterModule

@@ -106,7 +106,7 @@ dependencies {
 if (isNewArchitectureEnabled()) {
   react {
     jsRootDir = file("../src/")
-    libraryName = "StepCounter"
+    libraryName = "RNStepCounter"
     codegenJavaPackageName = "com.stepcounter"
   }
 }
