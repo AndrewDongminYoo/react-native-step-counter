@@ -63,14 +63,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    askPermission().then((granted) => {
-      console.log('🚀 ~ file: App.tsx:73 ~ askPermission ~ granted:', granted);
-      if (granted) {
-        startStepCounter();
-      } else {
-        startStepCounter();
-      }
-    });
+    askPermission();
+    startStepCounter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

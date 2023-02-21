@@ -16,8 +16,10 @@ class StepCounterService : SensorListenService() {
     private var lastUpdate: Long = 0
     private var i = 0
     private var delay: Int = 0
-    private var initSteps: Double? = null
+    private var initSteps: Double = 0.0
     override var currentSteps: Double = 0.0
+    override var startDate: Long = 0
+    override var endDate: Long = 0
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -27,19 +29,20 @@ class StepCounterService : SensorListenService() {
             Process.myUid(),
             "Permission denied"
         )
+        startDate = System.currentTimeMillis()
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double {
-        val curTime = TimeUnit.NANOSECONDS.toMillis(timeNs)
+        endDate = TimeUnit.NANOSECONDS.toMillis(timeNs)
         i++
-        if ((curTime - lastUpdate) > delay) {
+        if ((endDate - lastUpdate) > delay) {
             i = 0
-            if (initSteps === null) {
+            if (initSteps == 0.0) {
                 initSteps = eventData[0].toDouble()
             } else {
-                currentSteps = eventData[0].toDouble().minus(initSteps!!)
-                lastUpdate = curTime
+                currentSteps = eventData[0].toDouble().minus(initSteps)
+                lastUpdate = endDate
             }
         }
         return currentSteps

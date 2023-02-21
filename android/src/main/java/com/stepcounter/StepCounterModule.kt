@@ -6,11 +6,14 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES
 import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
 import com.stepcounter.utils.AndroidVersionHelper
+import com.stepcounter.utils.SerializeHelper
 
 @SuppressLint("ObsoleteSdkInt")
 @ReactModule(name = StepCounterModule.NAME)
@@ -21,33 +24,48 @@ class StepCounterModule(context: ReactApplicationContext) :
         val TAG_NAME: String = StepCounterModule::class.java.name
     }
     private val appContext: ReactApplicationContext = context
+    private val reactContextMap = SerializeHelper.serialize(appContext)
     private var currentSteps: Double = 0.0
-    private var stepService: SensorListenService? = null
-    private val serviceIntent = Intent(appContext, SensorListenService::class.java)
+    private lateinit var stepService: SensorListenService
+    private lateinit var serviceIntent: Intent
+//    private var stepCounterCallback: Callback? = null
 
     override fun initialize() {
         super.initialize()
-        stepService = if (SDK_INT >= VERSION_CODES.LOLLIPOP) {
-            StepCounterService()
-        } else AccelerometerService()
-        stepService!!.setContext(appContext)
+        if (SDK_INT >= VERSION_CODES.LOLLIPOP) {
+            stepService = StepCounterService()
+            serviceIntent = Intent(appContext, StepCounterService::class.java)
+        } else {
+            stepService = AccelerometerService()
+            serviceIntent = Intent(appContext, AccelerometerService::class.java)
+        }
+        serviceIntent.putExtra("reactApplicationContext", reactContextMap)
     }
+
+    override fun invalidate() {
+        appContext.stopService(serviceIntent)
+        super.invalidate()
+    }
+
     override fun isStepCountingSupported(): Boolean {
         Log.d(TAG_NAME, "step_counter supported? ${SDK_INT >= VERSION_CODES.KITKAT}")
         Log.d(TAG_NAME, "accelerometer supported? ${SDK_INT >= VERSION_CODES.ECLAIR}")
-        return AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
+        val enabled = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
+        Log.d(TAG_NAME, "hardware_step_counter enabled? $enabled")
+        return true
     }
 
     override fun startStepCounterUpdate(from: Double): Boolean {
         Log.d(TAG_NAME, "startStepCounterUpdate from $from")
         Log.d(TAG_NAME, "startStepCounterUpdate step $currentSteps")
+        stepService.startDate = from.toLong()
         appContext.startService(serviceIntent)
-        return stepService != null
+        return true
     }
 
     override fun stopStepCounterUpdate() {
         Log.d(TAG_NAME, "stopStepCounterUpdate")
-        stepService!!.stopService(serviceIntent)
+        stepService.stopSelf()
     }
     /**
      * Keep: Required for RN built in Event Emitter Support.
@@ -61,4 +79,14 @@ class StepCounterModule(context: ReactApplicationContext) :
      */
     override fun removeListeners(count: Double) {}
     override fun getName(): String = NAME
+
+    fun onListenerUpdated(stepsParamsMap: WritableMap) {
+        Log.d(SensorListenService.TAG_NAME, "sendStepCounterUpdateEvent: $currentSteps")
+        try {
+            appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit("stepCounterUpdate", stepsParamsMap)
+        } catch (e: RuntimeException) {
+            Log.e(SensorListenService.TAG_NAME, "sendStepCounterUpdateEvent: ", e)
+        }
+    }
 }
