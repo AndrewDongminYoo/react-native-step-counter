@@ -2,7 +2,6 @@ package com.stepcounter.utils
 
 import kotlin.math.sqrt
 
-@Suppress("unused")
 object SensorFusionMath {
     fun sum(array: FloatArray): Float {
         var returnVal = 0f
@@ -33,12 +32,12 @@ object SensorFusionMath {
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
     }
 
-    fun normalize(a: FloatArray): FloatArray {
-        val value = FloatArray(a.size)
-        val norm = norm(a)
-        for (i in a.indices) {
-            value[i] = a[i] / norm
+    fun normalize(array: FloatArray): FloatArray {
+        val copied = FloatArray(array.size)
+        val average = norm(array)
+        for (i in array.indices) {
+            copied[i] = array[i] / average
         }
-        return value
+        return copied
     }
 }
