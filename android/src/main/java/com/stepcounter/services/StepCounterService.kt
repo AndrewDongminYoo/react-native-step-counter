@@ -1,12 +1,9 @@
 package com.stepcounter.services
 
-import android.Manifest.permission
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import android.os.Build
 import android.os.Process
-import androidx.annotation.RequiresApi
 import java.util.concurrent.TimeUnit
 
 class StepCounterService : SensorListenService() {
@@ -21,10 +18,9 @@ class StepCounterService : SensorListenService() {
     override var startDate: Long = 0
     override var endDate: Long = 0
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         this.enforcePermission(
-            permission.ACTIVITY_RECOGNITION,
+            "android.permission.ACTIVITY_RECOGNITION",
             Process.myPid(),
             Process.myUid(),
             "Permission denied"

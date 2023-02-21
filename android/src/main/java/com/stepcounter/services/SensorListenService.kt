@@ -1,7 +1,6 @@
 package com.stepcounter.services
 
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
@@ -14,8 +13,8 @@ import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.stepcounter.StepCounterModule
+import com.stepcounter.StepCounterModule.Companion.CONTEXT
 import com.stepcounter.utils.SerializeHelper
 
 abstract class SensorListenService : Service(), SensorEventListener {
@@ -27,7 +26,6 @@ abstract class SensorListenService : Service(), SensorEventListener {
      * [TYPE_STEP_COUNTER][Sensor.TYPE_STEP_COUNTER]: 19<br/>
      */
     abstract val sensorType: Int // 19 or 1
-
     /**
      * the fastest rate
      * [SENSOR_DELAY_FASTEST][SensorManager.SENSOR_DELAY_FASTEST]: 0
@@ -43,11 +41,10 @@ abstract class SensorListenService : Service(), SensorEventListener {
      */
     abstract val sensorDelay: Int
     abstract val sensorTypeString: String
-    private lateinit var detectedSensor: Sensor
-    private lateinit var sensorManager: SensorManager
-    private lateinit var context: ReactApplicationContext
-    private lateinit var eventEmitter: RCTDeviceEventEmitter
-    private var stepCounterM: StepCounterModule? = null
+    private var detectedSensor: Sensor? = null
+    private var sensorManager: SensorManager? = null
+    private var context: ReactApplicationContext? = null
+    private var counterModule: StepCounterModule? = null
     private val binder: Binder = LocalBinder()
     private val stepsParamsMap: WritableMap
         get() {
@@ -65,76 +62,42 @@ abstract class SensorListenService : Service(), SensorEventListener {
      * Number of steps the user wants to walk every day
      */
     private var dailyGoal: Int = 10000
-
     /**
      * Number of in-database-saved calories;
      */
     private var calories: Double = 0.0
-
     /**
      * Distance of in-database-saved steps
      */
     private var distance: Double = 0.0
-
     /**
      * Number of steps counted since service start
      */
     abstract var currentSteps: Double
-
     /**
      * Start date of the step counting
      */
     abstract var startDate: Long
-
     /**
      * End date of the step counting
      */
     abstract var endDate: Long
 
-    /**
-     * Send the step counter update event to the JS side.
-     */
-    private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d(TAG_NAME, "onReceive: ${intent?.dataString}")
-            if (intent?.action == ACTION_NAME) {
-                currentSteps = intent.getDoubleExtra("steps", 0.0)
-                distance = intent.getDoubleExtra("distance", currentSteps * 0.762)
-                calories = intent.getDoubleExtra("calories", currentSteps * 0.04)
-                dailyGoal = intent.getIntExtra("dailyGoal", 10000)
-                startDate = intent.getLongExtra("startDate", 0L)
-                endDate = intent.getLongExtra("endDate", 0L)
-            }
-        }
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        try {
-            sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-            detectedSensor = sensorManager.getDefaultSensor(sensorType)
-            Log.d(TAG_NAME, "Sensor found: $detectedSensor")
-        } catch (e: Exception) {
-            Log.d(TAG_NAME, "Sensor not found")
-            stopSelf()
-        }
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG_NAME, "onStartCommand.intent: $intent")
         Log.d(TAG_NAME, "onStartCommand.flags: $flags")
         Log.d(TAG_NAME, "onStartCommand.startId: $startId")
-        context = SerializeHelper.deserialize(this, intent)
-        eventEmitter = context.getJSModule(RCTDeviceEventEmitter::class.java)
-        stepCounterM = context.getNativeModule(StepCounterModule::class.java)
-        sensorManager.registerListener(this, detectedSensor, sensorDelay)
+        context = SerializeHelper.deserialize(this, intent, CONTEXT)
+        counterModule = context!!.getNativeModule(StepCounterModule::class.java)
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        detectedSensor = sensorManager!!.getDefaultSensor(sensorType)
+        sensorManager!!.registerListener(this, detectedSensor, sensorDelay)
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun stopService(name: Intent?): Boolean {
         Log.d(TAG_NAME, "onDestroy: ")
-        sensorManager.unregisterListener(this)
-        this.unregisterReceiver(broadcastReceiver)
+        sensorManager!!.unregisterListener(this)
         return super.stopService(name)
     }
 
@@ -189,20 +152,14 @@ abstract class SensorListenService : Service(), SensorEventListener {
     private fun sendStepCounterUpdateEvent() {
         Log.d(TAG_NAME, "sendStepCounterUpdateEvent: $currentSteps")
         try {
-            eventEmitter.emit("stepCounterUpdate", stepsParamsMap)
+            counterModule?.onListenerUpdated(stepsParamsMap)
         } catch (e: RuntimeException) {
-            try {
-                stepCounterM?.onListenerUpdated(stepsParamsMap)
-            } catch (e: Exception) {
-                Log.e(TAG_NAME, "sendStepCounterUpdateEvent: ", e)
-            }
             Log.e(TAG_NAME, "sendStepCounterUpdateEvent: ", e)
         }
     }
 
     companion object {
         val TAG_NAME: String = SensorListenService::class.java.name
-        const val ACTION_NAME: String = "com.stepcounter.services.SensorListenService"
     }
 
     inner class LocalBinder : Binder() {

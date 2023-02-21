@@ -8,7 +8,7 @@ import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
@@ -22,12 +22,13 @@ class StepCounterModule(context: ReactApplicationContext) :
     companion object {
         const val NAME: String = "RNStepCounter"
         val TAG_NAME: String = StepCounterModule::class.java.name
+        const val CONTEXT = "com.stepcounter.StepCounterModule.appContext"
     }
     private val appContext: ReactApplicationContext = context
     private val reactContextMap = SerializeHelper.serialize(appContext)
     private var currentSteps: Double = 0.0
-    private lateinit var stepService: SensorListenService
-    private lateinit var serviceIntent: Intent
+    private var stepService: SensorListenService
+    private var serviceIntent: Intent
 //    private var stepCounterCallback: Callback? = null
 
     override fun initialize() {
@@ -39,11 +40,11 @@ class StepCounterModule(context: ReactApplicationContext) :
             stepService = AccelerometerService()
             serviceIntent = Intent(appContext, AccelerometerService::class.java)
         }
-        serviceIntent.putExtra("reactApplicationContext", reactContextMap)
+        serviceIntent.putExtra(CONTEXT, reactContextMap)
     }
 
     override fun invalidate() {
-        appContext.stopService(serviceIntent)
+        stepService.stopSelf()
         super.invalidate()
     }
 
@@ -59,7 +60,7 @@ class StepCounterModule(context: ReactApplicationContext) :
         Log.d(TAG_NAME, "startStepCounterUpdate from $from")
         Log.d(TAG_NAME, "startStepCounterUpdate step $currentSteps")
         stepService.startDate = from.toLong()
-        appContext.startService(serviceIntent)
+        stepService.startService(serviceIntent)
         return true
     }
 
@@ -83,7 +84,7 @@ class StepCounterModule(context: ReactApplicationContext) :
     fun onListenerUpdated(stepsParamsMap: WritableMap) {
         Log.d(SensorListenService.TAG_NAME, "sendStepCounterUpdateEvent: $currentSteps")
         try {
-            appContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            appContext.getJSModule(RCTDeviceEventEmitter::class.java)
                 .emit("stepCounterUpdate", stepsParamsMap)
         } catch (e: RuntimeException) {
             Log.e(SensorListenService.TAG_NAME, "sendStepCounterUpdateEvent: ", e)
