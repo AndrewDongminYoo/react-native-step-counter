@@ -26,7 +26,7 @@ export type StepCountData = {
 /* Defining the interface of the module. */
 export interface Spec extends TurboModule {
   isStepCountingSupported(): boolean;
-  startStepCounterUpdate(from: number): boolean;
+  startStepCounterUpdate(from: number): Promise<StepCountData>;
   stopStepCounterUpdate(): void;
 
   /* Required Methods for NativeEventEmitter */
@@ -35,4 +35,4 @@ export interface Spec extends TurboModule {
 }
 
 /* Getting enforcing the module from the registry. */
-export default TurboModuleRegistry.getEnforcing<Spec>('RNStepCounter');
+export default TurboModuleRegistry.getEnforcing<Spec>('RNStepCounter') as Spec;

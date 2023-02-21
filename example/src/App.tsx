@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import type { EmitterSubscription, GestureResponderEvent } from 'react-native';
-import { NativeEventEmitter, NativeModules, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { isStepCountingSupported, startStepCounterUpdate, stopStepCounterUpdate } from 'react-native-step-counter';
+import type { EmitterSubscription } from 'react-native';
+import { Button, NativeEventEmitter, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import RNStepCounter, {
+  isStepCountingSupported,
+  startStepCounterUpdate,
+  stopStepCounterUpdate,
+} from 'react-native-step-counter';
 import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
-
-type OnPress = (event?: GestureResponderEvent) => void;
 
 export async function requestRequiredPermissions() {
   return await requestMultiple(
@@ -29,12 +31,7 @@ export default function App() {
   const [allowed, setAllow] = useState(false);
   const [steps, setSteps] = useState(0);
   const [subscription, setSubscription] = useState<EmitterSubscription>();
-  const RNStepCounter = NativeModules.RNStepCounter;
-  console.log('🚀 ~ file: App.tsx:37 ~ App ~ RNStepCounter:', RNStepCounter);
-  console.log('🚀 ~ file: App.tsx:37 ~ App ~ NativeModules:', NativeModules);
   const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
-  console.log('🚀 ~ file: App.tsx:40 ~ App ~ nativeEventEmitter:', nativeEventEmitter);
-  console.log('🚀 ~ file: App.tsx:40 ~ App ~ RNStepCounter:', RNStepCounter);
 
   /** get user's motion permission and check pedometer is available */
   async function askPermission() {
@@ -45,17 +42,24 @@ export default function App() {
     return supported;
   }
 
-  const startStepCounter: OnPress = () => {
+  const startStepCounter = async () => {
     const now = Date.now();
-    startStepCounterUpdate(now);
+    // startStepCounterUpdate(now).then((data)=> {
+    //   console.debug('🚀 nativeEventEmitter.startStepCounterUpdate', data);
+    //   setSteps(data.steps);
+    // });
+    startStepCounterUpdate(now).then((data) => {
+      console.log('🚀 nativeEventEmitter.addListener', data);
+      setSteps(data.steps);
+    });
     const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
-      console.debug('🚀 nativeEventEmitter.stepCounterUpdate', data);
+      console.log('🚀 nativeEventEmitter.addListener', data);
       setSteps(data.steps);
     });
     setSubscription(sub);
   };
 
-  const stopStepCounter: OnPress = useCallback(() => {
+  const stopStepCounter = useCallback(() => {
     setSteps(0);
     stopStepCounterUpdate();
     subscription && nativeEventEmitter.removeSubscription(subscription);
@@ -63,8 +67,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    askPermission();
-    startStepCounter();
+    const runService = async () => {
+      await askPermission();
+      await startStepCounter();
+    };
+    runService();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -73,6 +80,8 @@ export default function App() {
       <View style={styles.screen}>
         <Text style={styles.step}>사용가능:{allowed ? '🅾️' : '️❎'}</Text>
         <Text style={styles.step}>걸음 수: {steps}</Text>
+        <Button onPress={startStepCounter} title="시작" />
+        <Button onPress={stopStepCounter} title="정지" />
       </View>
     </SafeAreaView>
   );
