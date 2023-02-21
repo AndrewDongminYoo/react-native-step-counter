@@ -1,5 +1,5 @@
 import { NativeModules, Platform } from 'react-native';
-import type { StepCountData as Data } from './NativeStepCounter';
+import type { StepCountData as Data, Spec } from './NativeStepCounter';
 
 /* A way to check if the module is linked. */
 export const LINKING_ERROR =
@@ -22,22 +22,24 @@ const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
 const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
 
-const RNStepCounter = StepCounterModule
-  ? StepCounterModule
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+const RNStepCounter = (
+  StepCounterModule
+    ? StepCounterModule
+    : new Proxy(
+        {},
+        {
+          get() {
+            throw new Error(LINKING_ERROR);
+          },
+        }
+      )
+) as Spec;
 
 export function isStepCountingSupported(): boolean {
   return RNStepCounter.isStepCountingSupported();
 }
 
-export function startStepCounterUpdate(from: number): boolean {
+export function startStepCounterUpdate(from: number): Promise<StepCountData> {
   return RNStepCounter.startStepCounterUpdate(from);
 }
 
