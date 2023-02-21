@@ -1,6 +1,5 @@
 package com.stepcounter.services
 
-import android.Manifest.permission
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -31,7 +30,7 @@ class AccelerometerService: SensorListenService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         this.enforcePermission(
-            permission.BODY_SENSORS,
+            "android.permission.BODY_SENSORS",
             Process.myPid(),
             Process.myUid(),
             "Permission denied"
