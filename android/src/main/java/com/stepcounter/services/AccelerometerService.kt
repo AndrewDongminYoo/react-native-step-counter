@@ -1,10 +1,9 @@
 package com.stepcounter.services
 
-import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import android.os.Process
 import android.util.Log
+import com.stepcounter.StepCounterModule
 import com.stepcounter.utils.SensorFusionMath.dot
 import com.stepcounter.utils.SensorFusionMath.norm
 import com.stepcounter.utils.SensorFusionMath.normalize
@@ -12,12 +11,15 @@ import com.stepcounter.utils.SensorFusionMath.sum
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
-class AccelerometerService: SensorListenService() {
+class AccelerometerService(
+    counterModule: StepCounterModule,
+    sensorManager: SensorManager,
+): SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "ACCELEROMETER"
     override val sensorDelay = SensorManager.SENSOR_DELAY_NORMAL
     override val sensorType = Sensor.TYPE_ACCELEROMETER
+    override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
-    override var startDate: Long = 0
     override var endDate: Long = 0
     private var velocityRingCounter = 0
     private var accelRingCounter = 0
@@ -28,16 +30,6 @@ class AccelerometerService: SensorListenService() {
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
     private val velocityRing = FloatArray(VELOCITY_RING_SIZE)
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        this.enforcePermission(
-            "android.permission.BODY_SENSORS",
-            Process.myPid(),
-            Process.myUid(),
-            "Permission denied"
-        )
-        startDate = System.currentTimeMillis()
-        return super.onStartCommand(intent, flags, startId)
-    }
     override fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double {
         Log.d(TAG_NAME, "accelerometer values: $eventData")
         Log.d(TAG_NAME, "accelerometer timestamp: $timeNs")

@@ -35,11 +35,17 @@
 			</dict>
 		</dict>
 	</dict>
+  <!-- Permission Section Start -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need to access your location to count your steps.</string>
+	<string>We want to access your location to count your steps.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>We need to access your motion data to count your steps.</string>
-	<key>UILaunchStoryboardName</key>
+	<string>We want to access your motion data to count your steps.</string>
+	<key>NSHealthShareUsageDescription</key>
+  <string>We want you share your health data to count your steps.</string>
+  <key>NSHealthUpdateUsageDescription</key>
+  <string>We want to update your workout data to count your steps.</string>
+  <!-- Permission Section End -->
+  <key>UILaunchStoryboardName</key>
 	<string>LaunchScreen.storyboard</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>

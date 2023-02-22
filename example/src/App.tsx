@@ -3,12 +3,13 @@ import type { EmitterSubscription } from 'react-native';
 import { Button, NativeEventEmitter, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import RNStepCounter, {
   isStepCountingSupported,
+  parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
 import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
 
-export async function requestRequiredPermissions() {
+export async function requestRequires() {
   return await requestMultiple(
     Platform.select({
       ios: [PERMISSIONS.IOS.MOTION],
@@ -35,7 +36,7 @@ export default function App() {
 
   /** get user's motion permission and check pedometer is available */
   async function askPermission() {
-    await requestRequiredPermissions();
+    await requestRequires();
     const supported = isStepCountingSupported();
     console.debug('🚀 - isStepCountingSupported', supported);
     setAllow(supported);
@@ -43,17 +44,10 @@ export default function App() {
   }
 
   const startStepCounter = async () => {
-    const now = Date.now();
-    // startStepCounterUpdate(now).then((data)=> {
-    //   console.debug('🚀 nativeEventEmitter.startStepCounterUpdate', data);
-    //   setSteps(data.steps);
-    // });
-    startStepCounterUpdate(now).then((data) => {
-      console.log('🚀 nativeEventEmitter.addListener', data);
-      setSteps(data.steps);
-    });
+    const now = new Date();
+    startStepCounterUpdate(Number(now));
     const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
-      console.log('🚀 nativeEventEmitter.addListener', data);
+      console.log(parseStepData(data));
       setSteps(data.steps);
     });
     setSubscription(sub);
@@ -68,10 +62,16 @@ export default function App() {
 
   useEffect(() => {
     const runService = async () => {
-      await askPermission();
-      await startStepCounter();
+      await askPermission().then((granted) => {
+        if (granted) {
+          startStepCounter();
+        }
+      });
     };
     runService();
+    return () => {
+      stopStepCounter();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

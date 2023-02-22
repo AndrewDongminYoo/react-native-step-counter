@@ -35,11 +35,30 @@ const RNStepCounter = (
       )
 ) as Spec;
 
+export function parseStepData(data: StepCountData) {
+  const { dailyGoal, steps, calories, startDate, endDate, distance } = data;
+  const stepsString = steps + ' steps';
+  const kCal = calories.toFixed(2) + 'kCal';
+  const endDateTime = new Date(endDate).toLocaleTimeString('en-gb');
+  const startDateTime = new Date(startDate).toLocaleTimeString('en-gb');
+  const roundedDistance = Math.round(distance) + 'm';
+  const stepGoalStatus = steps >= dailyGoal ? 'Goal Reached' : `${steps}/${dailyGoal} steps`;
+  return {
+    dailyGoal: stepGoalStatus,
+    steps,
+    stepsString,
+    calories: kCal,
+    startDate: startDateTime,
+    endDate: endDateTime,
+    distance: roundedDistance,
+  };
+}
+
 export function isStepCountingSupported(): boolean {
   return RNStepCounter.isStepCountingSupported();
 }
 
-export function startStepCounterUpdate(from: number): Promise<StepCountData> {
+export function startStepCounterUpdate(from: number): boolean {
   return RNStepCounter.startStepCounterUpdate(from);
 }
 
