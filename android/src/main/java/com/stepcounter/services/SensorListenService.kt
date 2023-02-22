@@ -45,8 +45,41 @@ abstract class SensorListenService(
      * [SENSOR_DELAY_NORMAL][SensorManager.SENSOR_DELAY_NORMAL]: 3
      */
     abstract val sensorDelay: Int
+
+    /**
+     * the sensor type as a string
+     *
+     * [TYPE_ACCELEROMETER][Sensor.TYPE_ACCELEROMETER]: "ACCELEROMETER"
+     *
+     * [TYPE_STEP_COUNTER][Sensor.TYPE_STEP_COUNTER]: "STEP_COUNTER"
+     *
+     * [TYPE_STEP_DETECTOR][Sensor.TYPE_STEP_DETECTOR]: "STEP_DETECTOR"
+     */
     abstract val sensorTypeString: String
+
+    /**
+     * the detected sensor
+     * @see SensorManager.getDefaultSensor
+     * @see SensorManager
+     * @see Sensor
+     * @sample Sensor.TYPE_STEP_COUNTER
+     * @sample SensorManager.getDefaultSensor
+     *
+     */
     abstract val detectedSensor: Sensor
+
+    /**
+     * the current steps data of the user
+     * @see currentSteps
+     * @see distance
+     * @see startDate
+     * @see endDate
+     * @see sensorTypeString
+     * @see calories
+     * @see dailyGoal
+     * @see WritableMap
+     * @see Arguments.createMap
+     */
     private val stepsParamsMap: WritableMap
         get() {
             val map = Arguments.createMap()
@@ -93,6 +126,12 @@ abstract class SensorListenService(
      */
     abstract var endDate: Long
 
+    /**
+     * this class now not implemented Service class, but made it work so
+     * @see android.content.Context.startService
+     * @see android.content.Context.stopService
+     * @see SensorManager.registerListener
+     */
     fun startService() {
         Log.d(TAG_NAME, "SensorListenService.startService")
         Log.d(TAG_NAME, "SensorListenService.sensorDelay: $sensorDelay")
@@ -101,6 +140,12 @@ abstract class SensorListenService(
         sensorManager.registerListener(this, detectedSensor, sensorDelay)
     }
 
+    /**
+     * this class now not implemented Service class, but made it work so
+     * @see android.content.Context.startService
+     * @see android.content.Context.stopService
+     * @see SensorManager.unregisterListener
+     */
     fun stopService() {
         Log.d(TAG_NAME, "SensorListenService.stopService")
         sensorManager.unregisterListener(this)
@@ -130,6 +175,12 @@ abstract class SensorListenService(
         counterModule.onStepDetected(stepsParamsMap)
     }
 
+    /**
+     * update the current steps
+     * @param timeNs the time in nanoseconds
+     * @param eventData the event data
+     * @return the current steps
+     */
     abstract fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double
 
     /**

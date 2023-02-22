@@ -11,6 +11,26 @@ import com.stepcounter.utils.SensorFusionMath.sum
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
+/**
+ * This class is responsible for listening to the accelerometer sensor.
+ * It is used to count the steps of the user.
+ * @param counterModule The module that is responsible for the communication with the react-native layer
+ * @param sensorManager The sensor manager that is responsible for the sensor
+ * @property sensorTypeString The type of the sensor as a string "ACCELEROMETER"
+ * @property sensorDelay The delay of the sensor
+ * @property sensorType The type of the sensor
+ * @property detectedSensor The sensor that is detected
+ * @property currentSteps The current steps
+ * @property endDate The end date
+ * @constructor Creates a new AccelerometerService
+ * @see SensorListenService
+ * @see Sensor
+ * @see SensorManager
+ * @see StepCounterModule
+ * @see TimeUnit
+ * @see SensorManager.SENSOR_DELAY_NORMAL
+ * @see Sensor.TYPE_ACCELEROMETER
+ */
 class AccelerometerService(
     counterModule: StepCounterModule,
     sensorManager: SensorManager,
@@ -30,6 +50,15 @@ class AccelerometerService(
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
     private val velocityRing = FloatArray(VELOCITY_RING_SIZE)
 
+    /**
+     * This function is responsible for updating the current steps.
+     * @param [timeNs][Long timestamp][android.hardware.SensorEvent.timestamp] The time in nanoseconds
+     * @param [eventData][FloatArray(3) values][android.hardware.SensorEvent.values] The event data
+     * @return The current steps
+     * @see android.hardware.SensorEvent
+     * @see android.hardware.SensorEvent.values
+     * @see android.hardware.SensorEvent.timestamp
+     */
     override fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double {
         Log.d(TAG_NAME, "accelerometer values: $eventData")
         Log.d(TAG_NAME, "accelerometer timestamp: $timeNs")
