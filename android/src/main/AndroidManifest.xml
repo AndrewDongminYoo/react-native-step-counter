@@ -22,17 +22,4 @@
       android:name="android.hardware.sensor.accelerometer"
       android:required="false" />
 
-  <application>
-    <service
-        android:name=".services.SensorListenService"
-        android:enabled="false"
-        android:exported="false" />
-    <service
-        android:name=".services.StepCounterService"
-        android:exported="false" />
-    <service
-        android:name=".services.AccelerometerService"
-        android:exported="false" />
-  </application>
-
 </manifest>

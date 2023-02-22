@@ -1,23 +1,28 @@
 package com.stepcounter.services
 
-import android.app.Service
-import android.content.Context
-import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Binder
-import android.os.IBinder
 import android.util.Log
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.stepcounter.StepCounterModule
-import com.stepcounter.StepCounterModule.Companion.CONTEXT
-import com.stepcounter.utils.SerializeHelper
 
-abstract class SensorListenService : Service(), SensorEventListener {
+/**
+ * the base class for sensor listen service
+ * @param counterModule the step counter module
+ * @param sensorManager the sensor manager
+ * @see StepCounterModule
+ * @see Sensor
+ * @see SensorEvent
+ * @see SensorEventListener
+ * @see SensorManager
+ */
+abstract class SensorListenService(
+    private val counterModule: StepCounterModule,
+    private val sensorManager: SensorManager,
+) : SensorEventListener {
     /**
      * the accelerometer sensor type
      * [TYPE_ACCELEROMETER][Sensor.TYPE_ACCELEROMETER]: 1<br/>
@@ -25,7 +30,7 @@ abstract class SensorListenService : Service(), SensorEventListener {
      * the step counter sensor type
      * [TYPE_STEP_COUNTER][Sensor.TYPE_STEP_COUNTER]: 19<br/>
      */
-    abstract val sensorType: Int // 19 or 1
+    abstract val sensorType: Int
     /**
      * the fastest rate
      * [SENSOR_DELAY_FASTEST][SensorManager.SENSOR_DELAY_FASTEST]: 0
@@ -41,11 +46,7 @@ abstract class SensorListenService : Service(), SensorEventListener {
      */
     abstract val sensorDelay: Int
     abstract val sensorTypeString: String
-    private var detectedSensor: Sensor? = null
-    private var sensorManager: SensorManager? = null
-    private var context: ReactApplicationContext? = null
-    private var counterModule: StepCounterModule? = null
-    private val binder: Binder = LocalBinder()
+    abstract val detectedSensor: Sensor
     private val stepsParamsMap: WritableMap
         get() {
             val map = Arguments.createMap()
@@ -61,15 +62,24 @@ abstract class SensorListenService : Service(), SensorEventListener {
     /**
      * Number of steps the user wants to walk every day
      */
-    private var dailyGoal: Int = 10000
+    private var dailyGoal: Int = 10_000
+        get() {
+            return if (currentSteps.toInt() > field) {
+                currentSteps = 0.0
+                Log.d(TAG_NAME, "daily goal reached")
+                10_000
+            } else 10_000
+        }
     /**
      * Number of in-database-saved calories;
      */
-    private var calories: Double = 0.0
+    private val calories: Double
+        get() = currentSteps * 0.045
     /**
      * Distance of in-database-saved steps
      */
-    private var distance: Double = 0.0
+    private val distance: Double
+        get() = currentSteps * 0.762
     /**
      * Number of steps counted since service start
      */
@@ -77,32 +87,23 @@ abstract class SensorListenService : Service(), SensorEventListener {
     /**
      * Start date of the step counting
      */
-    abstract var startDate: Long
+    private val startDate: Long = System.currentTimeMillis()
     /**
      * End date of the step counting
      */
     abstract var endDate: Long
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG_NAME, "onStartCommand.intent: $intent")
-        Log.d(TAG_NAME, "onStartCommand.flags: $flags")
-        Log.d(TAG_NAME, "onStartCommand.startId: $startId")
-        context = SerializeHelper.deserialize(this, intent, CONTEXT)
-        counterModule = context!!.getNativeModule(StepCounterModule::class.java)
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        detectedSensor = sensorManager!!.getDefaultSensor(sensorType)
-        sensorManager!!.registerListener(this, detectedSensor, sensorDelay)
-        return super.onStartCommand(intent, flags, startId)
+    fun startService() {
+        Log.d(TAG_NAME, "SensorListenService.startService")
+        Log.d(TAG_NAME, "SensorListenService.sensorDelay: $sensorDelay")
+        Log.d(TAG_NAME, "SensorListenService.sensorTypes: $sensorTypeString")
+        Log.d(TAG_NAME, "SensorListenService.currentStep: $currentSteps")
+        sensorManager.registerListener(this, detectedSensor, sensorDelay)
     }
 
-    override fun stopService(name: Intent?): Boolean {
-        Log.d(TAG_NAME, "onDestroy: ")
-        sensorManager!!.unregisterListener(this)
-        return super.stopService(name)
-    }
-
-    override fun onBind(intent: Intent): IBinder {
-        return binder
+    fun stopService() {
+        Log.d(TAG_NAME, "SensorListenService.stopService")
+        sensorManager.unregisterListener(this)
     }
 
     /**
@@ -122,18 +123,19 @@ abstract class SensorListenService : Service(), SensorEventListener {
      * @param event the [SensorEvent][android.hardware.SensorEvent].
      */
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type != Sensor.TYPE_ACCELEROMETER
-            && event?.sensor?.type != Sensor.TYPE_STEP_COUNTER
-        ) return
+        if (event?.sensor == null
+            || event.sensor?.type != detectedSensor.type
+            || event.sensor.type != sensorType) return
         updateCurrentSteps(event.timestamp, event.values)
-        sendStepCounterUpdateEvent()
+        counterModule.onStepDetected(stepsParamsMap)
     }
 
     abstract fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double
 
     /**
-     * Called when the accuracy of the registered sensor has changed.  Unlike
-     * onSensorChanged(), this is only called when this accuracy value changes.
+     * Called when the accuracy of the registered sensor has changed.
+     *
+     * Unlike onSensorChanged(), this is only called when this accuracy value changes.
      * See the SENSOR_STATUS_* constants in
      * [SensorManager][android.hardware.SensorManager] for details.
      *
@@ -145,25 +147,7 @@ abstract class SensorListenService : Service(), SensorEventListener {
         Log.d(TAG_NAME, "onAccuracyChanged.sensor: $sensor")
     }
 
-    /**
-     * Send event to Device Bridge JS Module
-     * @throws RuntimeException
-     */
-    private fun sendStepCounterUpdateEvent() {
-        Log.d(TAG_NAME, "sendStepCounterUpdateEvent: $currentSteps")
-        try {
-            counterModule?.onListenerUpdated(stepsParamsMap)
-        } catch (e: RuntimeException) {
-            Log.e(TAG_NAME, "sendStepCounterUpdateEvent: ", e)
-        }
-    }
-
     companion object {
         val TAG_NAME: String = SensorListenService::class.java.name
-    }
-
-    inner class LocalBinder : Binder() {
-        val service: SensorListenService
-            get() = this@SensorListenService
     }
 }
