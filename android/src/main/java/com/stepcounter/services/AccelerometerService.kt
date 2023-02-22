@@ -14,15 +14,25 @@ import kotlin.math.min
 /**
  * This class is responsible for listening to the accelerometer sensor.
  * It is used to count the steps of the user.
+ * @constructor Creates a new AccelerometerService
  * @param counterModule The module that is responsible for the communication with the react-native layer
  * @param sensorManager The sensor manager that is responsible for the sensor
+ *
  * @property sensorTypeString The type of the sensor as a string "ACCELEROMETER"
  * @property sensorDelay The delay of the sensor
  * @property sensorType The type of the sensor
  * @property detectedSensor The sensor that is detected
  * @property currentSteps The current steps
  * @property endDate The end date
- * @constructor Creates a new AccelerometerService
+ * @property velocityRingCounter The velocity ring counter
+ * @property accelRingCounter The acceleration ring counter
+ * @property oldVelocityEstimate The old velocity estimate
+ * @property lastStepTimeNs The last step time in nanoseconds
+ * @property accelRingX The acceleration ring for the x-axis
+ * @property accelRingY The acceleration ring for the y-axis
+ * @property accelRingZ The acceleration ring for the z-axis
+ * @property velocityRing The velocity ring
+ *
  * @see SensorListenService
  * @see Sensor
  * @see SensorManager

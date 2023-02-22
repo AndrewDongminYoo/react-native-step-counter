@@ -13,10 +13,6 @@ npm install react-native-step-counter
 
 ## 인터페이스
 
-- `requestPermission` '권한 요청': 사용자에게 모션 추적 권한을 비동기적으로 요청합니다. 사용 권한 상태를 확인할 수 있는 프로미스 객체를 반환합니다.
-
-- `checkPermission` '권한 확인': 현재 모션 추적 권한 상태를 동기적으로 체크합니다. 권한 상태를 참/거짓으로 반환합니다.
-
 - `startStepCounterUpdate` '걸음 수 측정 시작': StepCounter 데이터 업데이트를 시작합니다. 추후 StepCounter 업데이트를 중지할 수 있도록 이벤트 수신기를 리턴합니다.
 
 - `stopStepCounterUpdate` '걸음 수 측정 종료': StepCounter 데이터 업데이트를 중지합니다. startStepCounterUpdate에서 반환된 수신기를 인수로 받아 제거합니다.

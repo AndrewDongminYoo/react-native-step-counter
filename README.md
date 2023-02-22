@@ -1,14 +1,14 @@
 # React-Native Step Counter Library
 
-This library provides an interface for tracking the number of steps taken by the user in a React Native app.
+A simple React Native package to count the number of steps taken by the user. This package uses the StepCounter (or Accelerometer) Sensor API on Android and the Core Motion framework on iOS to count the steps.
 
 ## Installation
 
 ```zsh
-npm install react-native-step-counter
+npm install react-native-step-counter react-native-permissions
 
 # or if you use Yarn,
-yarn add react-native-step-counter
+yarn add react-native-step-counter react-native-permissions
 ```
 
 ## Requirements
@@ -39,23 +39,34 @@ yarn add react-native-step-counter
 
 ### iOS
 
-```plist
-  // ios/<APP_PROJECT_NAME>/Info.plist
-  // 모션 사용에 대한 권한을 요청할 때 나타날 메세지를 Info.plist에 입력해야 함
+```dtd
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
+<plist version="1.0">
+  ...
+  <!-- Permission Section Start -->
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>We want to access your location to count your steps.</string>
   <key>NSMotionUsageDescription</key>
-  <string>We need to access your motion data to count your steps.</string>
+  <string>We want to access your motion data to count your steps.</string>
+  <key>NSHealthShareUsageDescription</key>
+  <string>We want you share your health data to count your steps.</string>
+  <key>NSHealthUpdateUsageDescription</key>
+  <string>We want to update your workout data to count your steps.</string>
+  <!-- Permission Section End -->
+  ...
+</plist>
 ```
 
 ## Interface
 
-- `isStepCountingSupported`: method to check if the device has a step counter or accelerometer sensor.
+- `isStepCountingSupported(): boolean`: method to check if the device has a step counter or accelerometer sensor.
 
   - request permission for the required sensors and check if the device has a step counter or accelerometer sensor.
   - if accelerometer sensor is found, then register as listener.
   - else if step counter sensor is found, then register as listener.
   - returns true if the device has a step counter or accelerometer sensor. false otherwise.
 
-- `startStepCounterUpdate(Date.now())`:
+- `startStepCounterUpdate(new Date()): boolean`:
 
   - set module status to `RUNNING`.
   - `stepSensor` is set to step counter sensor or accelerometer sensor.
@@ -73,14 +84,18 @@ yarn add react-native-step-counter
   - unregister as listener for `stepSensor`.
 
 - `StepCountData`:
-  - The Object that contains the step count data.
-  - with four properties: `distance`, `steps`, `startDate`, and `endDate`.
-  - `distance` - The distance in meters that the user has walked or run.
-  - `steps` - The number of steps taken during the time period.
-  - `startDate` - The start date of the data.
-  - `endDate` - The end date of the data.
-  - `floorsAscended` - The number of floors ascended during the time period.
-  - `floorsDescended` - The number of floors descended during the time period.
+  **Common Interface**
+  - `dailyGoal`: This is a number property that indicates the user's daily goal for number of steps taken. The default value for this property is 10,000.
+  - `steps`: This is a number property that indicates the number of steps taken by the user during the specified time period.
+  - `calories`: This is a number property that indicates the estimated number of calories burned by the user during the specified time period.
+  - `startDate`: This is a number property that indicates the start date of the data in Unix timestamp format, measured in milliseconds.
+  - `endDate`: This is a number property that indicates the end date of the data in Unix timestamp format, measured in milliseconds.
+  - `distance`: This is a number property that indicates the distance in meters that the user has walked or run during the specified time period.
+    **Android only**
+    `counterType`: This is a string property that indicates the type of counter used to count the steps. This property is only available on Android devices and can have one of two values: 'STEP_COUNTER' or 'ACCELEROMETER'.
+    **iOS only**
+  - `floorsAscended`: This is a number property that indicates the number of floors ascended by the user during the specified time period. This property is only available on iOS devices.
+  - `floorsDescended`: This is a number property that indicates the number of floors descended by the user during the specified time period. This property is only available on iOS devices.
 
 ## Usage
 
@@ -91,6 +106,7 @@ Import the library into your React Native app.
 ```typescript
 import RNStepCounter, {
   isStepCountingSupported,
+  parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
   StepCountData,
@@ -101,42 +117,46 @@ Use the `isStepCountingSupported` method to check if the device has a step count
 
 ```typescript
 const [supported, setSupported] = useState(false);
-const OK = isStepCountingSupported();
-setSupported(OK);
+async function askPermission() {
+  const granted = isStepCountingSupported();
+  console.debug('🚀 - isStepCountingSupported', granted);
+  setSupported(supported);
+  return supported;
+}
 ```
 
 Call the `startStepCounterUpdate` method from the `StepCounterModule` class to start the step counter service.
 
 ```typescript
-const now = Date.now();
-startStepCounterUpdate(now);
+const [steps, setSteps] = useState(0);
+const [subscription, setSubscription] = useState<EmitterSubscription>();
+
+const startStepCounter = async () => {
+  const now = new Date();
+  startStepCounterUpdate(Number(now));
+  const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
+    console.log(parseStepData(data));
+    setSteps(data.steps);
+  });
+  setSubscription(sub);
+};
 ```
 
 Here's an example of a complete React component that uses the NativeStepCounter:
 
 ```typescript
-import React, { Component } from 'react';
-import {
-  Button,
-  EmitterSubscription,
-  GestureResponderEvent,
-  NativeEventEmitter,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import type { EmitterSubscription } from 'react-native';
+import { Button, NativeEventEmitter, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import RNStepCounter, {
   isStepCountingSupported,
+  parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
 import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
 
-type OnPress = (event?: GestureResponderEvent) => void;
-
-export async function requestRequiredPermissions() {
+export async function requestRequires() {
   return await requestMultiple(
     Platform.select({
       ios: [PERMISSIONS.IOS.MOTION],
@@ -147,78 +167,96 @@ export async function requestRequiredPermissions() {
       ],
       default: [],
     })
-  ).then((permissions) => {
-    Object.entries(permissions).forEach(([key, value]) => {
-      console.log('requestPermission', key, value);
+  )
+    .then((permissions) => {
+      Object.entries(permissions).forEach(([key, value]) => {
+        console.log('requestPermission', key, value);
+      });
+      return true;
+    })
+    .catch((error) => {
+      console.error('requestPermission', error);
+      return false;
     });
-    return true;
-  });
 }
 
-type StepCountState = {
-  allowed: boolean;
-  stepData: StepCountData;
-  subscription: EmitterSubscription | null;
-};
+export default function App() {
+  const [supported, setSupported] = useState(false);
+  const [steps, setSteps] = useState(0);
+  const [subscription, setSubscription] = useState<EmitterSubscription>();
+  const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
 
-export default class App extends Component<never, StepCountState> {
-  state = {
-    allowed: false,
-    subscription: null as EmitterSubscription | null,
-    stepData: {
-      steps: 0,
-      distance: 0,
-      startDate: 0,
-      endDate: 0,
-    },
+  /** get user's motion permission and check pedometer is available */
+  async function askPermission() {
+    await requestRequires();
+    const granted = isStepCountingSupported();
+    console.debug('🚀 - isStepCountingSupported', granted);
+    setSupported(supported);
+    return supported;
+  }
+
+  const startStepCounter = async () => {
+    const now = new Date();
+    startStepCounterUpdate(Number(now));
+    const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
+      console.log(parseStepData(data));
+      setSteps(data.steps);
+    });
+    setSubscription(sub);
   };
 
-  nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
-
-  componentDidMount() {
-    const askPermission = async () => {
-      await requestRequiredPermissions();
-      const supported = isStepCountingSupported();
-      console.debug('🚀 - isStepCountingSupported', supported);
-      this.setState({ allowed: supported });
-    };
-    askPermission();
-    if (this.state.allowed) {
-      this.startStepCounter();
-    }
-  }
-
-  startStepCounter() {
-    const now = Date.now();
-    startStepCounterUpdate(now);
-    const sub = this.nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
-      this.setState({ stepData: data });
-    });
-    this.setState({ subscription: sub });
-  }
-
-  componentWillUnmount() {
-    this.setState({ stepData: { steps: 0 } });
+  const stopStepCounter = useCallback(() => {
+    setSteps(0);
     stopStepCounterUpdate();
-    if (this.state.subscription) {
-      this.nativeEventEmitter.removeSubscription(this.state.subscription);
-    }
-  }
+    subscription && nativeEventEmitter.removeSubscription(subscription);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  render() {
-    const { allowed, stepData } = this.state;
-    return (
-      <SafeAreaView>
-        <View style={styles.screen}>
-          <Text style={styles.step}>사용가능:{allowed ? `🅾️` : `️❎`}</Text>
-          <Text style={styles.step}>걸음 수: {stepData.steps}</Text>
-          <Button title="stop" onPress={stopStepCounterUpdate} />
-          <Button title="start" onPress={this.startStepCounter} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  useEffect(() => {
+    const runService = async () => {
+      await askPermission()
+        .then((granted) => {
+          if (granted) {
+            startStepCounter();
+          }
+        })
+        .catch((error) => {
+          console.error('askPermission', error);
+        });
+    };
+    runService();
+    return () => {
+      stopStepCounter();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <SafeAreaView>
+      <View style={styles.screen}>
+        <Text style={styles.step}>사용가능:{supported ? '🅾️' : '️❎'}</Text>
+        <Text style={styles.step}>걸음 수: {steps}</Text>
+        <Button onPress={startStepCounter} title="시작" />
+        <Button onPress={stopStepCounter} title="정지" />
+      </View>
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    height: '100%',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    display: 'flex',
+  },
+  step: {
+    color: '#000',
+    fontSize: 36,
+  },
+});
 ```
 
 ## Contributing
