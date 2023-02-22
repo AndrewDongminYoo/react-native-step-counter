@@ -11,7 +11,21 @@ import android.os.Build.VERSION_CODES
 import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresFeature
+import com.stepcounter.utils.AndroidVersionHelper.PREF_NAME
+import com.stepcounter.utils.AndroidVersionHelper.TAG_NAME
+import com.stepcounter.utils.AndroidVersionHelper.USE_SENSOR
+import com.stepcounter.utils.AndroidVersionHelper.isHardwareStepCounterEnabled
+import com.stepcounter.utils.AndroidVersionHelper.supportsStepDetector
 
+/**
+ * This class is responsible for the version check of the android device.
+ * It is used to check whether the device supports hardware step detection.
+ * @property TAG_NAME The name of the class
+ * @property PREF_NAME The name of the shared preferences
+ * @property USE_SENSOR The name of the preference that decides whether the hardware step counter should be used
+ * @property supportsStepDetector Decides whether the current soft- and hardware setup allows using hardware step detection
+ * @property isHardwareStepCounterEnabled Decides whether the hardware step counter should be used
+ */
 object AndroidVersionHelper {
     private val TAG_NAME: String = AndroidVersionHelper::class.java.name
     private const val PREF_NAME = "pref.com.stepcounter.stepcounter"
