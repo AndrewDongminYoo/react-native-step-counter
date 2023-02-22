@@ -20,16 +20,21 @@ export async function requestRequires() {
       ],
       default: [],
     })
-  ).then((permissions) => {
-    Object.entries(permissions).forEach(([key, value]) => {
-      console.log('requestPermission', key, value);
+  )
+    .then((permissions) => {
+      Object.entries(permissions).forEach(([key, value]) => {
+        console.log('requestPermission', key, value);
+      });
+      return true;
+    })
+    .catch((error) => {
+      console.error('requestPermission', error);
+      return false;
     });
-    return true;
-  });
 }
 
 export default function App() {
-  const [allowed, setAllow] = useState(false);
+  const [supported, setSupported] = useState(false);
   const [steps, setSteps] = useState(0);
   const [subscription, setSubscription] = useState<EmitterSubscription>();
   const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
@@ -37,9 +42,9 @@ export default function App() {
   /** get user's motion permission and check pedometer is available */
   async function askPermission() {
     await requestRequires();
-    const supported = isStepCountingSupported();
-    console.debug('🚀 - isStepCountingSupported', supported);
-    setAllow(supported);
+    const granted = isStepCountingSupported();
+    console.debug('🚀 - isStepCountingSupported', granted);
+    setSupported(supported);
     return supported;
   }
 
@@ -62,11 +67,15 @@ export default function App() {
 
   useEffect(() => {
     const runService = async () => {
-      await askPermission().then((granted) => {
-        if (granted) {
-          startStepCounter();
-        }
-      });
+      await askPermission()
+        .then((granted) => {
+          if (granted) {
+            startStepCounter();
+          }
+        })
+        .catch((error) => {
+          console.error('askPermission', error);
+        });
     };
     runService();
     return () => {
@@ -78,7 +87,7 @@ export default function App() {
   return (
     <SafeAreaView>
       <View style={styles.screen}>
-        <Text style={styles.step}>사용가능:{allowed ? '🅾️' : '️❎'}</Text>
+        <Text style={styles.step}>사용가능:{supported ? '🅾️' : '️❎'}</Text>
         <Text style={styles.step}>걸음 수: {steps}</Text>
         <Button onPress={startStepCounter} title="시작" />
         <Button onPress={stopStepCounter} title="정지" />
