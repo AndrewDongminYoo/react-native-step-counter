@@ -22,6 +22,7 @@ import com.stepcounter.StepCounterModule
 abstract class SensorListenService(
     private val counterModule: StepCounterModule,
     private val sensorManager: SensorManager,
+    userGoal: Int?
 ) : SensorEventListener {
     /**
      * the accelerometer sensor type
@@ -81,21 +82,20 @@ abstract class SensorListenService(
      * @see Arguments.createMap
      */
     private val stepsParamsMap: WritableMap
-        get() {
-            val map = Arguments.createMap()
-            map.putDouble("steps", currentSteps)
-            map.putDouble("distance", distance)
-            map.putInt("startDate", startDate.toInt())
-            map.putInt("endDate", endDate.toInt())
-            map.putString("counterType", sensorTypeString)
-            map.putDouble("calories", calories)
-            map.putInt("dailyGoal", dailyGoal)
-            return map
+        get() = Arguments.createMap().apply {
+            putDouble("steps", currentSteps)
+            putDouble("distance", distance)
+            putInt("startDate", startDate.toInt())
+            putInt("endDate", endDate.toInt())
+            putString("counterType", sensorTypeString)
+            putDouble("calories", calories)
+            putInt("dailyGoal", dailyGoal)
         }
+
     /**
      * Number of steps the user wants to walk every day
      */
-    private var dailyGoal: Int = 10_000
+    private var dailyGoal: Int = userGoal ?: 10_000
         get() {
             return if (currentSteps.toInt() > field) {
                 currentSteps = 0.0
@@ -103,8 +103,13 @@ abstract class SensorListenService(
                 10_000
             } else 10_000
         }
+
     /**
-     * Number of in-database-saved calories;
+     * Number of in-database-saved calories.
+     * 0.045 is the average calories burned per step.
+     * to get more accurate result, you can use this formula:
+     * 0.045 * weight * distance,
+     * but then you need to get the weight of the user. so it needs some permission.
      */
     private val calories: Double
         get() = currentSteps * 0.045
@@ -127,7 +132,7 @@ abstract class SensorListenService(
     abstract var endDate: Long
 
     /**
-     * this class now not implemented Service class, but made it work so
+     * this class is not implemented Service class now, but made it work so
      * @see android.content.Context.startService
      * @see android.content.Context.stopService
      * @see SensorManager.registerListener
@@ -141,7 +146,7 @@ abstract class SensorListenService(
     }
 
     /**
-     * this class now not implemented Service class, but made it work so
+     * this class is not implemented Service class now, but made it work so
      * @see android.content.Context.startService
      * @see android.content.Context.stopService
      * @see SensorManager.unregisterListener
