@@ -1,47 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import type { EmitterSubscription } from 'react-native';
-import { Button, NativeEventEmitter, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import RNStepCounter, {
+import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
   isStepCountingSupported,
   parseStepData,
+  requestPermissions,
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
-
-export async function requestRequires() {
-  return await requestMultiple(
-    Platform.select({
-      ios: [PERMISSIONS.IOS.MOTION],
-      android: [
-        PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION,
-        PERMISSIONS.ANDROID.BODY_SENSORS,
-        PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND,
-      ],
-      default: [],
-    })
-  )
-    .then((permissions) => {
-      Object.entries(permissions).forEach(([key, value]) => {
-        console.log('requestPermission', key, value);
-      });
-      return true;
-    })
-    .catch((error) => {
-      console.error('requestPermission', error);
-      return false;
-    });
-}
 
 export default function App() {
   const [supported, setSupported] = useState(false);
   const [steps, setSteps] = useState(0);
-  const [subscription, setSubscription] = useState<EmitterSubscription>();
-  const nativeEventEmitter = new NativeEventEmitter(RNStepCounter);
 
   /** get user's motion permission and check pedometer is available */
   async function askPermission() {
-    await requestRequires();
+    await requestPermissions();
     const granted = isStepCountingSupported();
     console.debug('🚀 - isStepCountingSupported', granted);
     setSupported(supported);
@@ -50,19 +23,15 @@ export default function App() {
 
   const startStepCounter = async () => {
     const now = new Date();
-    startStepCounterUpdate(Number(now));
-    const sub = nativeEventEmitter.addListener('stepCounterUpdate', (data) => {
+    startStepCounterUpdate(now, (data) => {
       console.log(parseStepData(data));
       setSteps(data.steps);
     });
-    setSubscription(sub);
   };
 
   const stopStepCounter = useCallback(() => {
     setSteps(0);
     stopStepCounterUpdate();
-    subscription && nativeEventEmitter.removeSubscription(subscription);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

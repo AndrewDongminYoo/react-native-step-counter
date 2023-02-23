@@ -45,7 +45,10 @@ object SensorFusionMath {
     }
 
     /**
-     * calculates the norm of an array of floats.
+     * In mathematics, a norm is a function from a real or complex vector space
+     * to the non-negative real numbers that behaves in certain ways like the distance
+     * from the origin: it commutes with scaling, obeys a form of the triangle inequality,
+     * and is zero only at the origin.
      * @param array The array to be calculated.
      * @returns The norm of the array.
      * @see <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)">Norm</a>
@@ -59,17 +62,13 @@ object SensorFusionMath {
     }
 
     /**
-     * **only works with 3D vectors.**
-     *
      * In mathematics, the dot product or scalar product is an algebraic operation
      * that takes two equal-length sequences of numbers (usually coordinate vectors),
      * and returns a single number.
      * @param a The first array.
      * @param b The second array.
-     * @see <a href="https://en.wikipedia.org/wiki/Dot_product">Dot product</a>
      * @returns The dot product of the two arrays.
-     * @location SensorFusionMath.kt
-     * @
+     * @see <a href="https://en.wikipedia.org/wiki/Dot_product">Dot product</a>
      */
     fun dot(a: FloatArray, b: FloatArray): Float {
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]

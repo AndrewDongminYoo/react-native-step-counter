@@ -39,7 +39,7 @@ yarn add react-native-step-counter react-native-permissions
 
 ### iOS
 
-```dtd
+```xml plist
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
 <plist version="1.0">
   ...
@@ -109,7 +109,6 @@ import RNStepCounter, {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-  StepCountData,
 } from 'react-native-step-counter';
 ```
 

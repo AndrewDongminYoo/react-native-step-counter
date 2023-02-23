@@ -18,6 +18,12 @@ module.exports = {
     'react-native/no-color-literals': 'off',
     'react-native/no-inline-styles': 'off',
     'react-native/sort-styles': 'off',
+    'no-trailing-spaces': [
+      'error',
+      {
+        ignoreComments: true,
+      },
+    ],
   },
   ignorePatterns: ['node_modules/', 'lib/'],
   env: { 'jest/globals': true },

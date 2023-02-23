@@ -40,6 +40,7 @@ class StepCounterModule(context: ReactApplicationContext) :
         private const val ACCELEROMETER = "android.permission.BODY_SENSORS"
         private const val GRANTED = "granted"
         private const val DENIED = "denied"
+        const val eventName = "StepCounter.stepCounterUpdate"
     }
 
     private val appContext: ReactApplicationContext = context
@@ -84,12 +85,12 @@ class StepCounterModule(context: ReactApplicationContext) :
     ): SensorListenService? {
         return if (checkSelfPermission(appContext, permission) == PERMISSION_GRANTED) {
             Log.d(TAG_NAME, "$permissionTag permission granted")
-            StepCounterService(this, sensorManager)
+            StepCounterService(this, sensorManager, null)
         } else {
             Log.d(TAG_NAME, "$permissionTag permission denied")
             if (checkSelfPermission(appContext, ACCELEROMETER) == PERMISSION_GRANTED) {
                 Log.d(TAG_NAME, "$permissionTag permission granted")
-                AccelerometerService(this, sensorManager)
+                AccelerometerService(this, sensorManager, null)
             } else {
                 Log.d(TAG_NAME, "$permissionTag permission denied")
                 null
@@ -123,7 +124,6 @@ class StepCounterModule(context: ReactApplicationContext) :
         stepService.startService()
         return true
     }
-
     /**
      * Stop the step counter sensor.
      * @return Nothing.
@@ -160,13 +160,13 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @throws RuntimeException if the event emitter is not initialized.
      */
     fun onStepDetected(stepsParamsMap: WritableMap) {
-        Log.d(TAG_NAME, "sendStepCounterUpdateEvent: $stepsParamsMap")
+        Log.d(TAG_NAME, "$eventName: $stepsParamsMap")
         this.stepsParamsMap = stepsParamsMap
         try {
             appContext.getJSModule(RCTDeviceEventEmitter::class.java)
-                .emit("stepCounterUpdate", stepsParamsMap)
+                .emit(eventName, stepsParamsMap)
         } catch (e: RuntimeException) {
-            Log.e(TAG_NAME, "sendStepCounterUpdateEvent: ", e)
+            Log.e(TAG_NAME, eventName, e)
         }
     }
 }

@@ -1,4 +1,3 @@
-/* A way to import the module. */
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
@@ -14,7 +13,12 @@ export type StepCountData = {
   floorsDescended?: number; // number of floors descended (iOS only)
 };
 
+export const NAME = 'RNStepCounter';
+
+export const eventName = 'StepCounter.stepCounterUpdate';
+
 export interface Spec extends TurboModule {
+  /* Main methods to get the step count. */
   isStepCountingSupported(): boolean;
   startStepCounterUpdate(from: number): boolean;
   stopStepCounterUpdate(): void;
@@ -25,4 +29,4 @@ export interface Spec extends TurboModule {
 }
 
 /* Getting enforcing the module from the registry. */
-export default TurboModuleRegistry.getEnforcing<Spec>('RNStepCounter') as Spec;
+export default TurboModuleRegistry.getEnforcing<Spec>(NAME) as Spec;
