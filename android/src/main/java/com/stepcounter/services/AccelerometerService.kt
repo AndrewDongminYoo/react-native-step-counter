@@ -2,6 +2,7 @@ package com.stepcounter.services
 
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.os.SystemClock
 import android.util.Log
 import com.stepcounter.StepCounterModule
 import com.stepcounter.utils.SensorFusionMath.dot
@@ -63,16 +64,17 @@ class AccelerometerService(
 
     /**
      * This function is responsible for updating the current steps.
-     * @param [timeNs][Long timestamp][android.hardware.SensorEvent.timestamp] The time in nanoseconds
      * @param [eventData][FloatArray(3) values][android.hardware.SensorEvent.values] The event data
      * @return The current steps
      * @see android.hardware.SensorEvent
      * @see android.hardware.SensorEvent.values
      * @see android.hardware.SensorEvent.timestamp
      */
-    override fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double {
+    override fun updateCurrentSteps(eventData: FloatArray): Double {
+        val timeNs = SystemClock.elapsedRealtimeNanos()
         Log.d(TAG_NAME, "accelerometer values: $eventData")
         Log.d(TAG_NAME, "accelerometer timestamp: $timeNs")
+
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
         accelRingX[accelRingCounter % ACCEL_RING_SIZE] = eventData[0]
