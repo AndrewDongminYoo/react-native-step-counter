@@ -176,17 +176,16 @@ abstract class SensorListenService(
         if (event?.sensor == null
             || event.sensor?.type != detectedSensor.type
             || event.sensor.type != sensorType) return
-        updateCurrentSteps(event.timestamp, event.values)
+        updateCurrentSteps(event.values)
         counterModule.onStepDetected(stepsParamsMap)
     }
 
     /**
      * update the current steps
-     * @param timeNs the time in nanoseconds
      * @param eventData the event data
      * @return the current steps
      */
-    abstract fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double
+    abstract fun updateCurrentSteps(eventData: FloatArray): Double
 
     /**
      * Called when the accuracy of the registered sensor has changed.

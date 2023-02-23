@@ -1,4 +1,3 @@
-/** @type {import('eslint').ESLint.Options} */
 module.exports = {
   root: true,
   extends: [
@@ -12,6 +11,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   rules: {
     'prettier/prettier': 'off',
+    '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-var-requires': 'off',

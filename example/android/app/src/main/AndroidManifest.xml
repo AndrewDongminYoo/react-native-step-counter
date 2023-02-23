@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools">
+  xmlns:tools="http://schemas.android.com/tools"
+  package="com.stepcounterexample">
 
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
   <uses-permission android:name="android.permission.INTERNET" />
@@ -12,13 +13,13 @@
 
   <uses-feature
       android:name="android.hardware.sensor.stepcounter"
-      android:required="false" />
+      android:required="true" />
   <uses-feature
       android:name="android.hardware.sensor.stepdetector"
-      android:required="false" />
+      android:required="true" />
   <uses-feature
       android:name="android.hardware.sensor.accelerometer"
-      android:required="false" />
+      android:required="true" />
 
   <application
   android:name=".MainApplication"

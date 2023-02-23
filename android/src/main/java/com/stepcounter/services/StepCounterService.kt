@@ -53,15 +53,14 @@ class StepCounterService(
 
     /**
      * This function is responsible for updating the current steps.
-     * @param [timeNs][Long timestamp][android.hardware.SensorEvent.timestamp] The time in nanoseconds (will be converted to milliseconds)
      * @param [eventData][FloatArray(1) values][android.hardware.SensorEvent.values] The step counter event data
      * @return The current steps
      * @see android.hardware.SensorEvent
      * @see android.hardware.SensorEvent.values
      * @see android.hardware.SensorEvent.timestamp
      */
-    override fun updateCurrentSteps(timeNs: Long, eventData: FloatArray): Double {
-        endDate = TimeUnit.NANOSECONDS.toMillis(timeNs)
+    override fun updateCurrentSteps(eventData: FloatArray): Double {
+        endDate = System.currentTimeMillis()
         // if the last update is 0, set it to the current time
         if (lastUpdate == null) {
             lastUpdate = endDate.minus(1)

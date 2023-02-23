@@ -181,6 +181,7 @@ export async function requestPermissions(): Promise<PermissionResponse> {
     .then((permissions) => {
       const result = defaultResponse;
       Object.entries(permissions).map(([_, value]) => {
+        console.debug(_, value);
         switch (value) {
           case RESULTS.UNAVAILABLE:
           case RESULTS.BLOCKED:

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Component } from 'react';
 import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import {
   isStepCountingSupported,
@@ -8,61 +8,78 @@ import {
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
 
-export default function App() {
-  const [supported, setSupported] = useState(false);
-  const [steps, setSteps] = useState(0);
+type AppState = {
+  granted: boolean;
+  supported: boolean;
+  steps: number;
+};
+
+export default class App extends Component<{}, AppState> {
+  state = {
+    granted: false,
+    supported: false,
+    steps: 0,
+  };
 
   /** get user's motion permission and check pedometer is available */
-  async function askPermission() {
-    await requestPermissions();
-    const granted = isStepCountingSupported();
-    console.debug('🚀 - isStepCountingSupported', granted);
-    setSupported(supported);
-    return supported;
-  }
-
-  const startStepCounter = async () => {
-    const now = new Date();
-    startStepCounterUpdate(now, (data) => {
-      console.log(parseStepData(data));
-      setSteps(data.steps);
+  askPermission = async () => {
+    await requestPermissions().then((response) => {
+      console.debug('🐰 permissions granted?', response.granted);
+      console.debug('🐰 permissions canAskAgain?', response.canAskAgain);
+      console.debug('🐰 permissions expires?', response.expires);
+      console.debug('🐰 permissions status?', response.status);
+      this.setState({
+        granted: response.granted,
+      });
+    });
+    const featureAvailable = isStepCountingSupported();
+    console.debug('🚀 - isStepCountingSupported', featureAvailable);
+    this.setState({
+      supported: featureAvailable,
     });
   };
 
-  const stopStepCounter = useCallback(() => {
-    setSteps(0);
+  startStepCounter = async () => {
+    const now = new Date();
+    startStepCounterUpdate(now, (data) => {
+      console.log(parseStepData(data));
+      this.setState({
+        steps: data.steps,
+      });
+    });
+  };
+
+  stopStepCounter() {
+    this.setState({
+      steps: 0,
+    });
     stopStepCounterUpdate();
-  }, []);
+  }
 
-  useEffect(() => {
-    const runService = async () => {
-      await askPermission()
-        .then((granted) => {
-          if (granted) {
-            startStepCounter();
-          }
-        })
-        .catch((error) => {
-          console.error('askPermission', error);
-        });
-    };
-    runService();
-    return () => {
-      stopStepCounter();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <SafeAreaView>
-      <View style={styles.screen}>
-        <Text style={styles.step}>사용가능:{supported ? '🅾️' : '️❎'}</Text>
-        <Text style={styles.step}>걸음 수: {steps}</Text>
-        <Button onPress={startStepCounter} title="시작" />
-        <Button onPress={stopStepCounter} title="정지" />
-      </View>
-    </SafeAreaView>
-  );
+  componentDidMount(): void {
+    this.askPermission();
+  }
+  componentDidUpdate(_: Readonly<{}>, __: Readonly<AppState>): void {
+    if (this.state.granted && this.state.supported) {
+      this.startStepCounter();
+    }
+  }
+  componentWillUnmount(): void {
+    this.stopStepCounter();
+  }
+  render() {
+    return (
+      <SafeAreaView>
+        <View style={styles.screen}>
+          <Text style={styles.step}>권한허용:{this.state.granted ? '🅾️' : '️❎'}</Text>
+          <Text style={styles.step}>사용가능:{this.state.supported ? '🅾️' : '️❎'}</Text>
+          <Text style={styles.step}>걸음 수: {this.state.steps}</Text>
+          <Button onPress={this.startStepCounter} title="시작" />
+          <Button onPress={this.stopStepCounter} title="정지" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
