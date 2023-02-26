@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Button, SafeAreaView, Text, View } from 'react-native';
 import {
   isStepCountingSupported,
   parseStepData,
@@ -67,32 +67,23 @@ export default class App extends Component<{}, AppState> {
   componentWillUnmount(): void {
     this.stopStepCounter();
   }
+
   render() {
     return (
       <SafeAreaView>
-        <View style={styles.screen}>
-          <Text style={styles.step}>권한허용:{this.state.granted ? '🅾️' : '️❎'}</Text>
-          <Text style={styles.step}>사용가능:{this.state.supported ? '🅾️' : '️❎'}</Text>
-          <Text style={styles.step}>걸음 수: {this.state.steps}</Text>
-          <Button onPress={this.startStepCounter} title="시작" />
-          <Button onPress={this.stopStepCounter} title="정지" />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text>Motion Tracking Permission: {this.state.granted ? 'granted' : 'denied'}</Text>
+          {!this.state.granted ? (
+            <Button title="Request Permission" onPress={this.askPermission} />
+          ) : (
+            <>
+              <Text style={{ fontSize: 36, color: '#000' }}>걸음 수: {this.state.steps}</Text>
+              <Button title="Start StepCounter Updates" onPress={this.startStepCounter} />
+              <Button title="Stop StepCounter Updates" onPress={this.stopStepCounter} />
+            </>
+          )}
         </View>
       </SafeAreaView>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    display: 'flex',
-  },
-  step: {
-    color: '#000',
-    fontSize: 36,
-  },
-});
