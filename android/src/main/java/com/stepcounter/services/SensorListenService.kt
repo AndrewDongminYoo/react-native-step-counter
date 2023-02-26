@@ -4,6 +4,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import java.lang.System
 import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
@@ -34,21 +35,32 @@ abstract class SensorListenService(
     abstract val sensorType: Int
 
     /**
-     * The [rate of sensor events][android.hardware.SensorEvent] are
+     * The `rate` of [sensor events][android.hardware.SensorEvent] are
      * delivered at. This is only a hint to the system. Events may be received faster or
-     * slower than the specified rate. Usually events are received faster. The value must
-     * be one of [SENSOR_DELAY_NORMAL][SensorManager.SENSOR_DELAY_NORMAL], [SENSOR_DELAY_UI][SensorManager.SENSOR_DELAY_UI],
+     * slower than the specified rate. Usually events are received faster.
+     *
+     * [samplingPeriodUs] – The desired delay between two consecutive events in microseconds.
+     * This is only a hint to the system. Events may be received faster or slower than the specified rate.
+     * Typically, events are received faster. Can be one of [SENSOR_DELAY_NORMAL][SensorManager.SENSOR_DELAY_NORMAL], [SENSOR_DELAY_UI][SensorManager.SENSOR_DELAY_UI],
      * [SENSOR_DELAY_GAME][SensorManager.SENSOR_DELAY_GAME], or [SENSOR_DELAY_FASTEST][SensorManager.SENSOR_DELAY_FASTEST]
      * or, the desired delay between events in microseconds. Specifying the delay in microseconds only works
-     * from Android 2.3 (API level 9) onwards. For earlier releases, you must use one of
-     * the `SENSOR_DELAY_*` constants.
+     * from Android 2.3 (API level 9) onwards. For earlier releases, you must use one of the `SENSOR_DELAY_*` constants.
      *
-     * @see SensorManager.SENSOR_DELAY_FASTEST get sensor data as fast as possible
-     * @see SensorManager.SENSOR_DELAY_GAME rate suitable for games
-     * @see SensorManager.SENSOR_DELAY_UI rate suitable for the user interface
-     * @see SensorManager.SENSOR_DELAY_NORMAL rate (default) suitable for screen orientation changes
+     * @see
+     * The following are the constants for the sampling period in microseconds
+     * <pre class="prettyprint">
+     * private fun getDelay(rate: Int): Int {
+     *     return when (rate) {
+     *         SensorManager.SENSOR_DELAY_FASTEST -> 0
+     *         SensorManager.SENSOR_DELAY_GAME -> 20000
+     *         SensorManager.SENSOR_DELAY_UI -> 66667
+     *         SensorManager.SENSOR_DELAY_NORMAL -> 200000
+     *         else -> rate
+     *     }
+     * }
+     * </pre>
      */
-    private val sensorDelay: Int = 1000 // 1 sec
+    private val samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL
 
     /**
      * @return if the [sensor][detectedSensor] is
@@ -62,7 +74,7 @@ abstract class SensorListenService(
     /**
      * the detected sensor
      * @see SensorManager.getDefaultSensor
-     * @see SensorManager
+     * @see SensorManager.getSensorList
      * @see Sensor.TYPE_ACCELEROMETER
      * @see Sensor.TYPE_STEP_COUNTER
      */
@@ -124,11 +136,20 @@ abstract class SensorListenService(
     /**
      * Start date of the step counting. UTC milliseconds
      */
-    abstract var startDate: Long
+    private val startDate: Long = System.currentTimeMillis()
     /**
      * End date of the step counting. UTC milliseconds
      */
     abstract var endDate: Long
+
+    private val sensorDelay: Int
+        get() = when (samplingPeriodUs) {
+            SensorManager.SENSOR_DELAY_FASTEST -> 0
+            SensorManager.SENSOR_DELAY_GAME -> 20000
+            SensorManager.SENSOR_DELAY_UI -> 66667
+            SensorManager.SENSOR_DELAY_NORMAL -> 200000
+            else -> samplingPeriodUs
+        }
 
     /**
      * this class is not implemented Service class now, but made it work so
@@ -138,9 +159,16 @@ abstract class SensorListenService(
      */
     fun startService() {
         Log.d(TAG_NAME, "SensorListenService.startService")
+        Log.d(TAG_NAME, "SensorListenService.samplingPeriodUs: $samplingPeriodUs")
         Log.d(TAG_NAME, "SensorListenService.sensorDelay: $sensorDelay")
         Log.d(TAG_NAME, "SensorListenService.sensorTypes: $sensorTypeString")
         Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
+        Log.d(TAG_NAME, "SensorManager.getSensorList(): ${sensorManager.getSensorList(sensorType)}")
+        Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
+        /**
+         * {1=[{Sensor name="LSM6DSO Accelerometer", vendor="STMicro", version=15932, type=1, maxRange=78.4532, resolution=0.0023928226, power=0.17, minDelay=2404}],
+         * 19=[{Sensor name="step_counter  Non-wakeup", vendor="Samsung", version=1, type=19, maxRange=4.2949673E9, resolution=1.0, power=0.001, minDelay=0}]}
+         */
         sensorManager.registerListener(this, detectedSensor, sensorDelay)
     }
 
@@ -175,27 +203,35 @@ abstract class SensorListenService(
      * or call [currentTimeInMillis][System.currentTimeMillis] method according to the function execution time.
      *
      * @param event the [SensorEvent][android.hardware.SensorEvent].
-     * @see SensorEvent.sensor
-     * @see SensorEvent.timestamp
-     * @see SensorEvent.values
-     * @see Sensor.getType
+     * @see <a href="https://developer.android.com/reference/android/hardware/SensorEvent">Hardware Activity Sensors</a>
+     * @see <a href="https://developer.android.com/reference/android/hardware/SensorEvent#sensor.type_accelerometer:">Accelerometer Sensor Event</a>
+     * @see <a href="https://developer.android.com/reference/android/hardware/Sensor#TYPE_STEP_COUNTER">Step Counter Sensor Event</a>
+     * @see <a href="https://developer.android.com/reference/android/hardware/Sensor#REPORTING_MODE_ON_CHANGE">Reporting Mode On Change</a>
      */
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor == null
-            || event.sensor?.type != detectedSensor.type
+            || event.sensor == null
+            || event.sensor != detectedSensor
             || event.sensor.type != sensorType) return
-        updateCurrentSteps(event.values)
-        counterModule.onStepDetected(stepsParamsMap)
+        val timeInMilli = System.currentTimeMillis()
+        if (timeInMilli - startDate > sensorDelay) {
+            val steps = updateCurrentSteps(timeInMilli, event.values)
+            if (steps != currentSteps) {
+                currentSteps = steps
+                counterModule.onStepDetected(stepsParamsMap)
+            }
+        }
     }
 
     /**
      * abstract method to update the current steps
      * implemented in [StepCounterService] and [AccelerometerService]
      * with different motion sensor handling algorithm.
+     * @param timestampMs the timestamp in milliseconds of the sensor event
      * @param eventData the detected vector of sensor event
      * @return the current steps
      */
-    abstract fun updateCurrentSteps(eventData: FloatArray): Double
+    abstract fun updateCurrentSteps(timestampMs: Long, eventData: FloatArray): Double
 
     /**
      * Called when the accuracy of the registered sensor has changed.
