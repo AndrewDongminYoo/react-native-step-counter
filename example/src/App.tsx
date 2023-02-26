@@ -3,7 +3,6 @@ import { Button, SafeAreaView, Text, View } from 'react-native';
 import {
   isStepCountingSupported,
   parseStepData,
-  requestPermissions,
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
@@ -23,19 +22,12 @@ export default class App extends Component<{}, AppState> {
 
   /** get user's motion permission and check pedometer is available */
   askPermission = async () => {
-    await requestPermissions().then((response) => {
-      console.debug('🐰 permissions granted?', response.granted);
-      console.debug('🐰 permissions canAskAgain?', response.canAskAgain);
-      console.debug('🐰 permissions expires?', response.expires);
-      console.debug('🐰 permissions status?', response.status);
+    isStepCountingSupported().then((result) => {
+      console.debug('🚀 - isStepCountingSupported', result);
       this.setState({
-        granted: response.granted,
+        granted: result.granted ?? false,
+        supported: result.supported ?? false,
       });
-    });
-    const featureAvailable = isStepCountingSupported();
-    console.debug('🚀 - isStepCountingSupported', featureAvailable);
-    this.setState({
-      supported: featureAvailable,
     });
   };
 
@@ -71,10 +63,22 @@ export default class App extends Component<{}, AppState> {
   render() {
     return (
       <SafeAreaView>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text>Motion Tracking Permission: {this.state.granted ? 'granted' : 'denied'}</Text>
+        <View style={{
+          height: '100%',
+          width: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'white',
+          display: 'flex',
+        }}>
+          <Text style={{ fontSize: 20, color: 'slategrey' }}>
+            User Granted Step Counter Feature?: {this.state.granted ? 'yes' : 'no'}
+          </Text>
+          <Text style={{ fontSize: 20, color: 'slategrey' }}>
+            Device has Step Counter Sensor?: {this.state.supported ? 'yes' : 'no'}
+          </Text>
           {!this.state.granted ? (
-            <Button title="Request Permission" onPress={this.askPermission} />
+            <Button title="Check Permission" onPress={this.askPermission} />
           ) : (
             <>
               <Text style={{ fontSize: 36, color: '#000' }}>걸음 수: {this.state.steps}</Text>
