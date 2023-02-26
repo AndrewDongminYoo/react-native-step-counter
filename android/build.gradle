@@ -92,6 +92,7 @@ java {
 repositories {
   mavenCentral()
   google()
+  gradlePluginPortal()
 }
 
 dependencies {
