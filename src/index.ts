@@ -98,13 +98,13 @@ const RNStepCounter = (
   StepCounterModule
     ? StepCounterModule
     : new Proxy(
-        {},
-        {
-          get() {
-            throw new Error(LINKING_ERROR);
-          },
-        }
-      )
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    )
 ) as Spec;
 
 const StepCounterEventEmitter = new NativeEventEmitter(RNStepCounter);
@@ -152,7 +152,7 @@ class UnavailabilityError extends Error {
   constructor(moduleName: string, propertyName: string) {
     super(
       `The method or property ${moduleName}.${propertyName} is not available on ${Platform.OS}, ` +
-        "are you sure you've linked all the native dependencies properly?"
+      "are you sure you've linked all the native dependencies properly?"
     );
     this.code = 'ERR_UNAVAILABLE';
   }
@@ -180,7 +180,7 @@ export async function requestPermissions(): Promise<PermissionResponse> {
   return await requestMultiple(requiredPermissions)
     .then((permissions) => {
       const result = defaultResponse;
-      Object.entries(permissions).map(([_, value]) => {
+      Object.entries(permissions).forEach(([_, value]) => {
         console.debug(_, value);
         switch (value) {
           case RESULTS.UNAVAILABLE:
