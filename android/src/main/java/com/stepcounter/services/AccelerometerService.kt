@@ -2,14 +2,12 @@ package com.stepcounter.services
 
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import android.os.SystemClock
 import android.util.Log
 import com.stepcounter.StepCounterModule
 import com.stepcounter.utils.SensorFusionMath.dot
 import com.stepcounter.utils.SensorFusionMath.norm
 import com.stepcounter.utils.SensorFusionMath.normalize
 import com.stepcounter.utils.SensorFusionMath.sum
-import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
 /**
@@ -28,7 +26,7 @@ import kotlin.math.min
  * @property velocityRingCounter The velocity ring counter
  * @property accelRingCounter The acceleration ring counter
  * @property oldVelocityEstimate The old velocity estimate
- * @property lastStepTimeNs The last step time in nanoseconds
+ * @property startDate The last step time in milliseconds
  * @property accelRingX The acceleration ring for the x-axis
  * @property accelRingY The acceleration ring for the y-axis
  * @property accelRingZ The acceleration ring for the z-axis
@@ -38,9 +36,9 @@ import kotlin.math.min
  * @see Sensor
  * @see SensorManager
  * @see StepCounterModule
- * @see TimeUnit
  * @see SensorManager.SENSOR_DELAY_NORMAL
  * @see Sensor.TYPE_ACCELEROMETER
+ * @see
  */
 class AccelerometerService(
     counterModule: StepCounterModule,
@@ -48,15 +46,14 @@ class AccelerometerService(
     userGoal: Int?,
 ) : SensorListenService(counterModule, sensorManager, userGoal) {
     override val sensorTypeString = "ACCELEROMETER"
-    override val sensorDelay = SensorManager.SENSOR_DELAY_NORMAL
     override val sensorType = Sensor.TYPE_ACCELEROMETER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
     override var endDate: Long = 0L
+    override var startDate: Long = 0L
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
     private var oldVelocityEstimate: Float = 0f
-    private var lastStepTimeNs: Long = 0L
     // We want to keep a history of values to do a rolling average of the current
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
@@ -66,16 +63,23 @@ class AccelerometerService(
 
     /**
      * This function is responsible for updating the current steps.
-     * @param [eventData][FloatArray(3) values][android.hardware.SensorEvent.values] The event data
+     * All [values][android.hardware.SensorEvent.values] are in SI units (m/s^2)
+     *
+     * - values[0]: Acceleration minus Gx on the x-axis
+     * - values[1]: Acceleration minus Gy on the y-axis
+     * - values[2]: Acceleration minus Gz on the z-axis
+     *
+     * @param eventData array of vector.
      * @return The current steps
      * @see android.hardware.SensorEvent
      * @see android.hardware.SensorEvent.values
      * @see android.hardware.SensorEvent.timestamp
      */
     override fun updateCurrentSteps(eventData: FloatArray): Double {
-        val timeNs = SystemClock.elapsedRealtimeNanos()
+        val timeMs = System.currentTimeMillis()
+        if (startDate == 0L) startDate = timeMs.minus(1000)
         Log.d(TAG_NAME, "accelerometer values: $eventData")
-        Log.d(TAG_NAME, "accelerometer timestamp: $timeNs")
+        Log.d(TAG_NAME, "accelerometer timestamp: $timeMs")
 
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
@@ -104,10 +108,9 @@ class AccelerometerService(
         // If the velocity estimate is greater than the threshold and the previous
         if (velocityEstimate > STEP_THRESHOLD
             && oldVelocityEstimate <= STEP_THRESHOLD
-            && timeNs - lastStepTimeNs > STEP_DELAY_NS
+            && timeMs - startDate > STEP_DELAY_MS
         ) {
-            lastStepTimeNs = timeNs
-            endDate = TimeUnit.NANOSECONDS.toMillis(timeNs)
+            endDate = timeMs
             oldVelocityEstimate = velocityEstimate
             currentSteps++
         }
@@ -120,11 +123,11 @@ class AccelerometerService(
         /**
          * The minimum acceleration that is considered a step
          */
-        private const val STEP_THRESHOLD = 4f // 8f
+        private const val STEP_THRESHOLD = 8f // 4f
         /**
          * The minimum time between steps
          */
-        private const val STEP_DELAY_NS = 250000000 // 800000000
+        private const val STEP_DELAY_MS = 800 // 250
         val TAG_NAME: String = AccelerometerService::class.java.name
     }
 }

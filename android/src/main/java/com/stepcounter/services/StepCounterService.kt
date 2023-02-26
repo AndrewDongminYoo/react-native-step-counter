@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
  * @property sensorDelay The integer enum value of delay of the sensor.
  *   choose between SensorManager.SENSOR_DELAY_NORMAL or SensorManager.SENSOR_DELAY_UI
  * @property detectedSensor The sensor that is detected
- * @property lastUpdate The last update of the sensor.
+ * @property startDate The last update of the sensor.
  *   if module started first time, it will be null.
  * @property delay The delay of the sensor.
  * @property previousSteps The initial steps or the previous steps.
@@ -41,13 +41,12 @@ class StepCounterService(
     userGoal: Int?,
 ) : SensorListenService(counterModule, sensorManager, userGoal) {
     override val sensorTypeString = "STEP_COUNTER"
-    override val sensorDelay = SensorManager.SENSOR_DELAY_NORMAL
     override val sensorType = Sensor.TYPE_STEP_COUNTER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
 
-    private var delay: Int = 1000 // 1 sec
-    private var previousSteps: Double = 0.toDouble()
-    private var lastUpdate: Long = 0.toLong()
+    private var delay: Int = 800 // 1 sec
+    private var previousSteps: Double? = null
+    override var startDate: Long = 0.toLong()
     override var endDate: Long = 0.toLong()
     override var currentSteps: Double = 0.toDouble()
 
@@ -63,23 +62,21 @@ class StepCounterService(
         // get the end date because the sensor event timestamp maybe in nanoseconds
         endDate = System.currentTimeMillis()
         // if the last update is 0, set it to the current time
-        if (lastUpdate == 0L) {
-            // set the last update to the current time minus the delay
-            lastUpdate = endDate.minus(delay)
+        if (startDate == 0L) {
+            // set the last update to the current time minus 1 sec
+            startDate = endDate.minus(1000)
         }
         // step counter sensor event data is a float array with a length of 1
-        val stepCount: Double = eventData[0].toDouble()
+        currentSteps = eventData[0].toDouble()
         // if the time difference is greater than the delay, set the current steps to the step count minus the initial steps
-        if (endDate.minus(lastUpdate) > delay) {
+        if (endDate.minus(startDate) >= delay) {
             // if the previous steps aren't initialized yet, set it to the step count minus 1
-            if (previousSteps == 0.0) {
+            if (previousSteps === null) {
                 // set the previous steps to the step count minus 1
-                previousSteps = stepCount.minus(1.0)
+                previousSteps = currentSteps.minus(1)
             }
-            // set the current steps to the step count minus the initial steps
-            currentSteps = stepCount.minus(previousSteps)
             // set the last update to the current time
-            lastUpdate = endDate
+            startDate = endDate
         }
         // return the current steps
         return currentSteps
