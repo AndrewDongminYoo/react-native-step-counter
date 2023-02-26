@@ -52,14 +52,16 @@ class AccelerometerService(
     override val sensorType = Sensor.TYPE_ACCELEROMETER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
-    override var endDate: Long = 0
-    private var velocityRingCounter = 0
-    private var accelRingCounter = 0
-    private var oldVelocityEstimate = 0f
+    override var endDate: Long = 0L
+    private var velocityRingCounter: Int = 0
+    private var accelRingCounter: Int = 0
+    private var oldVelocityEstimate: Float = 0f
     private var lastStepTimeNs: Long = 0L
+    // We want to keep a history of values to do a rolling average of the current
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
+    // We want to keep a history of values to do a rolling average of the current
     private val velocityRing = FloatArray(VELOCITY_RING_SIZE)
 
     /**
@@ -77,21 +79,29 @@ class AccelerometerService(
 
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
+        // We keep a rolling average of the last 50 values
         accelRingX[accelRingCounter % ACCEL_RING_SIZE] = eventData[0]
         accelRingY[accelRingCounter % ACCEL_RING_SIZE] = eventData[1]
         accelRingZ[accelRingCounter % ACCEL_RING_SIZE] = eventData[2]
         val gravity = FloatArray(3)
+        // Next we'll calculate the average of the last 50 vectors in the ring
         gravity[0] = sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE)
         gravity[1] = sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE)
         gravity[2] = sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
+        // Normalize the result
         val normalizationFactor = norm(gravity)
+        // Normalize the gravity vector
         val normGravity = normalize(gravity)
         // Next step is to figure out the component of the current acceleration
         // in the direction of world_z and subtract gravity's contribution
         val currentZ = dot(normGravity, eventData) - normalizationFactor
+        // Now we just need to update our estimate of the velocity
         velocityRingCounter++
+        // We keep a rolling average of the last 10 values
         velocityRing[velocityRingCounter % VELOCITY_RING_SIZE] = currentZ
+        // Calculate the average of the last 10 values
         val velocityEstimate = sum(velocityRing)
+        // If the velocity estimate is greater than the threshold and the previous
         if (velocityEstimate > STEP_THRESHOLD
             && oldVelocityEstimate <= STEP_THRESHOLD
             && timeNs - lastStepTimeNs > STEP_DELAY_NS
