@@ -45,11 +45,11 @@ class StepCounterService(
     override val sensorType = Sensor.TYPE_STEP_COUNTER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
 
-    private var delay: Int? = null
-    private var previousSteps: Double? = null
-    private var lastUpdate: Long? = null
-    override var endDate: Long = 0L
-    override var currentSteps: Double = 0.0
+    private var delay: Int = 1000 // 1 sec
+    private var previousSteps: Double = 0.toDouble()
+    private var lastUpdate: Long = 0.toLong()
+    override var endDate: Long = 0.toLong()
+    override var currentSteps: Double = 0.toDouble()
 
     /**
      * This function is responsible for updating the current steps.
@@ -60,29 +60,28 @@ class StepCounterService(
      * @see android.hardware.SensorEvent.timestamp
      */
     override fun updateCurrentSteps(eventData: FloatArray): Double {
+        // get the end date because the sensor event timestamp maybe in nanoseconds
         endDate = System.currentTimeMillis()
         // if the last update is 0, set it to the current time
-        if (lastUpdate == null) {
-            lastUpdate = endDate.minus(1)
-        }
-        // if the delay is 0, set it to the time difference between the current time and the last update
-        val timeDiff = endDate.minus(lastUpdate!!)
-        // if the time difference is greater than 0 and the delay is 0, set the delay to the time difference
-        if (timeDiff > 0 && delay == null) {
-            delay = (timeDiff / 1000).toInt()
+        if (lastUpdate == 0L) {
+            // set the last update to the current time minus the delay
+            lastUpdate = endDate.minus(delay)
         }
         // step counter sensor event data is a float array with a length of 1
         val stepCount: Double = eventData[0].toDouble()
         // if the time difference is greater than the delay, set the current steps to the step count minus the initial steps
-        if (timeDiff > delay!!) {
-            // if the initial steps are 0, set it to the step count minus 1
-            if (previousSteps == null) {
+        if (endDate.minus(lastUpdate) > delay) {
+            // if the previous steps aren't initialized yet, set it to the step count minus 1
+            if (previousSteps == 0.0) {
+                // set the previous steps to the step count minus 1
                 previousSteps = stepCount.minus(1.0)
             }
             // set the current steps to the step count minus the initial steps
-            currentSteps = stepCount.minus(previousSteps!!)
+            currentSteps = stepCount.minus(previousSteps)
+            // set the last update to the current time
             lastUpdate = endDate
         }
+        // return the current steps
         return currentSteps
     }
 }

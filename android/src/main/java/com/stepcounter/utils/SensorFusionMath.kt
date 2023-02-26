@@ -13,49 +13,52 @@ import kotlin.math.sqrt
  */
 object SensorFusionMath {
     /**
-     * Get the sum of an array of floats.
-     * @param array The array to be calculated.
+     * The summation function, also known as a sigma function, is commonly used in mathematics to denote
+     * the summation of a set of values. In the context of Euclidean vectors, the summation function can
+     * be used to calculate the length or magnitude of a vector.
+     * The Euclidean [norm], also known as the L2 [norm], of a vector `x = [x1, x2, ..., xn]` is defined as the
+     * square root of the sum of the squares of its components.
+     * @param vector The array to be calculated.
      * @returns The sum of the array.
      * @see <a href="https://en.wikipedia.org/wiki/Summation">Summation</a>
      */
-    fun sum(array: FloatArray): Float {
-        var returnVal = 0f
-        for (v in array) {
-            returnVal += v
+    fun sum(vector: FloatArray): Float {
+        var summation = 0f
+        for (v in vector) {
+            summation += v
         }
-        return returnVal
+        return summation
     }
 
     /**
-     * In mathematics, the cross product or vector product
-     * (occasionally directed area product, to emphasize
-     * its geometric significance) is a binary operation on
-     * two vectors in a three-dimensional oriented Euclidean
-     * vector space.
-     * @param arrayA The first array.
-     * @param arrayB The second array.
+     * The cross product is a binary operation on two vectors in three-dimensional space that
+     * results in a perpendicular vector to the input vectors. It's used in math, physics, engineering,
+     * and computer programming and should not be confused with the [dot] product,
+     * which is a scalar product that measures the projection of one vector onto another.
+     * @param vectorA The first array.
+     * @param vectorB The second array.
      * @see <a href="https://en.wikipedia.org/wiki/Cross_product">Cross product</a>
      */
-    fun cross(arrayA: FloatArray, arrayB: FloatArray): FloatArray {
+    fun cross(vectorA: FloatArray, vectorB: FloatArray): FloatArray {
         val retArray = FloatArray(3)
-        retArray[0] = arrayA[1] * arrayB[2] - arrayA[2] * arrayB[1]
-        retArray[1] = arrayA[2] * arrayB[0] - arrayA[0] * arrayB[2]
-        retArray[2] = arrayA[0] * arrayB[1] - arrayA[1] * arrayB[0]
+        retArray[0] = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
+        retArray[1] = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
+        retArray[2] = vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
         return retArray
     }
 
     /**
-     * In mathematics, a norm is a function from a real or complex vector space
+     * In mathematics, a norm is a function from a real or complex [vector] space
      * to the non-negative real numbers that behaves in certain ways like the distance
      * from the origin: it commutes with scaling, obeys a form of the triangle inequality,
      * and is zero only at the origin.
-     * @param array The array to be calculated.
-     * @returns The norm of the array.
-     * @see <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)">Norm</a>
+     * @param vector The vector to be calculated.
+     * @returns The norm of the vector.
+     * @see <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)#Euclidean_norm">Euclidean Normalization</a>
      */
-    fun norm(array: FloatArray): Float {
+    fun norm(vector: FloatArray): Float {
         var returnVal = 0f
-        for (v in array) {
+        for (v in vector) {
             returnVal += v * v
         }
         return sqrt(returnVal)
@@ -65,9 +68,10 @@ object SensorFusionMath {
      * In mathematics, the dot product or scalar product is an algebraic operation
      * that takes two equal-length sequences of numbers (usually coordinate vectors),
      * and returns a single number.
-     * @param a The first array.
-     * @param b The second array.
-     * @returns The dot product of the two arrays.
+     * In Euclidean geometry, the dot product of the Cartesian coordinates of two vectors is widely used.
+     * @param a The first sequence of numbers.
+     * @param b The second sequence of numbers. Must be the same length as the first sequence.
+     * @returns The dot product(single number) of the two sequences of numbers.
      * @see <a href="https://en.wikipedia.org/wiki/Dot_product">Dot product</a>
      */
     fun dot(a: FloatArray, b: FloatArray): Float {
@@ -75,17 +79,22 @@ object SensorFusionMath {
     }
 
     /**
-     * Normalizes an array of floats.
-     * @param array The array to be normalized.
-     * @return The normalized array.
-     * @see <a href="https://en.wikipedia.org/wiki/Normalization_(statistics)">Normalization</a>
+     * The norm function is a utility function used here to calculate the Euclidean norm of the input vector.
+     * The calculated norm value is used to normalize the input [vector] by
+     * dividing each component of the input vector by the norm value.
+     * Therefore, while both functions use the same mathematical formula for Euclidean vector normalization,
+     * they serve different purposes.
+     * The [norm] function calculates the norm of a vector, while the [normalize] function returns a new normalized vector.
+     * @param vector The input array to be normalized.
+     * @return The new normalized vector.
+     * @see SensorFusionMath.norm
      */
-    fun normalize(array: FloatArray): FloatArray {
-        val copied = FloatArray(array.size)
-        val average = norm(array)
-        for (i in array.indices) {
-            copied[i] = array[i] / average
+    fun normalize(vector: FloatArray): FloatArray {
+        val normalizedVector = FloatArray(vector.size)
+        val normed = norm(vector)
+        for (i in vector.indices) {
+            normalizedVector[i] = vector[i] / normed
         }
-        return copied
+        return normalizedVector
     }
 }

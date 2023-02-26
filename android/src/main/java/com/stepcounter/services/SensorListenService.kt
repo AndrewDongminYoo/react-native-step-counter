@@ -48,13 +48,11 @@ abstract class SensorListenService(
     abstract val sensorDelay: Int
 
     /**
-     * the sensor type as a string
-     *
-     * [TYPE_ACCELEROMETER][Sensor.TYPE_ACCELEROMETER]: "ACCELEROMETER"
-     *
-     * [TYPE_STEP_COUNTER][Sensor.TYPE_STEP_COUNTER]: "STEP_COUNTER"
-     *
-     * [TYPE_STEP_DETECTOR][Sensor.TYPE_STEP_DETECTOR]: "STEP_DETECTOR"
+     * @return if the [sensor][detectedSensor] is
+     * [accelerometer][Sensor.TYPE_ACCELEROMETER],
+     * "ACCELEROMETER"
+     * if it's [stepCounter][Sensor.TYPE_STEP_COUNTER],
+     * "STEP_COUNTER".
      */
     abstract val sensorTypeString: String
 
@@ -62,10 +60,8 @@ abstract class SensorListenService(
      * the detected sensor
      * @see SensorManager.getDefaultSensor
      * @see SensorManager
-     * @see Sensor
-     * @sample Sensor.TYPE_STEP_COUNTER
-     * @sample SensorManager.getDefaultSensor
-     *
+     * @see Sensor.TYPE_ACCELEROMETER
+     * @see Sensor.TYPE_STEP_COUNTER
      */
     abstract val detectedSensor: Sensor
 
@@ -98,8 +94,8 @@ abstract class SensorListenService(
     private var dailyGoal: Int = userGoal ?: 10_000
         get() {
             return if (currentSteps.toInt() > field) {
-                currentSteps = 0.0
                 Log.d(TAG_NAME, "daily goal reached")
+                currentSteps = 0.0
                 10_000
             } else 10_000
         }
@@ -181,7 +177,9 @@ abstract class SensorListenService(
     }
 
     /**
-     * update the current steps
+     * abstract method to update the current steps
+     * implemented in [StepCounterService] and [AccelerometerService]
+     * with different motion sensor handling algorithm.
      * @param eventData the event data
      * @return the current steps
      */
