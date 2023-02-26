@@ -45,16 +45,6 @@ class StepCounterModule(context: ReactApplicationContext) :
     private var stepsParamsMap: WritableMap = Arguments.createMap()
 
     /**
-     * The method that is called when the module is initialized.
-     * It checks the permission for the step counter sensor and initializes the step counter service.
-     */
-    init {
-        sensorManager = context.getSystemService(
-            Context.SENSOR_SERVICE
-        ) as SensorManager
-    }
-
-    /**
      * gets the step counter listener
      * @return the step counter listener
      * @see SensorListenService
@@ -63,11 +53,19 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see checkSelfPermission
      * @see PERMISSION_GRANTED
      */
-    private val stepCounterListener: SensorListenService
-    get() {
+    private var stepCounterListener: SensorListenService
+
+    /**
+     * The method that is called when the module is initialized.
+     * It checks the permission and the availability for the step counter sensor and initializes the step counter service.
+     */
+    init {
+        sensorManager = context.getSystemService(
+            Context.SENSOR_SERVICE
+        ) as SensorManager
         var permission: String = STEP_COUNTER
         var permissionTag = "Step Counter"
-        return if (checkSelfPermission(appContext, permission) == PERMISSION_GRANTED) {
+        stepCounterListener = if (checkSelfPermission(appContext, permission) == PERMISSION_GRANTED) {
             Log.d(TAG_NAME, "$permissionTag permission granted")
             StepCounterService(this, sensorManager, null)
         } else {
@@ -91,7 +89,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see Promise.resolve
      * @see VERSION_CODES.ECLAIR
      * @see VERSION_CODES.KITKAT
-     * @see WriteableMap
+     * @see WritableMap
      */
     override fun isStepCountingSupported(promise: Promise?) {
         Log.d(TAG_NAME, "step_counter supported? ${SDK_INT >= VERSION_CODES.KITKAT}")

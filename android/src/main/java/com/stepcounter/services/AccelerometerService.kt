@@ -18,7 +18,6 @@ import kotlin.math.min
  * @param sensorManager The sensor manager that is responsible for the sensor
  *
  * @property sensorTypeString The type of the sensor as a string "ACCELEROMETER"
- * @property sensorDelay The delay of the sensor
  * @property sensorType The type of the sensor
  * @property detectedSensor The sensor that is detected
  * @property currentSteps The current steps
@@ -38,7 +37,6 @@ import kotlin.math.min
  * @see StepCounterModule
  * @see SensorManager.SENSOR_DELAY_NORMAL
  * @see Sensor.TYPE_ACCELEROMETER
- * @see
  */
 class AccelerometerService(
     counterModule: StepCounterModule,
@@ -50,7 +48,6 @@ class AccelerometerService(
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
     override var endDate: Long = 0L
-    override var startDate: Long = 0L
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
     private var oldVelocityEstimate: Float = 0f
@@ -75,11 +72,9 @@ class AccelerometerService(
      * @see android.hardware.SensorEvent.values
      * @see android.hardware.SensorEvent.timestamp
      */
-    override fun updateCurrentSteps(eventData: FloatArray): Double {
-        val timeMs = System.currentTimeMillis()
-        if (startDate == 0L) startDate = timeMs.minus(1000)
+    override fun updateCurrentSteps(timestampMs: Long, eventData: FloatArray): Double {
         Log.d(TAG_NAME, "accelerometer values: $eventData")
-        Log.d(TAG_NAME, "accelerometer timestamp: $timeMs")
+        Log.d(TAG_NAME, "accelerometer timestamp: $timestampMs")
 
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
@@ -108,9 +103,8 @@ class AccelerometerService(
         // If the velocity estimate is greater than the threshold and the previous
         if (velocityEstimate > STEP_THRESHOLD
             && oldVelocityEstimate <= STEP_THRESHOLD
-            && timeMs - startDate > STEP_DELAY_MS
         ) {
-            endDate = timeMs
+            endDate = timestampMs
             oldVelocityEstimate = velocityEstimate
             currentSteps++
         }
@@ -124,10 +118,6 @@ class AccelerometerService(
          * The minimum acceleration that is considered a step
          */
         private const val STEP_THRESHOLD = 8f // 4f
-        /**
-         * The minimum time between steps
-         */
-        private const val STEP_DELAY_MS = 800 // 250
         val TAG_NAME: String = AccelerometerService::class.java.name
     }
 }
