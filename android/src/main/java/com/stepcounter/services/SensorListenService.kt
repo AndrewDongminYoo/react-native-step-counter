@@ -32,20 +32,23 @@ abstract class SensorListenService(
      * [TYPE_STEP_COUNTER][Sensor.TYPE_STEP_COUNTER]: 19<br/>
      */
     abstract val sensorType: Int
+
     /**
-     * the fastest rate
-     * [SENSOR_DELAY_FASTEST][SensorManager.SENSOR_DELAY_FASTEST]: 0
+     * The [rate of sensor events][android.hardware.SensorEvent] are
+     * delivered at. This is only a hint to the system. Events may be received faster or
+     * slower than the specified rate. Usually events are received faster. The value must
+     * be one of [SENSOR_DELAY_NORMAL][SensorManager.SENSOR_DELAY_NORMAL], [SENSOR_DELAY_UI][SensorManager.SENSOR_DELAY_UI],
+     * [SENSOR_DELAY_GAME][SensorManager.SENSOR_DELAY_GAME], or [SENSOR_DELAY_FASTEST][SensorManager.SENSOR_DELAY_FASTEST]
+     * or, the desired delay between events in microseconds. Specifying the delay in microseconds only works
+     * from Android 2.3 (API level 9) onwards. For earlier releases, you must use one of
+     * the `SENSOR_DELAY_*` constants.
      *
-     * rate suitable for games
-     * [SENSOR_DELAY_GAME][SensorManager.SENSOR_DELAY_GAME]: 1
-     *
-     * rate suitable for the user interface
-     * [SENSOR_DELAY_UI][SensorManager.SENSOR_DELAY_UI]: 2
-     *
-     * default rate that suitable for screen orientation changes
-     * [SENSOR_DELAY_NORMAL][SensorManager.SENSOR_DELAY_NORMAL]: 3
+     * @see SensorManager.SENSOR_DELAY_FASTEST get sensor data as fast as possible
+     * @see SensorManager.SENSOR_DELAY_GAME rate suitable for games
+     * @see SensorManager.SENSOR_DELAY_UI rate suitable for the user interface
+     * @see SensorManager.SENSOR_DELAY_NORMAL rate (default) suitable for screen orientation changes
      */
-    abstract val sensorDelay: Int
+    private val sensorDelay: Int = 1000 // 1 sec
 
     /**
      * @return if the [sensor][detectedSensor] is
@@ -119,11 +122,11 @@ abstract class SensorListenService(
      */
     abstract var currentSteps: Double
     /**
-     * Start date of the step counting
+     * Start date of the step counting. UTC milliseconds
      */
-    private val startDate: Long = System.currentTimeMillis()
+    abstract var startDate: Long
     /**
-     * End date of the step counting
+     * End date of the step counting. UTC milliseconds
      */
     abstract var endDate: Long
 
@@ -137,7 +140,7 @@ abstract class SensorListenService(
         Log.d(TAG_NAME, "SensorListenService.startService")
         Log.d(TAG_NAME, "SensorListenService.sensorDelay: $sensorDelay")
         Log.d(TAG_NAME, "SensorListenService.sensorTypes: $sensorTypeString")
-        Log.d(TAG_NAME, "SensorListenService.currentStep: $currentSteps")
+        Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
         sensorManager.registerListener(this, detectedSensor, sensorDelay)
     }
 
@@ -160,13 +163,22 @@ abstract class SensorListenService(
      * See [SensorManager][android.hardware.SensorManager]
      * for details on possible sensor types.
      * See also [SensorEvent][android.hardware.SensorEvent].
-     * **NOTE:** The application doesn't own the
-     * [event][android.hardware.SensorEvent]
+     *
+     * **NOTE1:** The application doesn't own the [event][android.hardware.SensorEvent]
      * object passed as a parameter and therefore cannot hold on to it.
      * The object may be part of an internal pool and may be reused by
-     * the framework.
+     * the framework. If you need to hold on to the event, you must make a copy.
+     *
+     * **NOTE2:** Since the timestamp delivered from JavaScript is based on milliseconds,
+     * mistakes can occur if the timestamp of sensor events recorded every moment in nanoseconds is delivered as it is.
+     * Thus, we convert timestamp (nanoseconds recorded in sensor events) using [toMillis][java.util.concurrent.TimeUnit.NANOSECONDS.toMillis] method,
+     * or call [currentTimeInMillis][System.currentTimeMillis] method according to the function execution time.
      *
      * @param event the [SensorEvent][android.hardware.SensorEvent].
+     * @see SensorEvent.sensor
+     * @see SensorEvent.timestamp
+     * @see SensorEvent.values
+     * @see Sensor.getType
      */
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor == null
@@ -180,7 +192,7 @@ abstract class SensorListenService(
      * abstract method to update the current steps
      * implemented in [StepCounterService] and [AccelerometerService]
      * with different motion sensor handling algorithm.
-     * @param eventData the event data
+     * @param eventData the detected vector of sensor event
      * @return the current steps
      */
     abstract fun updateCurrentSteps(eventData: FloatArray): Double
@@ -192,6 +204,7 @@ abstract class SensorListenService(
      * See the SENSOR_STATUS_* constants in
      * [SensorManager][android.hardware.SensorManager] for details.
      *
+     * @param sensor The [Sensor][android.hardware.Sensor] that has accuracy changed.
      * @param accuracy The new accuracy of this sensor, one of
      * `SensorManager.SENSOR_STATUS_*`
      */

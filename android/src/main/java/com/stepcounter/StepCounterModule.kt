@@ -23,8 +23,7 @@ import com.stepcounter.utils.AndroidVersionHelper
  * @property appContext The context of the react-native application from [context][com.facebook.react.bridge.ReactApplicationContext]
  * @property sensorManager The sensor manager that is responsible for the sensor
  * @property stepsParamsMap The map that contains the parameters for the steps
- * @property featureStatus The status of the feature
- * @property stepService The service that is responsible for the step counter sensor
+ * @property stepCounterListener The service that is responsible for the step counter sensor
  * @constructor Creates a new StepCounterModule implements NativeStepCounterSpec
  * @see ReactContextBaseJavaModule
  * @see ReactApplicationContext
@@ -35,19 +34,15 @@ class StepCounterModule(context: ReactApplicationContext) :
     NativeStepCounterSpec(context) {
     companion object {
         const val NAME: String = "RNStepCounter"
+        const val eventName: String = "StepCounter.stepCounterUpdate"
         private val TAG_NAME: String = StepCounterModule::class.java.name
         private const val STEP_COUNTER = "android.permission.ACTIVITY_RECOGNITION"
-        private const val ACCELEROMETER = "android.permission.BODY_SENSORS"
-        private const val GRANTED = "granted"
-        private const val DENIED = "denied"
-        const val eventName = "StepCounter.stepCounterUpdate"
+        private const val BG_BODY_SENSOR = "android.permission.BODY_SENSORS_BACKGROUND"
     }
 
     private val appContext: ReactApplicationContext = context
     private var sensorManager: SensorManager
     private var stepsParamsMap: WritableMap = Arguments.createMap()
-    private var featureStatus: String
-    private lateinit var stepService: SensorListenService
 
     /**
      * The method that is called when the module is initialized.
@@ -57,21 +52,10 @@ class StepCounterModule(context: ReactApplicationContext) :
         sensorManager = context.getSystemService(
             Context.SENSOR_SERVICE
         ) as SensorManager
-        checkSelfPermission(context, STEP_COUNTER)
-        val service = getStepCounterListener()
-        if (service != null) {
-            featureStatus = GRANTED
-            stepService = service
-        } else {
-            featureStatus = DENIED
-            this.invalidate()
-        }
     }
 
     /**
      * gets the step counter listener
-     * @param permission the permission for the step counter sensor
-     * @param permissionTag the tag for the permission
      * @return the step counter listener
      * @see SensorListenService
      * @see StepCounterService
@@ -79,39 +63,50 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see checkSelfPermission
      * @see PERMISSION_GRANTED
      */
-    private fun getStepCounterListener(
-        permission: String = STEP_COUNTER,
-        permissionTag: String = "Step Counter"
-    ): SensorListenService? {
+    private val stepCounterListener: SensorListenService
+    get() {
+        var permission: String = STEP_COUNTER
+        var permissionTag = "Step Counter"
         return if (checkSelfPermission(appContext, permission) == PERMISSION_GRANTED) {
             Log.d(TAG_NAME, "$permissionTag permission granted")
             StepCounterService(this, sensorManager, null)
         } else {
+            permission = BG_BODY_SENSOR
+            permissionTag = "Accelerometer in Background"
             Log.d(TAG_NAME, "$permissionTag permission denied")
-            if (checkSelfPermission(appContext, ACCELEROMETER) == PERMISSION_GRANTED) {
+            if (checkSelfPermission(appContext, permission) == PERMISSION_GRANTED) {
                 Log.d(TAG_NAME, "$permissionTag permission granted")
                 AccelerometerService(this, sensorManager, null)
             } else {
                 Log.d(TAG_NAME, "$permissionTag permission denied")
-                null
+                this.invalidate()
+                AccelerometerService(this, sensorManager, null)
             }
         }
     }
 
     /**
-     * Checks if the step counter sensor is supported.
-     * @return true if
-     *   the step counter sensor is supported,
-     *   or the accelerometer sensor is supported instead,
-     *   usually return true.
+     * The method ask if the step counter sensor is supported.
+     * @param promise the promise that is used to return the result to the react-native code
+     * @see Promise.resolve
+     * @see VERSION_CODES.ECLAIR
+     * @see VERSION_CODES.KITKAT
+     * @see WriteableMap
      */
-    override fun isStepCountingSupported(): Boolean {
+    override fun isStepCountingSupported(promise: Promise?) {
         Log.d(TAG_NAME, "step_counter supported? ${SDK_INT >= VERSION_CODES.KITKAT}")
-        Log.d(TAG_NAME, "step_detector supported? ${SDK_INT >= VERSION_CODES.KITKAT}")
         Log.d(TAG_NAME, "accelerometer supported? ${SDK_INT >= VERSION_CODES.ECLAIR}")
-        val enabled = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
-        Log.d(TAG_NAME, "hardware_step_counter enabled? $enabled")
-        return true
+        val supported = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
+        val granted = checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
+        Log.d(TAG_NAME, "hardware_step_counter enabled? $supported")
+        promise?.resolve(
+            Arguments.createMap().apply {
+                putBoolean("step_counter", SDK_INT >= VERSION_CODES.KITKAT)
+                putBoolean("accelerometer", SDK_INT >= VERSION_CODES.ECLAIR)
+                putBoolean("supported", supported)
+                putBoolean("granted", granted)
+            }
+        )
     }
 
     /**
@@ -121,7 +116,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      */
     override fun startStepCounterUpdate(from: Double): Boolean {
         Log.d(TAG_NAME, "startStepCounterUpdate")
-        stepService.startService()
+        stepCounterListener.startService()
         return true
     }
     /**
@@ -130,7 +125,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      */
     override fun stopStepCounterUpdate() {
         Log.d(TAG_NAME, "stopStepCounterUpdate")
-        stepService.stopService()
+        stepCounterListener.stopService()
     }
     /**
      * Keep: Required for RN built in Event Emitter Support.
