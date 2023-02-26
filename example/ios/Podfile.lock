@@ -748,8 +748,6 @@ PODS:
     - React-jsi (= 0.71.3)
     - React-logger (= 0.71.3)
     - React-perflogger (= 0.71.3)
-  - RNPermissions (3.6.1):
-    - React-Core
   - RNStepCounter (0.1.0):
     - RCT-Folly
     - RCTRequired
@@ -826,7 +824,6 @@ DEPENDENCIES:
   - React-rncore (from `../node_modules/react-native/ReactCommon`)
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNStepCounter (from `../..`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -923,8 +920,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/runtimeexecutor"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  RNPermissions:
-    :path: "../node_modules/react-native-permissions"
   RNStepCounter:
     :path: "../.."
   Yoga:
@@ -981,7 +976,6 @@ SPEC CHECKSUMS:
   React-rncore: 319d5fd0fccaf9537ba38d328c68ec75ca3c1e54
   React-runtimeexecutor: 7bf0dafc7b727d93c8cb94eb00a9d3753c446c3e
   ReactCommon: 6f65ea5b7d84deb9e386f670dd11ce499ded7b40
-  RNPermissions: dcdb7b99796bbeda6975a6e79ad519c41b251b1c
   RNStepCounter: 0a466996c0296a1d3ce1086918466e1c60b421c8
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 5ed1699acbba8863755998a4245daa200ff3817b
