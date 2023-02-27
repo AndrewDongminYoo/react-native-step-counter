@@ -15,12 +15,10 @@ import java.util.concurrent.TimeUnit
  * @property sensorDelay The integer enum value of delay of the sensor.
  *   choose between SensorManager.SENSOR_DELAY_NORMAL or SensorManager.SENSOR_DELAY_UI
  * @property detectedSensor The sensor that is detected
- * @property delay The delay of the sensor.
  * @property previousSteps The initial steps or the previous steps.
  *   step counter sensor is recording since the last reboot.
  *   so if previous step is null, we need to initialize the previous steps with the current steps minus 1.
  * @property currentSteps The current steps
- * @property endDate The end date
  * @constructor Creates a new StepCounterService
  * @see SensorListenService
  * @see Sensor
@@ -41,11 +39,18 @@ class StepCounterService(
     override val sensorTypeString = "STEP_COUNTER"
     override val sensorType = Sensor.TYPE_STEP_COUNTER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
-
-    private var delay: Int = 800 // 1 sec
-    private var previousSteps: Double? = null
-    override var endDate: Long = 0.toLong()
+    private var previousSteps: Double = 0.toDouble()
+        set(value) {
+            if (field.compareTo(value) < 0) {
+                field = value
+            }
+        }
     override var currentSteps: Double = 0.toDouble()
+        set(value) {
+            if (field.compareTo(value) < 0) {
+                field = value
+            }
+        }
 
     /**
      * This function is responsible for updating the current steps.
@@ -55,19 +60,16 @@ class StepCounterService(
      * @see android.hardware.SensorEvent.values
      * @see android.hardware.SensorEvent.timestamp
      */
-    override fun updateCurrentSteps(timestampMs: Long, eventData: FloatArray): Double {
-        // get the millisecond-converted event.timestamp
-        endDate = timestampMs
+    override fun updateCurrentSteps(eventData: FloatArray): Boolean {
         // if the time difference is greater than the delay, set the current steps to the step count minus the initial steps
-            // if the previous steps aren't initialized yet, set it to the step count minus 1
-        if (previousSteps === null) {
-            // set the previous steps to the step count minus 1
+        // if the previous steps aren't initialized yet,
+        return if (previousSteps.compareTo(0) == 0) {
             previousSteps = eventData[0].toDouble()
+            false
         } else {
-            currentSteps = eventData[0].toDouble().minus(previousSteps!!)
+            currentSteps = eventData[0].toDouble().minus(previousSteps)
             // set the last update to the current time
+            true
         }
-        // return the current steps
-        return currentSteps
     }
 }

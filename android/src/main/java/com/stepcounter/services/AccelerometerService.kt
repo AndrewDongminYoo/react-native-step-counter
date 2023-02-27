@@ -21,7 +21,6 @@ import kotlin.math.min
  * @property sensorType The type of the sensor
  * @property detectedSensor The sensor that is detected
  * @property currentSteps The current steps
- * @property endDate The end date
  * @property velocityRingCounter The velocity ring counter
  * @property accelRingCounter The acceleration ring counter
  * @property oldVelocityEstimate The old velocity estimate
@@ -47,7 +46,6 @@ class AccelerometerService(
     override val sensorType = Sensor.TYPE_ACCELEROMETER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
-    override var endDate: Long = 0L
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
     private var oldVelocityEstimate: Float = 0f
@@ -67,15 +65,13 @@ class AccelerometerService(
      * - values[2]: Acceleration minus Gz on the z-axis
      *
      * @param eventData array of vector.
-     * @return The current steps
+     * @return If the current step is just updated
      * @see android.hardware.SensorEvent
      * @see android.hardware.SensorEvent.values
      * @see android.hardware.SensorEvent.timestamp
      */
-    override fun updateCurrentSteps(timestampMs: Long, eventData: FloatArray): Double {
+    override fun updateCurrentSteps(eventData: FloatArray): Boolean {
         Log.d(TAG_NAME, "accelerometer values: $eventData")
-        Log.d(TAG_NAME, "accelerometer timestamp: $timestampMs")
-
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
         // We keep a rolling average of the last 50 values
@@ -101,14 +97,13 @@ class AccelerometerService(
         // Calculate the average of the last 10 values
         val velocityEstimate = sum(velocityRing)
         // If the velocity estimate is greater than the threshold and the previous
-        if (velocityEstimate > STEP_THRESHOLD
+        return if (velocityEstimate > STEP_THRESHOLD
             && oldVelocityEstimate <= STEP_THRESHOLD
         ) {
-            endDate = timestampMs
             oldVelocityEstimate = velocityEstimate
             currentSteps++
-        }
-        return currentSteps
+            true
+        } else false
     }
 
     companion object {

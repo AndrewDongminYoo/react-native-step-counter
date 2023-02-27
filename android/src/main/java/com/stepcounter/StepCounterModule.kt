@@ -14,6 +14,7 @@ import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
 import com.stepcounter.utils.AndroidVersionHelper
+import java.util.*
 
 /**
  * This class is the native module for the react-native-step-counter package.
@@ -22,7 +23,6 @@ import com.stepcounter.utils.AndroidVersionHelper
  * @param context The context of the react-native application
  * @property appContext The context of the react-native application from [context][com.facebook.react.bridge.ReactApplicationContext]
  * @property sensorManager The sensor manager that is responsible for the sensor
- * @property stepsParamsMap The map that contains the parameters for the steps
  * @property stepCounterListener The service that is responsible for the step counter sensor
  * @constructor Creates a new StepCounterModule implements NativeStepCounterSpec
  * @see ReactContextBaseJavaModule
@@ -42,7 +42,11 @@ class StepCounterModule(context: ReactApplicationContext) :
 
     private val appContext: ReactApplicationContext = context
     private var sensorManager: SensorManager
-    private var stepsParamsMap: WritableMap = Arguments.createMap()
+    private var supported = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
+    private val stepsOK: Boolean
+        get() = checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
+    private val accelOK: Boolean
+        get() = checkSelfPermission(appContext, BG_BODY_SENSOR) == PERMISSION_GRANTED
 
     /**
      * gets the step counter listener
@@ -63,21 +67,18 @@ class StepCounterModule(context: ReactApplicationContext) :
         sensorManager = context.getSystemService(
             Context.SENSOR_SERVICE
         ) as SensorManager
-        var permission: String = STEP_COUNTER
         var permissionTag = "Step Counter"
-        stepCounterListener = if (checkSelfPermission(appContext, permission) == PERMISSION_GRANTED) {
+        stepCounterListener = if (stepsOK) {
             Log.d(TAG_NAME, "$permissionTag permission granted")
             StepCounterService(this, sensorManager, null)
         } else {
-            permission = BG_BODY_SENSOR
-            permissionTag = "Accelerometer in Background"
             Log.d(TAG_NAME, "$permissionTag permission denied")
-            if (checkSelfPermission(appContext, permission) == PERMISSION_GRANTED) {
+            permissionTag = "Accelerometer in Background"
+            if (accelOK) {
                 Log.d(TAG_NAME, "$permissionTag permission granted")
                 AccelerometerService(this, sensorManager, null)
             } else {
                 Log.d(TAG_NAME, "$permissionTag permission denied")
-                this.invalidate()
                 AccelerometerService(this, sensorManager, null)
             }
         }
@@ -92,17 +93,17 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see WritableMap
      */
     override fun isStepCountingSupported(promise: Promise?) {
-        Log.d(TAG_NAME, "step_counter supported? ${SDK_INT >= VERSION_CODES.KITKAT}")
-        Log.d(TAG_NAME, "accelerometer supported? ${SDK_INT >= VERSION_CODES.ECLAIR}")
-        val supported = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
-        val granted = checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
-        Log.d(TAG_NAME, "hardware_step_counter enabled? $supported")
+        Log.d(TAG_NAME, "step_counter exists? ${SDK_INT >= VERSION_CODES.KITKAT}")
+        Log.d(TAG_NAME, "accelerometer exists? ${SDK_INT >= VERSION_CODES.ECLAIR}")
+        Log.d(TAG_NAME, "hardware_step_counter? $supported")
+        Log.d(TAG_NAME, "step_counter granted? $stepsOK")
+        Log.d(TAG_NAME, "accelerometer granted? $accelOK")
         promise?.resolve(
             Arguments.createMap().apply {
                 putBoolean("step_counter", SDK_INT >= VERSION_CODES.KITKAT)
                 putBoolean("accelerometer", SDK_INT >= VERSION_CODES.ECLAIR)
                 putBoolean("supported", supported)
-                putBoolean("granted", granted)
+                putBoolean("granted", stepsOK || accelOK)
             }
         )
     }
@@ -145,19 +146,18 @@ class StepCounterModule(context: ReactApplicationContext) :
 
     /**
      * Send the step counter update event to the react-native code.
-     * @param stepsParamsMap the map that contains the parameters for the steps
+     * @param paramsMap the map that contains the parameters for the steps
      * @return Nothing.
      * @see WritableMap
      * @see RCTDeviceEventEmitter
      * @see com.facebook.react.modules.core.DeviceEventManagerModule
      * @throws RuntimeException if the event emitter is not initialized.
      */
-    fun onStepDetected(stepsParamsMap: WritableMap) {
-        Log.d(TAG_NAME, "$eventName: $stepsParamsMap")
-        this.stepsParamsMap = stepsParamsMap
+    fun onStepDetected(paramsMap: WritableMap) {
+        Log.d(TAG_NAME, "$eventName: $paramsMap")
         try {
             appContext.getJSModule(RCTDeviceEventEmitter::class.java)
-                .emit(eventName, stepsParamsMap)
+                .emit(eventName, paramsMap)
         } catch (e: RuntimeException) {
             Log.e(TAG_NAME, eventName, e)
         }
