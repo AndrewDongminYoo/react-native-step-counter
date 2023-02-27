@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, SafeAreaView, Text, View } from 'react-native';
 import {
   isStepCountingSupported,
@@ -6,88 +6,78 @@ import {
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-
-type AppState = {
-  granted: boolean;
-  supported: boolean;
-  steps: number;
-};
-
-export default class App extends Component<{}, AppState> {
-  state = {
-    granted: false,
-    supported: false,
-    steps: 0,
-  };
+export default function App() {
+  const [supported, setSupported] = useState(false);
+  const [granted, setGranted] = useState(false);
+  const [steps, setSteps] = useState(0);
 
   /** get user's motion permission and check pedometer is available */
-  askPermission = async () => {
+  async function askPermission() {
     isStepCountingSupported().then((result) => {
       console.debug('🚀 - isStepCountingSupported', result);
-      this.setState({
-        granted: result.granted ?? false,
-        supported: result.supported ?? false,
-      });
+      setGranted(result.granted === true);
+      setSupported(result.supported === true);
     });
-  };
+  }
 
-  startStepCounter = async () => {
+  async function startStepCounter() {
     const now = new Date();
     startStepCounterUpdate(now, (data) => {
+      console.debug('🚀 - startStepCounterUpdate', data);
       console.log(parseStepData(data));
-      this.setState({
-        steps: data.steps,
-      });
+      setSteps(data.steps);
     });
-  };
+  }
 
-  stopStepCounter() {
-    this.setState({
-      steps: 0,
-    });
+  function stopStepCounter() {
+    setSteps(0);
     stopStepCounterUpdate();
   }
 
-  componentDidMount(): void {
-    this.askPermission();
-  }
-  componentDidUpdate(_: Readonly<{}>, __: Readonly<AppState>): void {
-    if (this.state.granted && this.state.supported) {
-      this.startStepCounter();
-    }
-  }
-  componentWillUnmount(): void {
-    this.stopStepCounter();
-  }
+  useEffect(() => {
+    console.debug('🚀 - componentDidMount');
+    askPermission();
+    return () => {
+      console.debug('🚀 - componentWillUnmount');
+      stopStepCounter();
+    };
+  }, []);
 
-  render() {
-    return (
-      <SafeAreaView>
-        <View style={{
+  useEffect(() => {
+    if (granted && supported) {
+      console.debug('🚀 - componentDidUpdate');
+      startStepCounter();
+    }
+  }, [granted, supported]);
+
+  return (
+    <SafeAreaView>
+      <View
+        style={{
           height: '100%',
           width: '100%',
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: 'white',
           display: 'flex',
-        }}>
-          <Text style={{ fontSize: 20, color: 'slategrey' }}>
-            User Granted Step Counter Feature?: {this.state.granted ? 'yes' : 'no'}
-          </Text>
-          <Text style={{ fontSize: 20, color: 'slategrey' }}>
-            Device has Step Counter Sensor?: {this.state.supported ? 'yes' : 'no'}
-          </Text>
-          {!this.state.granted ? (
-            <Button title="Check Permission" onPress={this.askPermission} />
-          ) : (
-            <>
-              <Text style={{ fontSize: 36, color: '#000' }}>걸음 수: {this.state.steps}</Text>
-              <Button title="Start StepCounter Updates" onPress={this.startStepCounter} />
-              <Button title="Stop StepCounter Updates" onPress={this.stopStepCounter} />
-            </>
-          )}
-        </View>
-      </SafeAreaView>
-    );
-  }
+        }}
+      >
+        <Text style={{ fontSize: 20, color: 'slategrey' }}>
+          User Granted Step Counter Feature?: {granted ? 'yes' : 'no'}
+        </Text>
+        <Text style={{ fontSize: 20, color: 'slategrey' }}>
+          Device has Step Counter Sensor?: {supported ? 'yes' : 'no'}
+        </Text>
+        {!granted ? (
+          <Button title="Check Permission Again" onPress={askPermission} />
+        ) : (
+          <>
+            <Text style={{ fontSize: 36, color: 'dimgray' }}>걸음 수: {steps}</Text>
+            <Button title="Start StepCounter Updates" onPress={startStepCounter} />
+            <Button title="Stop StepCounter Updates" onPress={stopStepCounter} />
+          </>
+        )}
+      </View>
+    </SafeAreaView>
+  );
 }

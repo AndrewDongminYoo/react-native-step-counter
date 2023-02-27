@@ -84,7 +84,6 @@ abstract class SensorListenService(
      * the current steps data of the user
      * @see currentSteps
      * @see distance
-     * @see startDate
      * @see endDate
      * @see sensorTypeString
      * @see calories
@@ -96,11 +95,11 @@ abstract class SensorListenService(
         get() = Arguments.createMap().apply {
             putDouble("steps", currentSteps)
             putDouble("distance", distance)
-            putInt("startDate", startDate.toInt())
-            putInt("endDate", endDate.toInt())
+            putDouble("startDate", startDate.toDouble())
+            putDouble("endDate", endDate.toDouble())
             putString("counterType", sensorTypeString)
             putDouble("calories", calories)
-            putInt("dailyGoal", dailyGoal)
+            putDouble("dailyGoal", dailyGoal.toDouble())
         }
 
     /**
@@ -124,6 +123,7 @@ abstract class SensorListenService(
      */
     private val calories: Double
         get() = currentSteps * 0.045
+
     /**
      * Distance of in-database-saved steps
      */
@@ -133,14 +133,17 @@ abstract class SensorListenService(
      * Number of steps counted since service start
      */
     abstract var currentSteps: Double
+
     /**
      * Start date of the step counting. UTC milliseconds
      */
     private val startDate: Long = System.currentTimeMillis()
+
     /**
      * End date of the step counting. UTC milliseconds
      */
-    abstract var endDate: Long
+    private val endDate: Long
+        get() = System.currentTimeMillis()
 
     private val sensorDelay: Int
         get() = when (samplingPeriodUs) {
@@ -163,13 +166,16 @@ abstract class SensorListenService(
         Log.d(TAG_NAME, "SensorListenService.sensorDelay: $sensorDelay")
         Log.d(TAG_NAME, "SensorListenService.sensorTypes: $sensorTypeString")
         Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
-        Log.d(TAG_NAME, "SensorManager.getSensorList(): ${sensorManager.getSensorList(sensorType)}")
+        val sensors = sensorManager.getSensorList(detectedSensor.type)
+        val sensor = sensorManager.getDefaultSensor(detectedSensor.type, false)
+        Log.d(TAG_NAME, "SensorManager.getSensorList: $sensors")
+        Log.d(TAG_NAME, "SensorManager.defaultSensor: $sensor")
         Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
         /**
-         * {1=[{Sensor name="LSM6DSO Accelerometer", vendor="STMicro", version=15932, type=1, maxRange=78.4532, resolution=0.0023928226, power=0.17, minDelay=2404}],
-         * 19=[{Sensor name="step_counter  Non-wakeup", vendor="Samsung", version=1, type=19, maxRange=4.2949673E9, resolution=1.0, power=0.001, minDelay=0}]}
+         * Sensor name="LSM6DSO Accelerometer", vendor="STMicro", version=15932, type=1, maxRange=78.4532, resolution=0.0023928226, power=0.17, minDelay=2404
+         * Sensor name="step_counter  Non-wakeup", vendor="Samsung", version=1, type=19, maxRange=4.2949673E9, resolution=1.0, power=0.001, minDelay=0
          */
-        sensorManager.registerListener(this, detectedSensor, sensorDelay)
+        sensorManager.registerListener(this, detectedSensor, samplingPeriodUs)
     }
 
     /**
@@ -210,16 +216,11 @@ abstract class SensorListenService(
      */
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor == null
-            || event.sensor == null
             || event.sensor != detectedSensor
-            || event.sensor.type != sensorType) return
-        val timeInMilli = System.currentTimeMillis()
-        if (timeInMilli - startDate > sensorDelay) {
-            val steps = updateCurrentSteps(timeInMilli, event.values)
-            if (steps != currentSteps) {
-                currentSteps = steps
-                counterModule.onStepDetected(stepsParamsMap)
-            }
+            || event.sensor.type != sensorType
+            || event.sensor.type != detectedSensor.type) return
+        if (updateCurrentSteps(event.values)) {
+            counterModule.onStepDetected(stepsParamsMap)
         }
     }
 
@@ -227,11 +228,10 @@ abstract class SensorListenService(
      * abstract method to update the current steps
      * implemented in [StepCounterService] and [AccelerometerService]
      * with different motion sensor handling algorithm.
-     * @param timestampMs the timestamp in milliseconds of the sensor event
      * @param eventData the detected vector of sensor event
-     * @return the current steps
+     * @return if the current steps is updated, return true, otherwise return false
      */
-    abstract fun updateCurrentSteps(timestampMs: Long, eventData: FloatArray): Double
+    abstract fun updateCurrentSteps(eventData: FloatArray): Boolean
 
     /**
      * Called when the accuracy of the registered sensor has changed.
