@@ -57,12 +57,12 @@ yarn add @donminyu/react-native-step-counter
 
 ## Interface
 
-- `isStepCountingSupported(): boolean`: 장치에 단계 카운터가 있는지 확인하는 방법 또는 가속도계 센서.
+- `isStepCountingSupported(): Promise<Record<string, boolean>>`: 장치에 단계 카운터가 있는지 확인하는 방법 또는 가속도계 센서.
 
   - 필요한 센서에 대한 권한을 요청하고 장치에 단계 카운터 또는 가속도계 센서가 있는지 확인합니다.
   - 장치에 단계 카운터 또는 가속도계 센서가 있으면 True를 반환합니다. 그렇지 않으면 거짓. (대부분의 경우 True)
 
-- `startStepCounterUpdate(new Date()): boolean`:
+- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback): EmitterSubscription`:
 
   - `stepSensor` 를 스텝카운터 센서 혹은 가속도계 센서로 설정합니다.
     - 스텝 카운터 센서가 발견되면 `stepSensor`로 등록합니다.
@@ -85,10 +85,10 @@ yarn add @donminyu/react-native-step-counter
   - `endDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 종료 날짜를 나타내는 숫자 속성입니다.
   - `distance`: 이것은 지정된 기간 동안 사용자가 걸거나 뛴 거리를 미터로 나타내는 숫자 속성입니다.
     **Android only**
-    `counterType`: 이것은 걸음을 감지하는 데 사용되는 카운터 유형을 나타내는 문자열 속성입니다.이 속성은 Android 장치에서만 디버깅 용도로 사용할 수 있으며 `STEP_COUNTER` 또는 `ACCELEROMETER`의 두 가지 값 중 하나를 가질 수 있습니다.
-    **iOS only**
-  - `floorsAscended`: 이것은 지정된 기간 동안 사용자가 올라간 층 수를 나타내는 숫자 속성입니다.이 속성은 iOS 장치에서만 사용할 수 있습니다.
-  - `floorsDescended`: 이것은 지정된 기간 동안 사용자가 내려온 층 수를 나타내는 숫자 속성입니다.이 속성은 iOS 장치에서만 사용할 수 있습니다.
+    - `counterType`: 이것은 걸음을 감지하는 데 사용되는 센서 유형을 나타내는 문자열 타입으로, `STEP_COUNTER` 또는 `ACCELEROMETER`의 두 가지 값 중 하나를 가질 수 있습니다.
+      **iOS only**
+    - `floorsAscended`: 이것은 지정된 기간 동안 사용자가 올라간 층 수를 나타내는 숫자 속성입니다.이 속성은 iOS 장치에서만 사용할 수 있습니다.
+    - `floorsDescended`: 이것은 지정된 기간 동안 사용자가 내려온 층 수를 나타내는 숫자 속성입니다.이 속성은 iOS 장치에서만 사용할 수 있습니다.
 
 ## Usage
 

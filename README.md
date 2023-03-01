@@ -57,12 +57,12 @@ yarn add @donminyu/react-native-step-counter
 
 ## Interface
 
-- `isStepCountingSupported(): boolean`: method to check if the device has a step counter or accelerometer sensor.
+- `isStepCountingSupported(): Promise<Record<string, boolean>>`: method to check if the device has a step counter or accelerometer sensor.
 
   - request permission for the required sensors and check if the device has a step counter or accelerometer sensor.
   - returns true if the device has a step counter or accelerometer sensor. (usually true for Android devices)
 
-- `startStepCounterUpdate(new Date()): boolean`:
+- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback): EmitterSubscription`:
 
   - `stepSensor` is set to step counter sensor or accelerometer sensor.
     - if step counter sensor is found, then register as listener.
@@ -77,18 +77,18 @@ yarn add @donminyu/react-native-step-counter
   - unregister the listener from `sensorManager`.
 
 - `StepCountData`:
-  **Common Interface**
-  - `dailyGoal`: This is a number property that indicates the user's daily goal for number of steps taken. The default value for this property is 10,000.
-  - `steps`: This is a number property that indicates the number of steps taken by the user during the specified time period.
-  - `calories`: This is a number property that indicates the estimated number of calories burned by the user during the specified time period.
-  - `startDate`: This is a number property that indicates the start date of the data in Unix timestamp format, measured in milliseconds.
-  - `endDate`: This is a number property that indicates the end date of the data in Unix timestamp format, measured in milliseconds.
-  - `distance`: This is a number property that indicates the distance in meters that the user has walked or run during the specified time period.
-    **Android only**
-    `counterType`: This is a string property that indicates the type of counter used to count the steps. This property is only available on Android devices and can have one of two values: `STEP_COUNTER` or `ACCELEROMETER`.
-    **iOS only**
-  - `floorsAscended`: This is a number property that indicates the number of floors ascended by the user during the specified time period. This property is only available on iOS devices.
-  - `floorsDescended`: This is a number property that indicates the number of floors descended by the user during the specified time period. This property is only available on iOS devices.
+  - **Common Interface**
+    - `dailyGoal`: This is a number property that indicates the user's daily goal for number of steps taken. The default value for this property is 10,000.
+    - `steps`: This is a number property that indicates the number of steps taken by the user during the specified time period.
+    - `calories`: This is a number property that indicates the estimated number of calories burned by the user during the specified time period.
+    - `startDate`: This is a number property that indicates the start date of the data in Unix timestamp format, measured in milliseconds.
+    - `endDate`: This is a number property that indicates the end date of the data in Unix timestamp format, measured in milliseconds.
+    - `distance`: This is a number property that indicates the distance in meters that the user has walked or run during the specified time period.
+  - **Android only**
+    - `counterType`: The type of sensor used to count the steps. This property can have one of two values: `STEP_COUNTER` or `ACCELEROMETER`.
+  - **iOS only**
+    - `floorsAscended`: This is a number property that indicates the number of floors ascended by the user during the specified time period. This property is only available on iOS devices.
+    - `floorsDescended`: This is a number property that indicates the number of floors descended by the user during the specified time period. This property is only available on iOS devices.
 
 ## Usage
 
