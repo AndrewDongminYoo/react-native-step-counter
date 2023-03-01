@@ -5,10 +5,10 @@ A simple React Native package to count the number of steps taken by the user. Th
 ## Installation
 
 ```zsh
-npm install react-native-step-counter
+npm install @donminyu/react-native-step-counter
 
 # or if you use Yarn,
-yarn add react-native-step-counter
+yarn add @donminyu/react-native-step-counter
 ```
 
 ## Requirements
@@ -19,21 +19,19 @@ yarn add react-native-step-counter
 <!--  android/src/main/AndroidManifest.xml-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.stepcounter">
-  <!--  최신 기종 (스텝 카운터 센서가 기본적으로 있는 경우)-->
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-  <!--  일부 기종 스텝 카운터 센서 없어 가속도계의 움직임을 추적해 계산 (기록 빈도수가 높은 센서 사용)-->
   <uses-permission android:name="android.permission.BODY_SENSORS" />
-  <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+  <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
 
   <uses-feature
-      android:name="android.hardware.sensor.step_counter"
-      android:required="true" />
+    android:name="android.hardware.sensor.stepcounter"
+    android:required="true" />
   <uses-feature
-      android:name="android.hardware.sensor.step_detector"
-      android:required="true" />
+    android:name="android.hardware.sensor.stepdetector"
+    android:required="true" />
   <uses-feature
-      android:name="android.hardware.sensor.accelerometer"
-      android:required="true" />
+    android:name="android.hardware.sensor.accelerometer"
+    android:required="true" />
 </manifest>
 ```
 
@@ -99,7 +97,8 @@ To use the Step Counter Library in your React Native app, follow these steps:
 Import the library into your React Native app.
 
 ```typescript
-import RNStepCounter, {
+import React, { useEffect, useState } from 'react';
+import {
   isStepCountingSupported,
   parseStepData,
   startStepCounterUpdate,
@@ -111,121 +110,104 @@ Use the `isStepCountingSupported` method to check if the device has a step count
 
 ```typescript
 const [supported, setSupported] = useState(false);
+const [granted, setGranted] = useState(false);
+
 async function askPermission() {
-  const granted = isStepCountingSupported();
-  console.debug('🚀 - isStepCountingSupported', granted);
-  setSupported(supported);
-  return supported;
+  isStepCountingSupported().then((result) => {
+    console.debug('🚀 - isStepCountingSupported', result);
+    setGranted(result.granted === true);
+    setSupported(result.supported === true);
+  });
 }
 ```
 
-Call the `startStepCounterUpdate` method from the `StepCounterModule` class to start the step counter service. Then `NativeEventEmitter` is used to listen for the `stepCounterUpdate` event.
+Call the `startStepCounterUpdate` method to start the step counter service.
 
 ```typescript
 const [steps, setSteps] = useState(0);
-const [subscription, setSubscription] = useState<EmitterSubscription>();
 
-const startStepCounter = async () => {
-  const now = new Date();
-  const sub = startStepCounterUpdate(now, (data) => {
-    console.log(parseStepData(data));
+async function startStepCounter() {
+  startStepCounterUpdate(new Date(), (data) => {
+    console.debug(parseStepData(data));
     setSteps(data.steps);
   });
-  setSubscription(sub);
-};
+}
 ```
 
 Here's an example of a complete React component that uses the `NativeStepCounter`:
 
 ```typescript
-import React, { Component } from 'react';
-import { Button, SafeAreaView, Text, View } from 'react-native';
-import {
-  isStepCountingSupported,
-  parseStepData,
-  requestPermissions,
-  startStepCounterUpdate,
-  stopStepCounterUpdate,
-} from 'react-native-step-counter';
-
-type AppState = {
-  granted: boolean;
-  supported: boolean;
-  steps: number;
-};
-
-export default class App extends Component<{}, AppState> {
-  state = {
-    granted: false,
-    supported: false,
-    steps: 0,
-  };
+export default function App() {
+  const [supported, setSupported] = useState(false);
+  const [granted, setGranted] = useState(false);
+  const [steps, setSteps] = useState(0);
 
   /** get user's motion permission and check pedometer is available */
-  askPermission = async () => {
-    await requestPermissions().then((response) => {
-      console.debug('🐰 permissions granted?', response.granted);
-      console.debug('🐰 permissions canAskAgain?', response.canAskAgain);
-      console.debug('🐰 permissions expires?', response.expires);
-      console.debug('🐰 permissions status?', response.status);
-      this.setState({
-        granted: response.granted,
-      });
+  async function askPermission() {
+    isStepCountingSupported().then((result) => {
+      console.debug('🚀 - isStepCountingSupported', result);
+      setGranted(result.granted === true);
+      setSupported(result.supported === true);
     });
-    const featureAvailable = isStepCountingSupported();
-    console.debug('🚀 - isStepCountingSupported', featureAvailable);
-    this.setState({
-      supported: featureAvailable,
-    });
-  };
+  }
 
-  startStepCounter = async () => {
-    const now = new Date();
-    startStepCounterUpdate(now, (data) => {
-      console.log(parseStepData(data));
-      this.setState({
-        steps: data.steps,
-      });
+  async function startStepCounter() {
+    startStepCounterUpdate(new Date(), (data) => {
+      console.debug(parseStepData(data));
+      setSteps(data.steps);
     });
-  };
+  }
 
-  stopStepCounter() {
-    this.setState({
-      steps: 0,
-    });
+  function stopStepCounter() {
+    setSteps(0);
     stopStepCounterUpdate();
   }
 
-  componentDidMount(): void {
-    this.askPermission();
-  }
-  componentDidUpdate(_: Readonly<{}>, __: Readonly<AppState>): void {
-    if (this.state.granted && this.state.supported) {
-      this.startStepCounter();
-    }
-  }
-  componentWillUnmount(): void {
-    this.stopStepCounter();
-  }
+  useEffect(() => {
+    console.debug('🚀 - componentDidMount');
+    askPermission();
+    return () => {
+      console.debug('🚀 - componentWillUnmount');
+      stopStepCounter();
+    };
+  }, []);
 
-  render() {
-    return (
-      <SafeAreaView>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text>Motion Tracking Permission: {this.state.granted ? 'granted' : 'denied'}</Text>
-          {!this.state.granted ? (
-            <Button title="Request Permission" onPress={this.askPermission} />
-          ) : (
-            <>
-                <Text style={{ fontSize: 36, color: '#000' }}>걸음 수: {this.state.steps}</Text>
-              <Button title="Start StepCounter Updates" onPress={this.startStepCounter} />
-              <Button title="Stop StepCounter Updates" onPress={this.startStepCounter} />
-            </>
-          )}
-        </View>
-      </SafeAreaView>
-    );
-  }
+  useEffect(() => {
+    console.debug('🚀 - componentDidUpdate');
+    if (granted && supported) {
+      console.debug('🚀 - granted and supported');
+      startStepCounter();
+    } else if (granted && !supported) {
+      console.debug('🚀 - granted but not supported');
+      startStepCounter();
+    } else if (supported && !granted) {
+      console.debug('🚀 - supported but not granted');
+      requestPermission().then((accepted) => {
+        console.debug('🚀 - requestPermission', accepted);
+        setGranted(accepted);
+      });
+    }
+  }, [granted, supported]);
+
+  return (
+    <SafeAreaView>
+      <View style={styles.container}>
+        <Text style={styles.normText}>User Granted Step Counter Feature?: {granted ? 'yes' : 'no'}</Text>
+        <Text style={styles.normText}>Device has Step Counter Sensor?: {supported ? 'yes' : 'no'}</Text>
+        {!granted ? (
+          <>
+            <Button title="Request Permission Again" onPress={requestPermission} />
+          </>
+        ) : (
+          <>
+            <Text style={styles.normText}>걸음 수: {steps}</Text>
+            <Button title="Start StepCounter Updates" onPress={startStepCounter} />
+            <Button title="Stop StepCounter Updates" onPress={stopStepCounter} />
+          </>
+        )}
+      </View>
+    </SafeAreaView>
+  );
 }
 ```
 

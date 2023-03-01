@@ -1,7 +1,7 @@
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import type { EmitterSubscription as Subscription } from 'react-native';
 import type { StepCountData as Data, Spec } from './NativeStepCounter';
-import { eventName, NAME as NativeModuleName } from './NativeStepCounter';
+import { eventName, VERSION, NAME } from './NativeStepCounter';
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
@@ -18,8 +18,6 @@ const LINKING_ERROR =
   '- You are not using Expo Go\n' +
   'If none of these fix the issue, please open an issue on the Github repository: ' +
   'https://github.com/AndrewDongminYoo/react-native-step-counter`';
-
-export const NAME = NativeModuleName;
 
 /**
  * `StepCountData` is an object with four properties: `distance`, `steps`, `startDate`, and `endDate`.
@@ -74,13 +72,13 @@ const RNStepCounter = (
   StepCounterModule
     ? StepCounterModule
     : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    )
+        {},
+        {
+          get() {
+            throw new Error(LINKING_ERROR);
+          },
+        }
+      )
 ) as Spec;
 
 const StepCounterEventEmitter = new NativeEventEmitter(RNStepCounter);
@@ -128,7 +126,7 @@ class UnavailabilityError extends Error {
   constructor(moduleName: string, propertyName: string) {
     super(
       `The method or property ${moduleName}.${propertyName} is not available on ${Platform.OS}, ` +
-      "are you sure you've linked all the native dependencies properly?"
+        "are you sure you've linked all the native dependencies properly?"
     );
     this.code = 'ERR_UNAVAILABLE';
   }
@@ -152,21 +150,21 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
  * @param {Date} start A date indicating the start of the range over which to measure steps.
  * @param {StepCountUpdateCallback} callBack is provided with a single argument that is [StepCountData](StepCountData).
  * @return Returns a [Subscription](Subscription) that enables you to call.
- * 
+ *
  * when you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
- * 
+ *
  * ### iOS
  * `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.
- * 
+ *
  * @link [`CMPedometer.stopUpdates`](https://developer.apple.com/documentation/coremotion/cmpedometer/1613950-startupdates)
  * @link [`CMStepCounter.stopStepCountingUpdates`](https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates)
- * 
- * > Only the past seven days worth of data is stored and available for you to retrieve. 
+ *
+ * > Only the past seven days worth of data is stored and available for you to retrieve.
  * > Specifying a start date that is more than seven days in the past returns only the available data.
  */
 export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback): Subscription {
   if (!RNStepCounter.startStepCounterUpdate) {
-    throw new UnavailabilityError(NativeModuleName, eventName);
+    throw new UnavailabilityError(NAME, eventName);
   }
   const from = start.getTime();
   RNStepCounter.startStepCounterUpdate(from);
@@ -178,7 +176,7 @@ export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCal
  * @return `void`
  * ### iOS
  * `CMStepCounter.stopStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.stopUpdates` instead.
- * 
+ *
  * @link [`CMPedometer.stopUpdates`](https://developer.apple.com/documentation/coremotion/cmpedometer/1613973-stopupdates)
  * @link [`CMStepCounter.stopStepCountingUpdates`](https://developer.apple.com/documentation/coremotion/cmstepcounter/1616157-stopstepcountingupdates)
  */
@@ -187,4 +185,5 @@ export function stopStepCounterUpdate(): void {
   RNStepCounter.stopStepCounterUpdate();
 }
 
+export { NAME, VERSION };
 export default RNStepCounter;
