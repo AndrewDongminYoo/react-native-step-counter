@@ -1,3 +1,8 @@
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+}
+
 //file:noinspection GrDeprecatedAPIUsage
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
@@ -160,6 +165,8 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     //noinspection GradleDependency
+    implementation platform('com.google.firebase:firebase-bom:31.2.2')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation('com.facebook.react:react-android:0.71.3')
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
