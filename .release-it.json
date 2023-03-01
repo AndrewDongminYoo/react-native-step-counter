@@ -1,6 +1,6 @@
 {
   "git": {
-    "commitMessage": "chore: release ${version}",
+    "commitMessage": "chore: 🔖 release ${version}",
     "tagAnnotation": "Release v${version}",
     "tagName": "v${version}",
     "push": true,
@@ -26,9 +26,8 @@
   },
   "hooks": {
     "before:init": ["npm run lint", "npm test"],
-    "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./package-lock.json",
+    "after:bump": "npm run build && npm run test:build:version",
     "after:git:release": "echo After git push, before github release",
-    "before:release": "npm run release:changelog:fix",
     "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
   }
 }
