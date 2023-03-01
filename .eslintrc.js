@@ -11,6 +11,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   rules: {
     'prettier/prettier': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',

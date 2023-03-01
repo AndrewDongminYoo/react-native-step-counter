@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Platform, Rationale, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Button, Platform, type Rationale, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import {
   isStepCountingSupported,
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from 'react-native-step-counter';
-import { Permission, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import { type Permission, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
 const requestPermission = async () => {
   const permission: Permission =
