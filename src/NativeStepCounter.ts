@@ -14,13 +14,13 @@ export type StepCountData = {
 };
 
 export const NAME = 'RNStepCounter';
-
+export const VERSION = '0.1.0';
 export const eventName = 'StepCounter.stepCounterUpdate';
 
 export interface Spec extends TurboModule {
   /**
    * check if the step counter is supported on the device.
-   * @return {Promise<Record<string, boolean>>} Returns the `Promise` object, 
+   * @return {Promise<Record<string, boolean>>} Returns the `Promise` object,
    * including information such as whether the user's device has a step counter sensor by default (`supported`)
    * and whether the user has allowed the app to measure the pedometer data. (`granted`)
    * @property {boolean} granted - The permission is granted or not.
@@ -48,7 +48,7 @@ export interface Spec extends TurboModule {
   startStepCounterUpdate(from: number): boolean;
   /**
    * Stop updating the step count data.
-   * 
+   *
    * removes all the listeners that were registered with `startStepCounterUpdate`.
    */
   stopStepCounterUpdate(): void;
