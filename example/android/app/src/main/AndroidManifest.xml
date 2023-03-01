@@ -2,24 +2,19 @@
   xmlns:tools="http://schemas.android.com/tools"
   package="com.stepcounterexample">
 
-  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-  <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
   <uses-permission android:name="android.permission.BODY_SENSORS" />
   <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
-  <uses-permission
-      android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"
-      tools:ignore="HighSamplingRate" />
 
   <uses-feature
-      android:name="android.hardware.sensor.stepcounter"
-      android:required="true" />
+    android:name="android.hardware.sensor.stepcounter"
+    android:required="true" />
   <uses-feature
-      android:name="android.hardware.sensor.stepdetector"
-      android:required="true" />
+    android:name="android.hardware.sensor.stepdetector"
+    android:required="true" />
   <uses-feature
-      android:name="android.hardware.sensor.accelerometer"
-      android:required="true" />
+    android:name="android.hardware.sensor.accelerometer"
+    android:required="true" />
 
   <application
   android:name=".MainApplication"

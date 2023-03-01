@@ -100,8 +100,6 @@ class StepCounterModule(context: ReactApplicationContext) :
         Log.d(TAG_NAME, "accelerometer granted? $accelOK")
         promise?.resolve(
             Arguments.createMap().apply {
-                putBoolean("step_counter", SDK_INT >= VERSION_CODES.KITKAT)
-                putBoolean("accelerometer", SDK_INT >= VERSION_CODES.ECLAIR)
                 putBoolean("supported", supported)
                 putBoolean("granted", stepsOK || accelOK)
             }
