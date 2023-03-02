@@ -8,50 +8,40 @@
 @implementation RNStepCounter
 RCT_EXPORT_MODULE()
 
-- (CMPedometer *) pedometer {
-    return [[CMPedometer alloc]init];
-}
-
-- (NSDate *) today {
-    return [[NSDate date]init];
-}
-
-- (NSArray<NSString *> *)supportedEvents{
+- (NSArray<NSString *> *)supportedEvents {
     return @[@"StepCounter.stepCounterUpdate"];
 }
 
-RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
-                                   reject:(RCTPromiseRejectBlock)reject) {
-    resolve(@{
-        @"granted": @([CMPedometer authorizationStatus]),
-        @"supported": @([CMPedometer isStepCountingAvailable]),
-    });
+RCT_EXPORT_METHOD(isStepCountingSupported:(RCTResponseSenderBlock) callback) {
+    callback(@[[NSNull null]],
+             @{@"granted": @([CMPedometer authorizationStatus]),
+             @"supported": @([CMPedometer isStepCountingAvailable])});
 }
 
 - (void)queryStepCounterDataBetweenDates:(NSDate *)startDate
-                 endDate:(NSDate *)endDate 
-                 handler:(RCTResponseSenderBlock)handler {
-        [self.pedometer queryPedometerDataFromDate:startDate
-                                            toDate:endDate
-                                       withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-        handler(@[error.description?:[NSNull null], [self dictionaryFromPedometerData:pedometerData]]);
+                                 endDate:(NSDate *)endDate
+                                 handler:(RCTResponseSenderBlock)handler {
+    [self.pedometer queryPedometerDataFromDate:startDate
+                                        toDate:endDate
+                                   withHandler:^(CMPedometerData *pedometerData, NSError *error) {
+        handler(@[error.description?:[NSNull null],
+                  [self dictionaryFromPedometerData:pedometerData]]);
     }];
 }
 
 RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSNumber *, 
-  startStepCounterUpdate:(double)date) {
-    [self.pedometer startPedometerUpdatesFromDate:(self.today)
+                           startStepCounterUpdate:(double)date) {
+    [self.pedometer startPedometerUpdatesFromDate:[[NSDate date]init]
                                       withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-      if (pedometerData) {
-      [self sendEventWithName:@"StepCounter.stepCounterUpdate"
-         body:[self dictionaryFromPedometerData:pedometerData]];
-      }
-  }];
+        if (pedometerData) {
+            [self sendEventWithName:@"StepCounter.stepCounterUpdate"
+           body:[self dictionaryFromPedometerData:pedometerData]];
+        }
+    }];
     return @(1);
 }
 
 - (NSDictionary *)dictionaryFromPedometerData:(CMPedometerData *)data {
-
     static NSDateFormatter *formatter;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -72,57 +62,54 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSNumber *,
     };
 }
 
-RCT_EXPORT_METHOD(stopPedometerUpdates) {
+RCT_EXPORT_METHOD(stopStepCounterUpdate) {
     [self.pedometer stopPedometerUpdates];
 }
 
-RCT_EXPORT_METHOD(addListener:(NSString *)eventName) {
-    // NOTHING
-}
-
-RCT_EXPORT_METHOD(removeListeners:(double)count) {
-    // NOTHING
-}
-
-- (void)stopStepCounterUpdate {
-    <#code#>
-}
-
-
-- (void)authorizationStatus:(RCTResponseSenderBlock) callback {
+- (Boolean)authorizationStatus:(RCTResponseSenderBlock) {
     NSString *response = @"not_available";
+    Boolean *isGranted = @(false);
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpartial-availability"
-        CMAuthorizationStatus status = [CMPedometer authorizationStatus];
-        switch (status) {
-            case CMAuthorizationStatusDenied:
-                response = @"denied";
-                break;
-            case CMAuthorizationStatusAuthorized:
-                response = @"authorized";
-                break;
-            case CMAuthorizationStatusRestricted:
-                response = @"restricted";
-                break;
-            case CMAuthorizationStatusNotDetermined:
-                response = @"not_determined";
-                break;
-            default:
-                break;
-        }
-
+    CMAuthorizationStatus status = [CMPedometer authorizationStatus];
+    switch (status) {
+        case CMAuthorizationStatusAuthorized:
+            response = @"authorized";
+            isGranted = @(true);
+            break;
+        default:
+            break;
+    }
+    return isGranted;
 #pragma clang diagnostic pop
 #endif
-    callback(@[[NSNull null], response]);
 }
 
 #pragma mark - Private
 
+-(void)addListener:(NSString *)eventName {
+    // NOTHING
+}
+
+-(void)removeListeners:(double)count {
+    // NOTHING
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self == nil) {
+        return nil;
+    }
+    _pedometer = [[CMPedometer alloc]init];
+    return self;
+}
+
 // Don't compile this code when we build for the old architecture.
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
-    (const facebook::react::ObjCTurboModule::InitParams &)params
+(const facebook::react::ObjCTurboModule::InitParams &)params
 {
     return std::make_shared<facebook::react::NativeStepCounterSpecJSI>(params);
 }
