@@ -24,14 +24,14 @@ import java.util.*
  * @property appContext The context of the react-native application from [context][com.facebook.react.bridge.ReactApplicationContext]
  * @property sensorManager The sensor manager that is responsible for the sensor
  * @property stepCounterListener The service that is responsible for the step counter sensor
- * @constructor Creates a new StepCounterModule implements NativeStepCounterSpec
+ * @constructor Creates a new StepCounterModule implements StepCounterSpec
  * @see ReactContextBaseJavaModule
  * @see ReactApplicationContext
- * @see NativeStepCounterSpec
+ * @see StepCounterSpec
  */
 @SuppressLint("ObsoleteSdkInt")
 class StepCounterModule(context: ReactApplicationContext) :
-    NativeStepCounterSpec(context) {
+    StepCounterSpec(context) {
     companion object {
         const val NAME: String = "RNStepCounter"
         const val eventName: String = "StepCounter.stepCounterUpdate"
@@ -92,13 +92,13 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see VERSION_CODES.KITKAT
      * @see WritableMap
      */
-    override fun isStepCountingSupported(promise: Promise?) {
+    override fun isStepCountingSupported(promise: Promise) {
         Log.d(TAG_NAME, "step_counter exists? ${SDK_INT >= VERSION_CODES.KITKAT}")
         Log.d(TAG_NAME, "accelerometer exists? ${SDK_INT >= VERSION_CODES.ECLAIR}")
         Log.d(TAG_NAME, "hardware_step_counter? $supported")
         Log.d(TAG_NAME, "step_counter granted? $stepsOK")
         Log.d(TAG_NAME, "accelerometer granted? $accelOK")
-        promise?.resolve(
+        promise.resolve(
             Arguments.createMap().apply {
                 putBoolean("supported", supported)
                 putBoolean("granted", stepsOK || accelOK)
@@ -116,6 +116,7 @@ class StepCounterModule(context: ReactApplicationContext) :
         stepCounterListener.startService()
         return true
     }
+
     /**
      * Stop the step counter sensor.
      * @return Nothing.
@@ -124,6 +125,7 @@ class StepCounterModule(context: ReactApplicationContext) :
         Log.d(TAG_NAME, "stopStepCounterUpdate")
         stepCounterListener.stopService()
     }
+
     /**
      * Keep: Required for RN built in Event Emitter Support.
      * @param eventName the name of the event. usually "stepCounterUpdate".
@@ -136,6 +138,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * not implemented.
      */
     override fun removeListeners(count: Double) {}
+
     /**
      * StepCounterPackage requires this property for the module.
      * @return the name of the module. usually "RNStepCounter".

@@ -49,10 +49,12 @@ class AccelerometerService(
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
     private var oldVelocityEstimate: Float = 0f
+
     // We want to keep a history of values to do a rolling average of the current
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
     private val accelRingY = FloatArray(ACCEL_RING_SIZE)
     private val accelRingZ = FloatArray(ACCEL_RING_SIZE)
+
     // We want to keep a history of values to do a rolling average of the current
     private val velocityRing = FloatArray(VELOCITY_RING_SIZE)
 
@@ -109,6 +111,7 @@ class AccelerometerService(
     companion object {
         private const val ACCEL_RING_SIZE = 50
         private const val VELOCITY_RING_SIZE = 10
+
         /**
          * The minimum acceleration that is considered a step
          */

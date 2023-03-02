@@ -4,7 +4,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import java.lang.System
 import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
@@ -129,6 +128,7 @@ abstract class SensorListenService(
      */
     private val distance: Double
         get() = currentSteps * 0.762
+
     /**
      * Number of steps counted since service start
      */
@@ -218,7 +218,8 @@ abstract class SensorListenService(
         if (event?.sensor == null
             || event.sensor != detectedSensor
             || event.sensor.type != sensorType
-            || event.sensor.type != detectedSensor.type) return
+            || event.sensor.type != detectedSensor.type
+        ) return
         if (updateCurrentSteps(event.values)) {
             counterModule.onStepDetected(stepsParamsMap)
         }

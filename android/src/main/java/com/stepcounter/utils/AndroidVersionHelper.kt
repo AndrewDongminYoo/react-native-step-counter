@@ -30,6 +30,7 @@ object AndroidVersionHelper {
     private val TAG_NAME: String = AndroidVersionHelper::class.java.name
     private const val PREF_NAME = "pref.com.stepcounter.stepcounter"
     private const val USE_SENSOR = "pref.com.stepcounter.use_step_hardware"
+
     /**
      * Decides whether the current soft- and hardware setup allows using hardware step detection
      * @param pm An instance of the android PackageManager
