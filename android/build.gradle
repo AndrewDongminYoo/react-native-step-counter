@@ -1,7 +1,4 @@
 buildscript {
-    // BuildScript is evaluated before everything else so we can't use getExtOrDefault
-    def kotlin_version = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : project.properties["StepCounter_kotlinVersion"]
-
     repositories {
         google()
         mavenCentral()
@@ -9,9 +6,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.1'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         // noinspection DifferentKotlinGradleVersion
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0"
     }
 }
 
@@ -27,7 +24,9 @@ if (isNewArchitectureEnabled()) {
 }
 
 def getExtOrDefault(name) {
-    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["StepCounter_" + name]
+    return rootProject.ext.has(name)
+        ? rootProject.ext.get(name)
+        : project.properties["StepCounter_" + name]
 }
 
 def getExtOrIntegerDefault(name) {
@@ -38,7 +37,6 @@ android {
     namespace "com.stepcounter"
     testNamespace 'com.stepcounter.test'
     ndkVersion getExtOrDefault("ndkVersion")
-    buildToolsVersion getExtOrDefault("buildToolsVersion")
     compileSdk getExtOrIntegerDefault("compileSdk")
 
     defaultConfig {
@@ -74,9 +72,12 @@ android {
             //noinspection GroovyImplicitNullArgumentCall
             if (isNewArchitectureEnabled()) {
                 java.srcDirs += [
+                    "src/newarch",
                     // This is needed to build Kotlin project with NewArch enabled
                     "${project.buildDir}/generated/source/codegen/java"
                 ]
+            } else {
+                java.srcDirs += ["src/oldarch"]
             }
         }
     }
