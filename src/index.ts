@@ -5,7 +5,7 @@ import { eventName, VERSION, NAME } from './NativeStepCounter';
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
-  "The package 'react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
+  "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
   Platform.select({
     ios: '- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n',
     android: '- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`',
@@ -56,7 +56,7 @@ const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').
  * @module StepCounter
  * @example
  * ```ts
- * import { StepCounter } from 'react-native-step-counter';
+ * import { StepCounter } from '@dongminyu/react-native-step-counter';
  * ```
  * ---
  * ** iOS Only Properties **

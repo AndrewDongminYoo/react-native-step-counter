@@ -21,5 +21,8 @@
     "@babel/runtime": "^7.21.0",
     "babel-plugin-module-resolver": "^5.0.0",
     "metro-react-native-babel-preset": "0.75.1"
+  },
+  "resolutions": {
+    "@dongminyu/react-native-step-counter": "0.0.2"
   }
 }

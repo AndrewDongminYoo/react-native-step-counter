@@ -5,17 +5,17 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from 'react-native-step-counter';
+} from '@dongminyu/react-native-step-counter';
 import { type Permission, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
 const requestPermission = async () => {
   const permission: Permission =
     Platform.OS === 'ios' ? PERMISSIONS.IOS.MOTION : PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION;
   const rationale: Rationale = {
-    title: 'Title',
-    message: 'Message',
-    buttonPositive: 'OK',
-    buttonNegative: 'Cancel',
+    title: '"Step Counter" Permission',
+    message: '"Step Counter" needs access to your sensor data.',
+    buttonPositive: 'ACCEPT',
+    buttonNegative: 'DENY',
   };
   return request(permission, rationale).then((result) => {
     if (result === RESULTS.GRANTED) {
@@ -31,7 +31,12 @@ const requestPermission = async () => {
 export default function App() {
   const [supported, setSupported] = useState(false);
   const [granted, setGranted] = useState(false);
-  const [steps, setSteps] = useState(0);
+  const [additionalInfo, setAdditionalInfo] = useState({
+    dailyGoal: '',
+    stepsString: '',
+    calories: '',
+    distance: '',
+  });
 
   /** get user's motion permission and check pedometer is available */
   async function askPermission() {
@@ -44,13 +49,19 @@ export default function App() {
 
   async function startStepCounter() {
     startStepCounterUpdate(new Date(), (data) => {
-      console.debug(parseStepData(data));
-      setSteps(data.steps);
+      setAdditionalInfo({
+        ...parseStepData(data),
+      });
     });
   }
 
   function stopStepCounter() {
-    setSteps(0);
+    setAdditionalInfo({
+      dailyGoal: '0/10000 steps',
+      stepsString: '0.0kCal',
+      calories: '0 steps',
+      distance: '0.0m',
+    });
     stopStepCounterUpdate();
   }
 
@@ -91,8 +102,11 @@ export default function App() {
           </>
         ) : (
           <>
-            <Text style={styles.normText}>걸음 수: {steps}</Text>
-            <Button title="Start StepCounter Updates" onPress={startStepCounter} />
+            <Text style={styles.normText}>dailyGoal : {additionalInfo.dailyGoal}</Text>
+            <Text style={styles.normText}>calories : {additionalInfo.calories}</Text>
+            <Text style={styles.normText}>stepsString : {additionalInfo.stepsString}</Text>
+            <Text style={styles.normText}>distance : {additionalInfo.distance}</Text>
+            <Button title="Start StepCounter Update" onPress={startStepCounter} />
             <Button title="Stop StepCounter Updates" onPress={stopStepCounter} />
           </>
         )}

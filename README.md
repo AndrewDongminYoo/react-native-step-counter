@@ -103,7 +103,7 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from 'react-native-step-counter';
+} from '@dongminyu/react-native-step-counter';
 ```
 
 Use the `isStepCountingSupported` method to check if the device has a step counter or accelerometer sensor.

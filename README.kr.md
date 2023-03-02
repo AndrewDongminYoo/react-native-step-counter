@@ -103,7 +103,7 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from 'react-native-step-counter';
+} from '@dongminyu/react-native-step-counter';
 ```
 
 `isStepCountingSupported` 메소드를 사용하여 장치에 스텝 카운터 또는 가속도계 센서가 있는지 확인합니다.
