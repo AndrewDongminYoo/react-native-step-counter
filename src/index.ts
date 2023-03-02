@@ -5,7 +5,7 @@ import { eventName, VERSION, NAME } from './NativeStepCounter';
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
-  "The package 'react-native-walking-tracker' doesn't seem to be linked. Make sure: \n\n" +
+  "The package 'react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
   Platform.select({
     ios: '- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n',
     android: '- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`',
@@ -49,7 +49,7 @@ type ParsedStepCountData = {
 // @ts-expect-error: global.__turboModuleProxy may not defined
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
-const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
+const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.StepCounter;
 
 /**
  * A module that allows you to get the step count data.
