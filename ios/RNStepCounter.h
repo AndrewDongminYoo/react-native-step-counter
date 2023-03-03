@@ -5,13 +5,14 @@
 @interface RNStepCounter : NSObject <NativeStepCounterSpec>
 
 #else
-#if __has_include("RCTBridgeModule.h")
-#import "RCTBridgeModule.h"
+#if __has_include("RCTEventEmitter.h")
+#import "RCTEventEmitter.h"
 #else
-#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 #endif
 
-@interface RNStepCounter : NSObject <RCTBridgeModule>
+@interface RNStepCounter : RCTEventEmitter
+
 #endif
 
 - (void)isStepCountingSupported:(RCTPromiseResolveBlock)resolve
