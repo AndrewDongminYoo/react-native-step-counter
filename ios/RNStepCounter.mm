@@ -1,8 +1,10 @@
 #import "RNStepCounter.h"
 
-#import <CoreMotion/CMPedometer.h>
-
 @implementation RNStepCounter
++ (bool)requiresMainQueueSetup {
+    return true;
+}
+
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
@@ -11,18 +13,22 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
                                    reject:(RCTPromiseRejectBlock)reject) {
-    resolve(@[[NSNull null],
-               [self dictionaryStepCounterStatus]]);
+    resolve(@{@"granted": @(self.authorizationStatus),
+            @"supported": @([CMPedometer isStepCountingAvailable]),
+                 @"pace": @([CMPedometer isPaceAvailable]),
+              @"cadence": @([CMPedometer isCadenceAvailable]),
+             @"distance": @([CMPedometer isDistanceAvailable]),
+           @"floorCount": @([CMPedometer isFloorCountingAvailable]),
+    });
 }
 
 - (void)queryStepCounterDataBetweenDates:(NSDate *)startDate
                                  endDate:(NSDate *)endDate
-                                 handler:(RCTResponseSenderBlock)callback {
+                                 handler:(RCTResponseSenderBlock)handler {
     [self.pedometer queryPedometerDataFromDate:startDate
                                         toDate:endDate
                                    withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-        callback(@[error.description?:[NSNull null],
-                  [self dictionaryFromPedometerData:pedometerData]]);
+        handler(@[[self dictionaryFromPedometerData:pedometerData]]);
     }];
 }
 
@@ -36,13 +42,6 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSNumber *,
         }
     }];
     return @(1);
-}
-
-- (NSDictionary *)dictionaryStepCounterStatus {
-    return @{
-        @"granted": @([CMPedometer authorizationStatus]),
-        @"supported": @([CMPedometer isStepCountingAvailable])
-    };
 }
 
 - (NSDictionary *)dictionaryFromPedometerData:(CMPedometerData *)data {
@@ -59,7 +58,6 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSNumber *,
         @"endDate": [formatter stringFromDate:data.endDate]?:[NSNull null],
         @"steps": data.numberOfSteps?:[NSNull null],
         @"distance": data.distance?:[NSNull null],
-        @"dailyGoal": @(10000),
         @"counterType": @"CMPedometer",
         @"floorsAscended": data.floorsAscended?:[NSNull null],
         @"floorsDescended": data.floorsDescended?:[NSNull null],
@@ -71,37 +69,29 @@ RCT_EXPORT_METHOD(stopStepCounterUpdate) {
 }
 
 - (bool)authorizationStatus {
-    NSString *response = @"not_available";
-    bool isGranted = false;
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpartial-availability"
     CMAuthorizationStatus status = [CMPedometer authorizationStatus];
     switch (status) {
-        case CMAuthorizationStatusAuthorized:
-            response = @"authorized";
-            isGranted = true;
-            break;
+        case CMAuthorizationStatusAuthorized: // enum: 3
+            return true;
         default:
-            break;
+            return false;
     }
-    return isGranted;
 #pragma clang diagnostic pop
 #endif
 }
 
 #pragma mark - Private
 
--(void)addListener:(NSString *)eventName {
-    // NOTHING
-}
-
--(void)removeListeners:(double)count {
-    // NOTHING
-}
-
--(CMPedometer *)pedometer {
-    return [[CMPedometer alloc]init];
+- (instancetype)init {
+    self = [super init];
+    if (self == nil) {
+        return nil;
+    }
+    _pedometer = [CMPedometer new];
+    return self;
 }
 
 // Don't compile this code when we build for the old architecture.

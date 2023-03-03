@@ -5,21 +5,16 @@
 @interface RNStepCounter : NSObject <NativeStepCounterSpec>
 
 #else
-#if __has_include("RCTEventEmitter.h")
-#import "RCTEventEmitter.h"
-#else
 #import <React/RCTEventEmitter.h>
-#endif
+#import <CoreMotion/CMPedometer.h>
 
-@interface RNStepCounter : RCTEventEmitter
-
+@interface RNStepCounter : RCTEventEmitter<RCTBridgeModule>
+@property (nonatomic, readwrite) CMPedometer *pedometer;
 #endif
 
 - (void)isStepCountingSupported:(RCTPromiseResolveBlock)resolve
                          reject:(RCTPromiseRejectBlock)reject;
 - (NSNumber *)startStepCounterUpdate:(double)from;
 - (void)stopStepCounterUpdate;
-- (void)addListener:(NSString *)eventName;
-- (void)removeListeners:(double)count;
 
 @end
