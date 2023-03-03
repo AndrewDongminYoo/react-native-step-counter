@@ -32,10 +32,10 @@ export default function App() {
   const [supported, setSupported] = useState(false);
   const [granted, setGranted] = useState(false);
   const [additionalInfo, setAdditionalInfo] = useState({
-    dailyGoal: '',
-    stepsString: '',
-    calories: '',
-    distance: '',
+    dailyGoal: '0/10000 steps',
+    stepsString: '0.0kCal',
+    calories: '0 steps',
+    distance: '0.0m',
   });
 
   /** get user's motion permission and check pedometer is available */
