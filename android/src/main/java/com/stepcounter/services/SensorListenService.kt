@@ -105,7 +105,7 @@ abstract class SensorListenService(
             putDouble("calories", calories)
             putDouble("dailyGoal", dailyGoal.toDouble())
         }
-
+        
     /**
      * Number of steps the user wants to walk every day
      */

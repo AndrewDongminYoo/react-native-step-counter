@@ -22,17 +22,11 @@ const LINKING_ERROR =
 /**
  * `StepCountData` is an object with four properties: `distance`, `steps`, `startDate`, and `endDate`.
  * @type {object} StepCountData - The Object that contains the step count data.
- * @property {string} counterType - The type of counter used to count the steps. (Android only)
- * @property {number} dailyGoal - The daily goal set by the user. default: 10000
+ * @property {string} counterType - The type of counter used to count the steps.
  * @property {number} steps - The number of steps taken during the time period.
- * @property {number} calories - The number of calories burned during the time period.
  * @property {number} startDate - The start date of the data.
  * @property {number} endDate - The end date of the data.
  * @property {number} distance - The distance in meters that the user has walked or run.
- * ---
- * ** iOS Only Properties **
- * @property {number} floorsAscended - The number of floors ascended during the time period.
- * @property {number} floorsDescended - The number of floors descended during the time period.
  */
 type StepCountData = Data;
 
@@ -46,10 +40,10 @@ type ParsedStepCountData = {
   distance: string;
 };
 
-// @ts-expect-error: global.__turboModuleProxy may not defined
+// @ts-expect-error
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
-const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.StepCounter;
+const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
 
 /**
  * A module that allows you to get the step count data.
@@ -91,9 +85,10 @@ type StepCountUpdateCallback = (result: StepCountData) => void;
  * @returns {ParsedStepCountData} The parsed step count data.
  */
 export function parseStepData(data: StepCountData): ParsedStepCountData {
-  const { dailyGoal, steps, calories, startDate, endDate, distance } = data;
+  const { steps, startDate, endDate, distance } = data;
+  const dailyGoal = 10000;
   const stepsString = steps + ' steps';
-  const kCal = calories.toFixed(2) + 'kCal';
+  const kCal = (steps * 0.045).toFixed(2) + 'kCal';
   const endDateTime = new Date(endDate).toLocaleTimeString('en-gb');
   const startDateTime = new Date(startDate).toLocaleTimeString('en-gb');
   const roundedDistance = Math.round(distance) + 'm';
@@ -152,7 +147,13 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
  * @return Returns a [Subscription](Subscription) that enables you to call.
  *
  * when you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
- *
+ * @example
+ * ```ts
+ * const startDate = new Date();
+ * startStepCounterUpdate(startDate).then((response) => {
+ *    const data = parseStepCountData(response);
+ * })
+ * ```
  * ### iOS
  * `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.
  *

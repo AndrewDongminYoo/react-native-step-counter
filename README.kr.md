@@ -77,18 +77,11 @@ yarn add @donminyu/react-native-step-counter
   - `sensorManager`의 센서 이벤트 리스너를 해제합니다.
 
 - `StepCountData`:
-  **Common Interface**
-  - `dailyGoal`: 걷기에 대한 사용자의 일일 목표를 나타내는 숫자 속성입니다. 임의로 설정된 기본값은 만 보 입니다.
   - `steps`: 지정된 기간 동안 사용자가 걸은 걸음 수를 나타내는 숫자 속성입니다.
-  - `calories`: 이것은 지정된 기간 동안 사용자가 연소한 예상 칼로리 수를 나타내는 숫자 속성입니다. 사용자의 몸무게 등을 수집하지 않기 때문에 정확하지 않을 수 있습니다.
   - `startDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 시작 날짜를 나타내는 숫자 속성입니다.
   - `endDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 종료 날짜를 나타내는 숫자 속성입니다.
   - `distance`: 이것은 지정된 기간 동안 사용자가 걸거나 뛴 거리를 미터로 나타내는 숫자 속성입니다.
-    **Android only**
-    - `counterType`: 이것은 걸음을 감지하는 데 사용되는 센서 유형을 나타내는 문자열 타입으로, `STEP_COUNTER` 또는 `ACCELEROMETER`의 두 가지 값 중 하나를 가질 수 있습니다.
-      **iOS only**
-    - `floorsAscended`: 이것은 지정된 기간 동안 사용자가 올라간 층 수를 나타내는 숫자 속성입니다.이 속성은 iOS 장치에서만 사용할 수 있습니다.
-    - `floorsDescended`: 이것은 지정된 기간 동안 사용자가 내려온 층 수를 나타내는 숫자 속성입니다.이 속성은 iOS 장치에서만 사용할 수 있습니다.
+  - `counterType`: 이것은 걸음을 감지하는 데 사용되는 센서 유형을 나타내는 문자열 타입으로, iOS에서는 CMPedometer, 안드로이드에서는 `STEP_COUNTER` 또는 `ACCELEROMETER`의 두 가지 값 중 하나를 가질 수 있습니다.
 
 ## Usage
 
