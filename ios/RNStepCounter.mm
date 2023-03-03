@@ -32,8 +32,7 @@ RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
     }];
 }
 
-RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSNumber *, 
-                           startStepCounterUpdate:(double)date) {
+RCT_EXPORT_METHOD(startStepCounterUpdate:(double)date) {
     [self.pedometer startPedometerUpdatesFromDate:[[NSDate date]init]
                                       withHandler:^(CMPedometerData *pedometerData, NSError *error) {
         if (pedometerData) {
@@ -41,7 +40,6 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSNumber *,
            body:[self dictionaryFromPedometerData:pedometerData]];
         }
     }];
-    return @(1);
 }
 
 - (NSDictionary *)dictionaryFromPedometerData:(CMPedometerData *)data {

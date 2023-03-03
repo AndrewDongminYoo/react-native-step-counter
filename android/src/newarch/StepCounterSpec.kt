@@ -9,7 +9,7 @@ abstract class StepCounterSpec internal constructor(context: ReactApplicationCon
 
     abstract override fun isStepCountingSupported(promise: Promise)
 
-    abstract override fun startStepCounterUpdate(from: Double): Boolean
+    abstract override fun startStepCounterUpdate(from: Double)
 
     abstract override fun stopStepCounterUpdate()
 

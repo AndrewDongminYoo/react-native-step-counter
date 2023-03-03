@@ -109,12 +109,10 @@ class StepCounterModule(context: ReactApplicationContext) :
     /**
      * Start the step counter sensor.
      * @param from the number of steps to start from
-     * @return true if the step counter sensor is started, usually return true.
      */
-    override fun startStepCounterUpdate(from: Double): Boolean {
+    override fun startStepCounterUpdate(from: Double) {
         Log.d(TAG_NAME, "startStepCounterUpdate")
         stepCounterListener.startService()
-        return true
     }
 
     /**

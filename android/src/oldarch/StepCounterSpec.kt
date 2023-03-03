@@ -15,9 +15,9 @@ abstract class StepCounterSpec internal constructor(context: ReactApplicationCon
     @DoNotStrip
     abstract fun isStepCountingSupported(promise: Promise)
 
-    @ReactMethod(isBlockingSynchronousMethod = true)
+    @ReactMethod
     @DoNotStrip
-    abstract fun startStepCounterUpdate(from: Double): Boolean
+    abstract fun startStepCounterUpdate(from: Double)
 
     @ReactMethod
     @DoNotStrip

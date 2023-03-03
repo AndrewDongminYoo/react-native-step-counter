@@ -14,7 +14,7 @@
 
 - (void)isStepCountingSupported:(RCTPromiseResolveBlock)resolve
                          reject:(RCTPromiseRejectBlock)reject;
-- (NSNumber *)startStepCounterUpdate:(double)from;
+- (void)startStepCounterUpdate:(double)from;
 - (void)stopStepCounterUpdate;
 
 @end

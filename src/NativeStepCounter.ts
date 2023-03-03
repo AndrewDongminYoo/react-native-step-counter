@@ -2,10 +2,8 @@ import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 export type StepCountData = {
-  counterType?: string; // 'STEP_COUNTER'|'ACCELEROMETER'; // (Android only)
-  dailyGoal: number; // daily goal (default: 10000)
+  counterType: string; // 'STEP_COUNTER'|'ACCELEROMETER'; // (Android only)
   steps: number; // number of steps
-  calories: number; // number of calories (probably not accurate)
   startDate: number; // Unix timestamp in milliseconds
   endDate: number; // Unix timestamp in milliseconds
   distance: number; // distance in meters (probably not accurate)
@@ -37,15 +35,8 @@ export interface Spec extends TurboModule {
   isStepCountingSupported(): Promise<Record<string, boolean>>;
   /**
    * @param {number} from the current time obtained by `new Date()` in milliseconds.
-   * @example
-   * ```ts
-   * const startDate = new Date();
-   * startStepCounterUpdate(startDate).then((response) => {
-   *    const data = parseStepCountData(response);
-   * })
-   * ```
    */
-  startStepCounterUpdate(from: number): boolean;
+  startStepCounterUpdate(from: number): void;
   /**
    * Stop updating the step count data.
    *
