@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.3](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.2...v0.1.3) (2023-03-03)
+
+### Bug Fixes
+
+- **android:** 🏗️ make new-architecture non-require ([f5442f5](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f5442f523692302c92c214c7d35c94279c382d21))
+- **android:** 🔨 gradle project problems solved ([16ae7ea](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/16ae7eab74e39144dfcf924848cfd073a5c3ad98))
+- **android:** 🚑 accelerometer filter hotfix ([317a1b9](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/317a1b93231274d592229f4ae04a72f356507da3))
+- **ios:** 🏗️ make new-architecture non-require ([c674a9c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c674a9ca07df930ae2210e2e04146388b86f33ac))
+- **iOS:** 🐛 iOS implemented codes Fixed ([9d5cfb0](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/9d5cfb004dc4c18952aa2ca57456ceb73e3cde0b))
+
+### Features
+
+- **iOS:** ✨ rewrite implementation iOS specific codes ([78de416](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/78de416ce9dbb9a4cb7f591de02a48119dda859f))
+- **iOS:** 🐛 event emitter is working now ([cd3a1a9](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/cd3a1a9a60484354ab0c2d746ff0fabdcc41dfe6))
+
 ## [0.1.2](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.0...v0.1.2) (2023-03-01)
 
 ### Performance Improvements
