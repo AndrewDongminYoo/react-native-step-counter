@@ -155,7 +155,6 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @throws RuntimeException if the event emitter is not initialized.
      */
     fun onStepDetected(paramsMap: WritableMap) {
-        Log.d(TAG_NAME, "$eventName: $paramsMap")
         try {
             appContext.getJSModule(RCTDeviceEventEmitter::class.java)
                 .emit(eventName, paramsMap)

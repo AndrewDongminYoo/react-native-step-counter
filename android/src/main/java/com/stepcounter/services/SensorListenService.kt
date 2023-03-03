@@ -59,7 +59,12 @@ abstract class SensorListenService(
      * }
      * </pre>
      */
-    private val samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL
+    private val samplingPeriodUs
+        get() = when (sensorType) {
+            Sensor.TYPE_ACCELEROMETER -> SensorManager.SENSOR_DELAY_GAME
+            Sensor.TYPE_STEP_COUNTER -> SensorManager.SENSOR_DELAY_NORMAL
+            else -> SensorManager.SENSOR_DELAY_UI
+        }
 
     /**
      * @return if the [sensor][detectedSensor] is
@@ -104,14 +109,7 @@ abstract class SensorListenService(
     /**
      * Number of steps the user wants to walk every day
      */
-    private var dailyGoal: Int = userGoal ?: 10_000
-        get() {
-            return if (currentSteps.toInt() > field) {
-                Log.d(TAG_NAME, "daily goal reached")
-                currentSteps = 0.0
-                10_000
-            } else 10_000
-        }
+    private val dailyGoal: Int = userGoal ?: 10_000
 
     /**
      * Number of in-database-saved calories.

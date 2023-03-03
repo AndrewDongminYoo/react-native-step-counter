@@ -49,6 +49,7 @@ class AccelerometerService(
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
     private var oldVelocityEstimate: Float = 0f
+    private var lastStepTimeNs: Long = 0
 
     // We want to keep a history of values to do a rolling average of the current
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)
@@ -73,42 +74,44 @@ class AccelerometerService(
      * @see android.hardware.SensorEvent.timestamp
      */
     override fun updateCurrentSteps(eventData: FloatArray): Boolean {
-        Log.d(TAG_NAME, "accelerometer values: $eventData")
+        val timeNs = System.nanoTime()
         // First step is to update our guess of where the global z vector is.
         accelRingCounter++
         // We keep a rolling average of the last 50 values
         accelRingX[accelRingCounter % ACCEL_RING_SIZE] = eventData[0]
         accelRingY[accelRingCounter % ACCEL_RING_SIZE] = eventData[1]
         accelRingZ[accelRingCounter % ACCEL_RING_SIZE] = eventData[2]
-        val gravity = FloatArray(3)
         // Next we'll calculate the average of the last 50 vectors in the ring
-        gravity[0] = sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE)
-        gravity[1] = sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE)
-        gravity[2] = sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
-        // Normalize the result
-        val normalizationFactor = norm(gravity)
-        // Normalize the gravity vector
-        val normGravity = normalize(gravity)
+        val gravity: FloatArray = floatArrayOf(
+            sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE),
+            sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE),
+            sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
+        )
         // Next step is to figure out the component of the current acceleration
         // in the direction of world_z and subtract gravity's contribution
-        val currentZ = dot(normGravity, eventData) - normalizationFactor
+        val currentZ: Float = dot(normalize(gravity), eventData) - norm(gravity)
         // Now we just need to update our estimate of the velocity
         velocityRingCounter++
         // We keep a rolling average of the last 10 values
         velocityRing[velocityRingCounter % VELOCITY_RING_SIZE] = currentZ
         // Calculate the average of the last 10 values
-        val velocityEstimate = sum(velocityRing)
+        val velocityEstimate: Float = sum(velocityRing)
         // If the velocity estimate is greater than the threshold and the previous
-        return if (velocityEstimate > STEP_THRESHOLD
-            && oldVelocityEstimate <= STEP_THRESHOLD
-        ) {
-            oldVelocityEstimate = velocityEstimate
-            currentSteps++
-            true
-        } else false
+        val isWalkingOrRunning: Boolean =
+            velocityEstimate > STEP_THRESHOLD &&
+                    oldVelocityEstimate <= STEP_THRESHOLD &&
+                    timeNs - lastStepTimeNs > STEP_DELAY_NS
+        if (isWalkingOrRunning) {
+            currentSteps = currentSteps.plus(1)
+            Log.d(TAG_NAME, "STATUS: $currentSteps steps. TIMESTAMP: $timeNs")
+            lastStepTimeNs = timeNs
+        }
+        oldVelocityEstimate = velocityEstimate
+        return isWalkingOrRunning
     }
 
     companion object {
+        private const val STEP_DELAY_NS = 250000000 // 250ms
         private const val ACCEL_RING_SIZE = 50
         private const val VELOCITY_RING_SIZE = 10
 
