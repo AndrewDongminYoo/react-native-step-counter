@@ -5,9 +5,10 @@
   "scripts": {
     "android": "react-native run-android --mode Debug --port 8081",
     "clear": "react-native clean --include watchman,yarn,metro,android",
-    "ios": "react-native run-ios --device",
+    "ios": "react-native run-ios --device --port 8081",
     "pods": "pod-install --quiet",
     "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
+    "postinstall": "react-native setup-ios-permissions",
     "start": "react-native start"
   },
   "dependencies": {
@@ -22,7 +23,5 @@
     "babel-plugin-module-resolver": "^5.0.0",
     "metro-react-native-babel-preset": "0.75.1"
   },
-  "resolutions": {
-    "@dongminyu/react-native-step-counter": "../src/index.ts"
-  }
+  "reactNativePermissionsIOS": ["Motion"]
 }
