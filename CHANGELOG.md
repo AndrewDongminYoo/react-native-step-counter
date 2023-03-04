@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.0...v0.1.4) (2023-03-04)
+
+### Features
+
+- **android:** 🔨 move initialize servie code for demo app ([dfb11cf](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/dfb11cf10194d9f7623d3c2f71fbaa4fb2072ff9))
+
 ## [0.1.3](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.2...v0.1.3) (2023-03-03)
 
 ### Bug Fixes
