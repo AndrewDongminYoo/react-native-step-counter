@@ -41,11 +41,10 @@
     "prebuild": "yarn install && yarn example install && yarn cocoapods && yarn gradle",
     "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
     "prepack": "bob build",
-    "release:beta:no-npm": "release-it --preRelease=beta --no-npm",
-    "release:beta": "release-it --preRelease=beta",
+    "release:beta": "release-it --preRelease=beta --no-npm",
     "release:dry": "release-it --dry-run --no-npm",
     "release:info": "release-it --release-version",
-    "release:no-npm": "release-it --no-npm",
+    "release:no-dump": "release-it --no-increment",
     "release": "release-it",
     "test": "jest",
     "typecheck": "tsc --noEmit"

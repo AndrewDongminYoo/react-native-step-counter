@@ -1,6 +1,8 @@
 # React-Native Step Counter Library
 
-간단한 리액트 네이티브 패키지로 사용자의 걸음 수를 계산합니다.이 패키지는 `Android`의 `StepCounter` (미지원 시 `Accelerometer`) 센서 API를 사용하고 `iOS`의 `CoreMotion` `Framework CMPedometer` 를 사용하여 단계를 계산합니다.
+English-speaking developers, please return to the repository main page or click [the following link](README.md)
+
+간단한 리액트 네이티브 패키지로 사용자의 걸음 수를 계산합니다.이 패키지는 `Android`의 `StepCounter` (미지원 시 `Accelerometer`) 센서 API를 사용하고 `iOS`의 `CoreMotion` `Framework CMPedometer` 를 사용하여 단계를 계산합니다.
 
 ## 설치 방법
 
@@ -11,7 +13,7 @@ npm install @donminyu/react-native-step-counter
 yarn add @donminyu/react-native-step-counter
 ```
 
-## 사전 요구사항
+## 사전 요구사항
 
 ### ANDROID
 
@@ -188,9 +190,7 @@ export default function App() {
         <Text style={styles.normText}>User Granted Step Counter Feature?: {granted ? 'yes' : 'no'}</Text>
         <Text style={styles.normText}>Device has Step Counter Sensor?: {supported ? 'yes' : 'no'}</Text>
         {!granted ? (
-          <>
-            <Button title="Request Permission Again" onPress={requestPermission} />
-          </>
+          <Button title="Request Permission Again" onPress={requestPermission} />
         ) : (
           <>
             <Text style={styles.normText}>걸음 수: {steps}</Text>
@@ -203,6 +203,10 @@ export default function App() {
   );
 }
 ```
+
+## Change Log
+
+패키지의 버전별 변경 사항을 확인하려면 [CHANGELOG](CHANGELOG.md)를 참조하십시오.
 
 ## Contributing
 

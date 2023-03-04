@@ -1,5 +1,7 @@
 # React-Native Step Counter Library
 
+한국어 사용자 분들은 [Korean version.](README.kr.md)를 참조하십시오.
+
 A simple React Native package to count the number of steps taken by the user. This package uses the StepCounter (or Accelerometer) Sensor API on Android and the Core Motion framework on iOS to count the steps.
 
 ## Installation
@@ -204,6 +206,10 @@ export default function App() {
   );
 }
 ```
+
+## Change Log
+
+See the [CHANGELOG](CHANGELOG.md) for a list of changes.
 
 ## Contributing
 

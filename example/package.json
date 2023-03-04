@@ -5,10 +5,15 @@
   "scripts": {
     "android": "react-native run-android --mode Debug --port 8081",
     "clear": "react-native clean --include watchman,yarn,metro,android",
+    "doctor": "react-native doctor --fix",
     "ios": "react-native run-ios --device --port 8081",
+    "patch": "patch-package",
+    "permissions": "react-native setup-ios-permissions",
+    "pods:fix": "(cd ios && pod install)",
     "pods": "pod-install --quiet",
+    "postinstall": "(yarn permissions && yarn patch && yarn pods)",
     "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
-    "postinstall": "react-native setup-ios-permissions",
+    "preandroid": "(cd android && ./gradlew clean && ./gradlew installDebug)",
     "start": "react-native start"
   },
   "dependencies": {
