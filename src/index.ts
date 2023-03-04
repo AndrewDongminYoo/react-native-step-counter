@@ -40,7 +40,17 @@ type ParsedStepCountData = {
   distance: string;
 };
 
-// @ts-expect-error
+/**
+ * We keep TurboModuleManager alive until the JS VM is deleted.
+ * It is perfectly valid to only use/create TurboModules from JS.
+ * In such a case, we shouldn't de-alloc TurboModuleManager if there
+ * aren't any strong references to it in ObjC. Hence, we give
+ * __turboModuleProxy a strong reference to TurboModuleManager.
+ * @link [`TurboModuleRegistry`](../node_modules/react-native/Libraries/TurboModule/TurboModuleRegistry.js)
+ * @link [`RCTTurboModuleManager`](../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/RCTTurboModuleManager.mm)
+ * @link [`TurboModuleBinding`](../node_modules/react-native/ReactCommon/react/nativemodule/core/ReactCommon/TurboModuleBinding.cpp)
+ */
+// @ts-ignore
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
 const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
@@ -91,7 +101,7 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
   const kCal = (steps * 0.045).toFixed(2) + 'kCal';
   const endDateTime = new Date(endDate).toLocaleTimeString('en-gb');
   const startDateTime = new Date(startDate).toLocaleTimeString('en-gb');
-  const roundedDistance = Math.round(distance) + 'm';
+  const roundedDistance = distance.toFixed(1) + 'm';
   const stepGoalStatus = steps >= dailyGoal ? 'Goal Reached' : `${steps}/${dailyGoal} steps`;
   return {
     dailyGoal: stepGoalStatus,

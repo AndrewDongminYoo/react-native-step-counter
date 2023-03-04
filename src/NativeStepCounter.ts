@@ -2,11 +2,11 @@ import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 export type StepCountData = {
-  counterType: string; // 'STEP_COUNTER'|'ACCELEROMETER'; // (Android only)
+  counterType: string; // 'STEP_COUNTER'|'ACCELEROMETER'|'CMPedometer'
   steps: number; // number of steps
-  startDate: number; // Unix timestamp in milliseconds
-  endDate: number; // Unix timestamp in milliseconds
-  distance: number; // distance in meters (probably not accurate)
+  startDate: number; // Unix timestamp in milliseconds (long)
+  endDate: number; // Unix timestamp in milliseconds (long)
+  distance: number; // distance in meters (android: probably not accurate)
   floorsAscended?: number; // number of floors ascended (iOS only)
   floorsDescended?: number; // number of floors descended (iOS only)
 };
