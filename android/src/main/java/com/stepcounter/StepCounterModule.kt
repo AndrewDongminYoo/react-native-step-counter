@@ -1,9 +1,7 @@
 package com.stepcounter
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.SensorManager
-import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES
 import android.util.Log
 import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
@@ -14,7 +12,6 @@ import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
 import com.stepcounter.utils.AndroidVersionHelper
-import java.util.*
 
 /**
  * This class is the native module for the react-native-step-counter package.
@@ -29,7 +26,6 @@ import java.util.*
  * @see ReactApplicationContext
  * @see StepCounterSpec
  */
-@SuppressLint("ObsoleteSdkInt")
 class StepCounterModule(context: ReactApplicationContext) :
     StepCounterSpec(context) {
     companion object {
@@ -57,7 +53,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see checkSelfPermission
      * @see PERMISSION_GRANTED
      */
-    private var stepCounterListener: SensorListenService
+    private lateinit var stepCounterListener: SensorListenService
 
     /**
      * The method that is called when the module is initialized.
@@ -67,21 +63,6 @@ class StepCounterModule(context: ReactApplicationContext) :
         sensorManager = context.getSystemService(
             Context.SENSOR_SERVICE
         ) as SensorManager
-        var permissionTag = "Step Counter"
-        stepCounterListener = if (stepsOK) {
-            Log.d(TAG_NAME, "$permissionTag permission granted")
-            StepCounterService(this, sensorManager, null)
-        } else {
-            Log.d(TAG_NAME, "$permissionTag permission denied")
-            permissionTag = "Accelerometer in Background"
-            if (accelOK) {
-                Log.d(TAG_NAME, "$permissionTag permission granted")
-                AccelerometerService(this, sensorManager, null)
-            } else {
-                Log.d(TAG_NAME, "$permissionTag permission denied")
-                AccelerometerService(this, sensorManager, null)
-            }
-        }
     }
 
     /**
@@ -93,8 +74,6 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see WritableMap
      */
     override fun isStepCountingSupported(promise: Promise) {
-        Log.d(TAG_NAME, "step_counter exists? ${SDK_INT >= VERSION_CODES.KITKAT}")
-        Log.d(TAG_NAME, "accelerometer exists? ${SDK_INT >= VERSION_CODES.ECLAIR}")
         Log.d(TAG_NAME, "hardware_step_counter? $supported")
         Log.d(TAG_NAME, "step_counter granted? $stepsOK")
         Log.d(TAG_NAME, "accelerometer granted? $accelOK")
@@ -111,6 +90,11 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @param from the number of steps to start from
      */
     override fun startStepCounterUpdate(from: Double) {
+        stepCounterListener = if (stepsOK) {
+            StepCounterService(this, sensorManager, null)
+        } else {
+            AccelerometerService(this, sensorManager, null)
+        }
         Log.d(TAG_NAME, "startStepCounterUpdate")
         stepCounterListener.startService()
     }
