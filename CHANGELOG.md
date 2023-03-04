@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.5](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.4...v0.1.5) (2023-03-04)
+
+### Bug Fixes
+
+- **android:** 🔨 accelerometer permission removed ([4105c89](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/4105c895c1c1a7f90d0b3fae57adc272efac3d27))
+- **android:** 🔨 add some useful npm scripts ([a525d69](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a525d69c780423e9b55b60c4f2ce826e069fad87))
+
+### Features
+
+- **example:** ✨ write example codes and make some test-visible property ([6297b95](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/6297b95aeed8e46b4c4744030f7370fef7613894))
+
 ## [0.1.4](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.0...v0.1.4) (2023-03-04)
 
 ### Features
