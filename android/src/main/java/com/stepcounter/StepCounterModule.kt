@@ -33,16 +33,16 @@ class StepCounterModule(context: ReactApplicationContext) :
         const val eventName: String = "StepCounter.stepCounterUpdate"
         private val TAG_NAME: String = StepCounterModule::class.java.name
         private const val STEP_COUNTER = "android.permission.ACTIVITY_RECOGNITION"
-        private const val BG_BODY_SENSOR = "android.permission.BODY_SENSORS_BACKGROUND"
     }
 
     private val appContext: ReactApplicationContext = context
     private var sensorManager: SensorManager
-    private var supported = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
     private val stepsOK: Boolean
         get() = checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
+    private val supported: Boolean
+        get() = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
     private val accelOK: Boolean
-        get() = checkSelfPermission(appContext, BG_BODY_SENSOR) == PERMISSION_GRANTED
+        get() = AndroidVersionHelper.isHardwareAccelerometerEnabled(appContext)
 
     /**
      * gets the step counter listener
@@ -53,7 +53,7 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see checkSelfPermission
      * @see PERMISSION_GRANTED
      */
-    private lateinit var stepCounterListener: SensorListenService
+    private var stepCounterListener: SensorListenService? = null
 
     /**
      * The method that is called when the module is initialized.
@@ -63,6 +63,11 @@ class StepCounterModule(context: ReactApplicationContext) :
         sensorManager = context.getSystemService(
             Context.SENSOR_SERVICE
         ) as SensorManager
+        stepCounterListener = if (stepsOK) {
+            StepCounterService(this, sensorManager)
+        } else {
+            AccelerometerService(this, sensorManager)
+        }
     }
 
     /**
@@ -90,13 +95,13 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @param from the number of steps to start from
      */
     override fun startStepCounterUpdate(from: Double) {
-        stepCounterListener = if (stepsOK) {
-            StepCounterService(this, sensorManager, null)
+        stepCounterListener = stepCounterListener ?: if (stepsOK) {
+            StepCounterService(this, sensorManager)
         } else {
-            AccelerometerService(this, sensorManager, null)
+            AccelerometerService(this, sensorManager)
         }
         Log.d(TAG_NAME, "startStepCounterUpdate")
-        stepCounterListener.startService()
+        stepCounterListener!!.startService()
     }
 
     /**
@@ -105,7 +110,8 @@ class StepCounterModule(context: ReactApplicationContext) :
      */
     override fun stopStepCounterUpdate() {
         Log.d(TAG_NAME, "stopStepCounterUpdate")
-        stepCounterListener.stopService()
+        stepCounterListener!!.stopService()
+        stepCounterListener = null
     }
 
     /**

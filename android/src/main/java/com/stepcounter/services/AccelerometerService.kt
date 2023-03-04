@@ -40,8 +40,7 @@ import kotlin.math.min
 class AccelerometerService(
     counterModule: StepCounterModule,
     sensorManager: SensorManager,
-    userGoal: Int?,
-) : SensorListenService(counterModule, sensorManager, userGoal) {
+) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "ACCELEROMETER"
     override val sensorType = Sensor.TYPE_ACCELEROMETER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)

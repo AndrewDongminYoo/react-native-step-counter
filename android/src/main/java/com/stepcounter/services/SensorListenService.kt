@@ -22,7 +22,6 @@ import com.stepcounter.StepCounterModule
 abstract class SensorListenService(
     private val counterModule: StepCounterModule,
     private val sensorManager: SensorManager,
-    userGoal: Int?
 ) : SensorEventListener {
     /**
      * the accelerometer sensor type
@@ -103,13 +102,7 @@ abstract class SensorListenService(
             putDouble("endDate", endDate.toDouble())
             putString("counterType", sensorTypeString)
             putDouble("calories", calories)
-            putDouble("dailyGoal", dailyGoal.toDouble())
         }
-        
-    /**
-     * Number of steps the user wants to walk every day
-     */
-    private val dailyGoal: Int = userGoal ?: 10_000
 
     /**
      * Number of in-database-saved calories.
@@ -169,10 +162,6 @@ abstract class SensorListenService(
         Log.d(TAG_NAME, "SensorManager.getSensorList: $sensors")
         Log.d(TAG_NAME, "SensorManager.defaultSensor: $sensor")
         Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
-        /**
-         * Sensor name="LSM6DSO Accelerometer", vendor="STMicro", version=15932, type=1, maxRange=78.4532, resolution=0.0023928226, power=0.17, minDelay=2404
-         * Sensor name="step_counter  Non-wakeup", vendor="Samsung", version=1, type=19, maxRange=4.2949673E9, resolution=1.0, power=0.001, minDelay=0
-         */
         sensorManager.registerListener(this, detectedSensor, samplingPeriodUs)
     }
 
