@@ -18,8 +18,8 @@ type SensorName = SensorType<Platform['OS']>;
 
 const initState = {
   dailyGoal: '0/10000 steps',
-  stepsString: '0 steps',
-  calories: '0.0kCal',
+  stepsString: '0.0kCal',
+  calories: '0 steps',
   distance: '0.0m',
 };
 
