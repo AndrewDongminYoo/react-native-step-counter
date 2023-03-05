@@ -43,16 +43,10 @@ yarn add @donminyu/react-native-step-counter
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
 <plist version="1.0">
   ...
-  <!-- Permission Section Start -->
-  <key>NSLocationWhenInUseUsageDescription</key>
-  <string>We want to access your location to count your steps.</string>
   <key>NSMotionUsageDescription</key>
   <string>We want to access your motion data to count your steps.</string>
-  <key>NSHealthShareUsageDescription</key>
-  <string>We want you share your health data to count your steps.</string>
   <key>NSHealthUpdateUsageDescription</key>
   <string>We want to update your workout data to count your steps.</string>
-  <!-- Permission Section End -->
   ...
 </plist>
 ```

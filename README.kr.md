@@ -43,16 +43,10 @@ yarn add @donminyu/react-native-step-counter
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
 <plist version="1.0">
   ...
-  <!-- 권한 섹션 시작 -->
-  <key>NSLocationWhenInUseUsageDescription</key>
-  <string>We want to access your location to count your steps.</string>
   <key>NSMotionUsageDescription</key>
   <string>We want to access your motion data to count your steps.</string>
-  <key>NSHealthShareUsageDescription</key>
-  <string>We want you share your health data to count your steps.</string>
   <key>NSHealthUpdateUsageDescription</key>
   <string>We want to update your workout data to count your steps.</string>
-  <!-- 권한 섹션 종료 -->
   ...
 </plist>
 ```
@@ -83,7 +77,7 @@ yarn add @donminyu/react-native-step-counter
   - `startDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 시작 날짜를 나타내는 숫자 속성입니다.
   - `endDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 종료 날짜를 나타내는 숫자 속성입니다.
   - `distance`: 이것은 지정된 기간 동안 사용자가 걸거나 뛴 거리를 미터로 나타내는 숫자 속성입니다.
-  - `counterType`: 이것은 걸음을 감지하는 데 사용되는 센서 유형을 나타내는 문자열 타입으로, iOS에서는 CMPedometer, 안드로이드에서는 `STEP_COUNTER` 또는 `ACCELEROMETER`의 두 가지 값 중 하나를 가질 수 있습니다.
+  - `counterType`: 이것은 걸음을 감지하는 데 사용되는 센서 유형을 나타내는 문자열 타입으로, iOS에서는 `CMPedometer`, 안드로이드에서는 `STEP_COUNTER` 또는 `ACCELEROMETER`의 두 가지 값 중 하나를 가질 수 있습니다.
 
 ## Usage
 

@@ -2,24 +2,24 @@
 
 ## [0.1.5](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.4...v0.1.5) (2023-03-04)
 
-### Bug Fixes
+### Bug Fixes v0.1.5
 
 - **android:** 🔨 accelerometer permission removed ([4105c89](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/4105c895c1c1a7f90d0b3fae57adc272efac3d27))
 - **android:** 🔨 add some useful npm scripts ([a525d69](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a525d69c780423e9b55b60c4f2ce826e069fad87))
 
-### Features
+### Features v0.1.5
 
 - **example:** ✨ write example codes and make some test-visible property ([6297b95](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/6297b95aeed8e46b4c4744030f7370fef7613894))
 
 ## [0.1.4](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.0...v0.1.4) (2023-03-04)
 
-### Features
+### Features v0.1.4
 
 - **android:** 🔨 move initialize servie code for demo app ([dfb11cf](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/dfb11cf10194d9f7623d3c2f71fbaa4fb2072ff9))
 
 ## [0.1.3](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.2...v0.1.3) (2023-03-03)
 
-### Bug Fixes
+### Bug Fixes v0.1.3
 
 - **android:** 🏗️ make new-architecture non-require ([f5442f5](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f5442f523692302c92c214c7d35c94279c382d21))
 - **android:** 🔨 gradle project problems solved ([16ae7ea](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/16ae7eab74e39144dfcf924848cfd073a5c3ad98))
@@ -27,20 +27,20 @@
 - **ios:** 🏗️ make new-architecture non-require ([c674a9c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c674a9ca07df930ae2210e2e04146388b86f33ac))
 - **iOS:** 🐛 iOS implemented codes Fixed ([9d5cfb0](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/9d5cfb004dc4c18952aa2ca57456ceb73e3cde0b))
 
-### Features
+### Features v0.1.3
 
 - **iOS:** ✨ rewrite implementation iOS specific codes ([78de416](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/78de416ce9dbb9a4cb7f591de02a48119dda859f))
 - **iOS:** 🐛 event emitter is working now ([cd3a1a9](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/cd3a1a9a60484354ab0c2d746ff0fabdcc41dfe6))
 
 ## [0.1.2](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.0...v0.1.2) (2023-03-01)
 
-### Performance Improvements
+### Performance Improvements v0.1.2
 
 - 🔖 release new package version v0.1.1 ([f56bf11](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f56bf11bf8c864fcaa1e34e20a2e34a4bfadd518))
 
 ## [0.1.1](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.0...v0.1.1) (2023-03-01)
 
-### Documentation
+### Documentation v0.1.1
 
 - **app**: 📝 modified README.md for the new interface ([94a2434](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/94a24348bf28e43e0f01a6cc02733ad8cf1d148b))
 - **android**: :memo: Completed documentation of Android codes.. ([a74a952](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a74a952369d7eb0e09ebd1e956e123b0c3ec39d6))
@@ -60,7 +60,7 @@
 - **android**: ✨ completed step-counter ([f7b106f](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f7b106f2a282b4b13dc4abbda8f212a31d530bb1))
 - **android**: 🏗️ split accelerometer and step_counter ([b35b1a3](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/b35b1a354400a86c3719883194bc1c45619bdbb8))
 
-### Bug Fixes
+### Bug Fixes v0.1.1
 
 - **android**: 🐛 accelerometer step counting fixing. ([3e0c95c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3e0c95c640458a5ce63897861a7c70f088b7a911))
 - **android**: 🐛 accelerometer step counting fixing. ([b33f27a](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/b33f27a010b23a728a27d467c2f6070abc30190f))
@@ -77,7 +77,7 @@
 
 ## [0.1.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/100b61f7a05bb84b315bb220affee637dd5e17b2...v0.1.0) (2023-02-27)
 
-### Other Changes
+### Other Changes pre-release
 
 - **all**: 🎉 initial commit ([100b61f](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/100b61f7a05bb84b315bb220affee637dd5e17b2))
 - **all**: 🔧 set configuration file with trunk ([ae7c140](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/ae7c1401ce5c4564c1a00ee2e1406b01a20c38bf))
@@ -125,7 +125,7 @@
 - **iOS**: 🔥 remove unused swift codes ([b414ff9](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/b414ff97fd9ba5ec07458ca0677fefd595caef0e))
 - **android**: 🔧 add google service API ([63c0cb1](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/63c0cb132b1a266c6833ea1273db0c32e2e696fc))
 
-### Code Refactoring
+### Code Refactoring pre-release
 
 - **android**: ♻️ deduplicate android codes & added javadoc & JSDoc ([31bf912](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/31bf91233c21647947829efd0caff6051a5a1067))
 - **react**: 🥅 TypeScript Bridge source changed ([c4a7dbc](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c4a7dbc12e492aa54a05348c697102823289e877))
@@ -134,6 +134,6 @@
 - **android**: ✨ Android Accelerometer Event Convert ([d017598](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/d0175988df84b2029df3416604111e445510405b))
 - **all**: 🏗️ configure architecture ([ec76a6c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/ec76a6cf2d7aa26a2117400597468effe77f6095))
 
-### Revert
+### Revert pre-release
 
 - **android**: 🐛 step detector codes revert to previous ([c133326](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c133326d072a7c8b08c87f903687a5b8e0728491))
