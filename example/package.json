@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android --mode Debug --port 8081",
-    "build-ios": "react-native run-ios --device --configuration Release --port 8081",
+    "build-ios": "react-native run-ios --configuration Release --scheme StepCounterExample --port 8081",
     "clear": "react-native clean --include watchman,yarn,metro,android",
     "doctor": "react-native doctor --fix",
-    "ios": "react-native run-ios --device --configuration Debug --port 8081",
+    "ios": "react-native run-ios --device \"Dongmin's iPhone\" --configuration Debug --port 8081",
     "patch": "patch-package",
     "permissions": "react-native setup-ios-permissions",
     "pods:fix": "(cd ios && pod install)",
