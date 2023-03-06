@@ -1,14 +1,25 @@
 #import "RNStepCounter.h"
+#import "SOMotionDetecter.h"
+
+#import <CoreMotion/CoreMotion.h>
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
+
+@interface RNStepCounter ()
+@property (nonatomic, readonly) CMPedometer *pedometer;
+@end
 
 @implementation RNStepCounter
-+ (bool)requiresMainQueueSetup {
-    return true;
++ (BOOL)requiresMainQueueSetup {
+    return YES;
 }
 
-RCT_EXPORT_MODULE()
+@synthesize bridge = _bridge;
+
+RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"StepCounter.stepCounterUpdate"];
+    return @[@"StepCounter.stepCounterUpdate", @"StepCounter.stepDetected"];
 }
 
 RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
@@ -22,22 +33,22 @@ RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
     });
 }
 
-- (void)queryStepCounterDataBetweenDates:(NSDate *)startDate
-                                 endDate:(NSDate *)endDate
-                                 handler:(RCTResponseSenderBlock)handler {
+RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
+                                           endDate:(NSDate *)endDate
+                                           handler:(RCTResponseSenderBlock)handler) {
     [self.pedometer queryPedometerDataFromDate:startDate
                                         toDate:endDate
-                                   withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-        handler(@[[self dictionaryFromPedometerData:pedometerData]]);
-    }];
+      withHandler:^(CMPedometerData *pedometerData, NSError *error) {
+          handler(@[error.description?:[NSNull null], [self dictionaryFromPedometerData:pedometerData]]);
+      }];
 }
 
-RCT_EXPORT_METHOD(startStepCounterUpdate:(double)date) {
-    [self.pedometer startPedometerUpdatesFromDate:[[NSDate date]init]
+RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
+    [self.pedometer startPedometerUpdatesFromDate:date?:[NSDate date]
                                       withHandler:^(CMPedometerData *pedometerData, NSError *error) {
         if (pedometerData) {
             [self sendEventWithName:@"StepCounter.stepCounterUpdate"
-           body:[self dictionaryFromPedometerData:pedometerData]];
+             body:[self dictionaryFromPedometerData:pedometerData]];
         }
     }];
 }
@@ -64,6 +75,19 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)date) {
 
 RCT_EXPORT_METHOD(stopStepCounterUpdate) {
     [self.pedometer stopPedometerUpdates];
+    [[SOMotionDetecter sharedInstance] stopDetection];
+}
+
+RCT_EXPORT_METHOD(startStepsDetection) {
+    [[SOMotionDetecter sharedInstance]
+      startDetectionWithUpdateBlock:^(NSError *error) {
+        if(error) {
+            return;
+        } else {
+            [self sendEventWithName:@"StepCounter.stepDetected"
+                               body:@true];
+        }
+    }];
 }
 
 - (bool)authorizationStatus {
@@ -88,17 +112,8 @@ RCT_EXPORT_METHOD(stopStepCounterUpdate) {
     if (self == nil) {
         return nil;
     }
-    _pedometer = [CMPedometer new];
+    _pedometer = [[CMPedometer alloc]init];
     return self;
 }
-
-// Don't compile this code when we build for the old architecture.
-#ifdef RCT_NEW_ARCH_ENABLED
-- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
-(const facebook::react::ObjCTurboModule::InitParams &)params
-{
-    return std::make_shared<facebook::react::NativeStepCounterSpecJSI>(params);
-}
-#endif
 
 @end
