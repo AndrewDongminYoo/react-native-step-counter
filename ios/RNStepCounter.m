@@ -15,6 +15,7 @@
 }
 
 @synthesize bridge = _bridge;
+@synthesize callableJSModules = _callableJSModules;
 
 RCT_EXPORT_MODULE();
 
@@ -63,13 +64,13 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
         formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
     });
     return @{
-        @"startDate": [formatter stringFromDate:data.startDate]?:[NSNull null],
-        @"endDate": [formatter stringFromDate:data.endDate]?:[NSNull null],
-        @"steps": data.numberOfSteps?:[NSNull null],
-        @"distance": data.distance?:[NSNull null],
         @"counterType": @"CMPedometer",
-        @"floorsAscended": data.floorsAscended?:[NSNull null],
-        @"floorsDescended": data.floorsDescended?:[NSNull null],
+          @"startDate": [formatter stringFromDate:data.startDate]?:[NSNull null],
+            @"endDate": [formatter stringFromDate:data.endDate]?:[NSNull null],
+              @"steps": data.numberOfSteps?:[NSNull null],
+           @"distance": data.distance?:[NSNull null],
+     @"floorsAscended": data.floorsAscended?:[NSNull null],
+    @"floorsDescended": data.floorsDescended?:[NSNull null],
     };
 }
 
@@ -90,17 +91,12 @@ RCT_EXPORT_METHOD(startStepsDetection) {
     }];
 }
 
-- (bool)authorizationStatus {
+- (BOOL)authorizationStatus {
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpartial-availability"
     CMAuthorizationStatus status = [CMPedometer authorizationStatus];
-    switch (status) {
-        case CMAuthorizationStatusAuthorized: // enum: 3
-            return true;
-        default:
-            return false;
-    }
+    return status == CMAuthorizationStatusAuthorized;
 #pragma clang diagnostic pop
 #endif
 }
