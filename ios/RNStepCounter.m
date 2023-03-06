@@ -15,12 +15,11 @@
 }
 
 @synthesize bridge = _bridge;
-@synthesize callableJSModules = _callableJSModules;
 
 RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"StepCounter.stepCounterUpdate", @"StepCounter.stepDetected"];
+    return @[@"StepCounter.stepCounterUpdate"];
 }
 
 RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
@@ -55,18 +54,10 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
 }
 
 - (NSDictionary *)dictionaryFromPedometerData:(CMPedometerData *)data {
-    static NSDateFormatter *formatter;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        formatter = [[NSDateFormatter alloc] init];
-        formatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ";
-        formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-        formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
-    });
     return @{
         @"counterType": @"CMPedometer",
-          @"startDate": [formatter stringFromDate:data.startDate]?:[NSNull null],
-            @"endDate": [formatter stringFromDate:data.endDate]?:[NSNull null],
+          @"startDate": data.startDate?:[NSNull null],
+            @"endDate": data.endDate?:[NSNull null],
               @"steps": data.numberOfSteps?:[NSNull null],
            @"distance": data.distance?:[NSNull null],
      @"floorsAscended": data.floorsAscended?:[NSNull null],

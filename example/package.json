@@ -12,7 +12,6 @@
     "permissions": "react-native setup-ios-permissions",
     "pods:fix": "(cd ios && pod install)",
     "pods": "pod-install --quiet",
-    "postinstall": "(yarn permissions && yarn pods)",
     "poststart": "watchman watch-del \"$PWD\" ; watchman watch-project \"$PWD\"",
     "preandroid": "(cd android && ./gradlew clean && ./gradlew installDebug)",
     "start": "react-native start"
