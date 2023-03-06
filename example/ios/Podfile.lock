@@ -415,7 +415,7 @@ PODS:
     - React-perflogger (= 0.71.3)
   - RNPermissions (3.7.3):
     - React-Core
-  - RNStepCounter (0.1.3):
+  - RNStepCounter (0.1.5):
     - React-Core
   - SocketRocket (0.6.0)
   - Yoga (1.14.0)
@@ -625,11 +625,11 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 7bf0dafc7b727d93c8cb94eb00a9d3753c446c3e
   ReactCommon: 6f65ea5b7d84deb9e386f670dd11ce499ded7b40
   RNPermissions: 3464be85b6aa90ef30745d46b5d61ac4e95a8df3
-  RNStepCounter: bea1fa260e0b78fa9d4c34389a45c03fed1bfc9c
+  RNStepCounter: 2c34cbae9e04db671034942672203a69c7e562a9
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 5ed1699acbba8863755998a4245daa200ff3817b
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
 PODFILE CHECKSUM: 8404e4ce80285f7bf348a6c55729f1ac7614ef46
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.0
