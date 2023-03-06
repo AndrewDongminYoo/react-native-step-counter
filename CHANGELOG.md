@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.7](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.6...v0.1.7) (2023-03-06)
+
+### Performance Improvements
+
+* **iOS:** ⚡️ issue with the `RCTCallableJSModule` solved ([eecdfd2](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/eecdfd23f77ec5e1a7de800a1a4fe15cede77bd4)), closes [#2](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/2)
+
 ## [0.1.6](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.5...v0.1.6) (2023-03-06)
 
 ### Bug Fixes
