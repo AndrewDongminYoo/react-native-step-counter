@@ -1,21 +1,11 @@
-import {
-  check,
-  openSettings,
-  type PermissionStatus,
-  PERMISSIONS,
-  request,
-  RESULTS,
-} from 'react-native-permissions';
+import { check, openSettings, type PermissionStatus, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { Platform, type Rationale } from 'react-native';
 import appInformation from '../package.json';
 
 const bodySensor = PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND;
 const activityRecognition = PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION;
 const motion = PERMISSIONS.IOS.MOTION;
-type Permission =
-  | typeof bodySensor
-  | typeof activityRecognition
-  | typeof motion;
+type Permission = typeof bodySensor | typeof activityRecognition | typeof motion;
 
 const CHECK = <S = PermissionStatus>(result: S) => result === RESULTS.GRANTED;
 
@@ -47,7 +37,9 @@ const checkPermission = async (permission: Permission) => {
 
 export const getStepCounterPermission = async () => {
   const permission = Platform.OS === 'ios' ? motion : activityRecognition;
-  if (await requestPermission(permission)) { return true; }
+  if (await requestPermission(permission)) {
+    return true;
+  }
   openSettings();
   return checkPermission(permission);
 };
