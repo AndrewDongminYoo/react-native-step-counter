@@ -33,16 +33,20 @@ class StepCounterModule(context: ReactApplicationContext) :
         const val eventName: String = "StepCounter.stepCounterUpdate"
         private val TAG_NAME: String = StepCounterModule::class.java.name
         private const val STEP_COUNTER = "android.permission.ACTIVITY_RECOGNITION"
+        const val STOPPED = 0
+        const val STARTED = 1
     }
 
     private val appContext: ReactApplicationContext = context
-    private var sensorManager: SensorManager
+    private val sensorManager: SensorManager
     private val stepsOK: Boolean
         get() = checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
-    private val supported: Boolean
-        get() = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
     private val accelOK: Boolean
         get() = AndroidVersionHelper.isHardwareAccelerometerEnabled(appContext)
+    private val supported: Boolean
+        get() = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
+    private val walkingStatus: Int
+        get() = if (stepCounterListener !== null) STARTED else STOPPED
 
     /**
      * gets the step counter listener
@@ -68,6 +72,7 @@ class StepCounterModule(context: ReactApplicationContext) :
         } else {
             AccelerometerService(this, sensorManager)
         }
+        appContext.addLifecycleEventListener(stepCounterListener)
     }
 
     /**
@@ -86,6 +91,7 @@ class StepCounterModule(context: ReactApplicationContext) :
             Arguments.createMap().apply {
                 putBoolean("supported", supported)
                 putBoolean("granted", stepsOK || accelOK)
+                putBoolean("working", walkingStatus == STARTED)
             }
         )
     }
@@ -111,7 +117,6 @@ class StepCounterModule(context: ReactApplicationContext) :
     override fun stopStepCounterUpdate() {
         Log.d(TAG_NAME, "stopStepCounterUpdate")
         stepCounterListener!!.stopService()
-        stepCounterListener = null
     }
 
     /**
@@ -142,11 +147,12 @@ class StepCounterModule(context: ReactApplicationContext) :
      * @see com.facebook.react.modules.core.DeviceEventManagerModule
      * @throws RuntimeException if the event emitter is not initialized.
      */
-    fun onStepDetected(paramsMap: WritableMap) {
+    fun sendStepCounterUpdateEvent(paramsMap: WritableMap) {
         try {
             appContext.getJSModule(RCTDeviceEventEmitter::class.java)
                 .emit(eventName, paramsMap)
         } catch (e: RuntimeException) {
+            e.message?.let { Log.e(TAG_NAME, it) }
             Log.e(TAG_NAME, eventName, e)
         }
     }

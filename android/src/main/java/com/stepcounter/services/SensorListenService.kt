@@ -6,6 +6,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.WritableMap
 import com.stepcounter.StepCounterModule
 
@@ -16,13 +17,15 @@ import com.stepcounter.StepCounterModule
  * @see StepCounterModule
  * @see Sensor
  * @see SensorEvent
- * @see SensorEventListener
- * @see SensorManager
+ * @see <a href="https://developer.android.com/reference/android/hardware/SensorEventListener">SensorEventListener</a>
+ * @see <a href="https://developer.android.com/reference/android/hardware/SensorManager">SensorManager</a>
+ * @see <a href="https://reactnative.dev/docs/native-modules-android#listening-to-lifecycle-events">LifecycleEventListener: document</a>
+ * @see <a href="https://github.com/facebook/react-native/blob/main/ReactAndroid/src/main/java/com/facebook/react/bridge/LifecycleEventListener.java">LifecycleEventListener: original file</a>
  */
 abstract class SensorListenService(
     private val counterModule: StepCounterModule,
     private val sensorManager: SensorManager,
-) : SensorEventListener {
+) : SensorEventListener, LifecycleEventListener {
     /**
      * the accelerometer sensor type
      * [TYPE_ACCELEROMETER][Sensor.TYPE_ACCELEROMETER]: 1<br/>
@@ -46,7 +49,7 @@ abstract class SensorListenService(
      *
      * @see
      * The following are the constants for the sampling period in microseconds
-     * <pre class="prettyprint">
+     * <pre class="prettyprint kotlin">
      * private fun getDelay(rate: Int): Int {
      *     return when (rate) {
      *         SensorManager.SENSOR_DELAY_FASTEST -> 0
@@ -68,9 +71,9 @@ abstract class SensorListenService(
     /**
      * @return if the [sensor][detectedSensor] is
      * [accelerometer][Sensor.TYPE_ACCELEROMETER],
-     * "ACCELEROMETER"
+     * "Accelerometer"
      * if it's [stepCounter][Sensor.TYPE_STEP_COUNTER],
-     * "STEP_COUNTER".
+     * "Step Counter".
      */
     abstract val sensorTypeString: String
 
@@ -90,11 +93,10 @@ abstract class SensorListenService(
      * @see endDate
      * @see sensorTypeString
      * @see calories
-     * @see dailyGoal
      * @see WritableMap
      * @see Arguments.createMap
      */
-    private val stepsParamsMap: WritableMap
+    val stepsParamsMap: WritableMap
         get() = Arguments.createMap().apply {
             putDouble("steps", currentSteps)
             putDouble("distance", distance)
@@ -102,6 +104,26 @@ abstract class SensorListenService(
             putDouble("endDate", endDate.toDouble())
             putString("counterType", sensorTypeString)
             putDouble("calories", calories)
+        }
+
+    val stepsSensorInfo: WritableMap
+        get() = Arguments.createMap().apply {
+            putInt("type", detectedSensor.type)
+            putInt("version", detectedSensor.version)
+            putInt("fifoMaxEvents", detectedSensor.fifoMaxEventCount)
+            putInt("fifoReservedEvents", detectedSensor.fifoReservedEventCount)
+            putInt("minDelay", detectedSensor.minDelay)
+            putInt("maxDelay", detectedSensor.maxDelay)
+            putInt("reportingMode", detectedSensor.reportingMode)
+            putString("name", detectedSensor.name)
+            putString("vendor", detectedSensor.vendor)
+            putString("stringType", detectedSensor.stringType)
+            putDouble("power", detectedSensor.power.toDouble())
+            putDouble("resolution", detectedSensor.resolution.toDouble())
+            putDouble("maximumRange", detectedSensor.maximumRange.toDouble())
+            putBoolean("wakeUpSensor", detectedSensor.isWakeUpSensor)
+            putBoolean("dynamicSensor", detectedSensor.isDynamicSensor)
+            putBoolean("additionalInfoSupported", detectedSensor.isAdditionalInfoSupported)
         }
 
     /**
@@ -152,16 +174,8 @@ abstract class SensorListenService(
      * @see SensorManager.registerListener
      */
     fun startService() {
-        Log.d(TAG_NAME, "SensorListenService.startService")
-        Log.d(TAG_NAME, "SensorListenService.samplingPeriodUs: $samplingPeriodUs")
-        Log.d(TAG_NAME, "SensorListenService.sensorDelay: $sensorDelay")
-        Log.d(TAG_NAME, "SensorListenService.sensorTypes: $sensorTypeString")
-        Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
-        val sensors = sensorManager.getSensorList(detectedSensor.type)
-        val sensor = sensorManager.getDefaultSensor(detectedSensor.type, false)
-        Log.d(TAG_NAME, "SensorManager.getSensorList: $sensors")
-        Log.d(TAG_NAME, "SensorManager.defaultSensor: $sensor")
-        Log.d(TAG_NAME, "SensorListenService.detectedSensor: $detectedSensor")
+        counterModule.sendStepCounterUpdateEvent(stepsSensorInfo)
+        Log.d(TAG_NAME, "SensorManager.stepsSensorInfo: $stepsSensorInfo")
         sensorManager.registerListener(this, detectedSensor, samplingPeriodUs)
     }
 
@@ -208,7 +222,7 @@ abstract class SensorListenService(
             || event.sensor.type != detectedSensor.type
         ) return
         if (updateCurrentSteps(event.values)) {
-            counterModule.onStepDetected(stepsParamsMap)
+            counterModule.sendStepCounterUpdateEvent(stepsParamsMap)
         }
     }
 
@@ -235,6 +249,33 @@ abstract class SensorListenService(
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         Log.d(TAG_NAME, "onAccuracyChanged.accuracy $accuracy")
         Log.d(TAG_NAME, "onAccuracyChanged.sensor: $sensor")
+    }
+
+    /**
+     * Called either when the host activity receives a resume event or
+     * if the native module that implements this is initialized while the host activity is already
+     * resumed. Always called for the most current activity.
+     * @see Activity.onResume
+     */
+    override fun onHostResume() {
+    }
+
+    /**
+     * Called when host activity receives pause event.
+     * Always called for the most current activity.
+     * @see Activity.onPause
+     */
+    override fun onHostPause() {
+
+    }
+
+    /**
+     * Called when host activity receives destroy event.
+     * Only called for the last React activity to be destroyed.
+     * @see Activity.onDestroy
+     */
+    override fun onHostDestroy() {
+        this.stopService()
     }
 
     companion object {

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
  * @param counterModule The module that is responsible for the communication with the react-native layer
  * @param sensorManager The sensor manager that is responsible for the sensor
  * @property sensorType The type of the sensor always Sensor.TYPE_STEP_COUNTER
- * @property sensorTypeString The type of the sensor as a string. so always "STEP_COUNTER"
+ * @property sensorTypeString The type of the sensor as a string. so always "Step Counter"
  * @property sensorDelay The integer enum value of delay of the sensor.
  *   choose between SensorManager.SENSOR_DELAY_NORMAL or SensorManager.SENSOR_DELAY_UI
  * @property detectedSensor The sensor that is detected
@@ -35,7 +35,7 @@ class StepCounterService(
     counterModule: StepCounterModule,
     sensorManager: SensorManager,
 ) : SensorListenService(counterModule, sensorManager) {
-    override val sensorTypeString = "STEP_COUNTER"
+    override val sensorTypeString = "Step Counter"
     override val sensorType = Sensor.TYPE_STEP_COUNTER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
     private var previousSteps: Double = 0.toDouble()

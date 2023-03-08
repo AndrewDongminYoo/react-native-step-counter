@@ -40,11 +40,11 @@ object SensorFusionMath {
      * @see <a href="https://en.wikipedia.org/wiki/Cross_product">Cross product</a>
      */
     fun cross(vectorA: FloatArray, vectorB: FloatArray): FloatArray {
-        val retArray = FloatArray(3)
-        retArray[0] = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
-        retArray[1] = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
-        retArray[2] = vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
-        return retArray
+        val outVector = FloatArray(3)
+        outVector[0] = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
+        outVector[1] = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
+        outVector[2] = vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
+        return outVector
     }
 
     /**
@@ -57,11 +57,11 @@ object SensorFusionMath {
      * @see <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)#Euclidean_norm">Euclidean Normalization</a>
      */
     fun norm(vector: FloatArray): Float {
-        var returnVal = 0f
+        var initFloat = 0f
         for (v in vector) {
-            returnVal += v * v
+            initFloat += v * v
         }
-        return sqrt(returnVal)
+        return sqrt(initFloat)
     }
 
     /**
