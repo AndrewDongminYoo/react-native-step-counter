@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.9](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.8...v0.1.9) (2023-03-09)
+
+### Features v0.1.9
+
+- **android:** ⚡️ Stabilize Android functionality ([43dc577](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/43dc577e08f21e4d368caa52f2a199f6c92a58dc))
+
 ## [0.1.8](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.7...v0.1.8) (2023-03-08)
 
 ### Performance Improvements v0.1.8
