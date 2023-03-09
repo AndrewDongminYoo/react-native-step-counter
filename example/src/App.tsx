@@ -9,6 +9,7 @@ import {
   type ParsedStepCountData,
 } from '@dongminyu/react-native-step-counter';
 import { getBodySensorPermission, getStepCounterPermission } from './permission';
+import LogCat from './LogCat';
 
 type SensorType<T = typeof Platform.OS> = T extends 'ios'
   ? 'CMPedometer'
@@ -28,6 +29,7 @@ const initState = {
 type AdditionalInfo = Partial<ParsedStepCountData>;
 
 export default function App() {
+  const [loaded, setLoaded] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);
   const [sensorType, setSensorType] = React.useState<SensorName>('NONE');
@@ -50,11 +52,13 @@ export default function App() {
         ...parsedData,
       });
     });
+    setLoaded(true);
   };
 
   const stopStepCounter = () => {
     setAdditionalInfo(initState);
     stopStepCounterUpdate();
+    setLoaded(false);
   };
 
   const forceUseAnotherSensor = () => {
@@ -86,19 +90,19 @@ export default function App() {
   return (
     <SafeAreaView>
       <View style={styles.container}>
-        <Text style={styles.normText}>User Granted the Permission?: {granted ? 'yes' : 'no'}</Text>
-        <Text style={styles.normText}>Device has Pedometer Sensor?: {supported ? 'yes' : 'no'}</Text>
-        {Platform.OS === 'android' ? (
-          <Button title={`sensor: ${sensorType}`} onPress={forceUseAnotherSensor} />
-        ) : (
-          <Text style={styles.normText}>now Using : {sensorType}</Text>
-        )}
-        <Text style={styles.normText}>dailyGoal : {additionalInfo.dailyGoal}</Text>
-        <Text style={styles.normText}>calories : {additionalInfo.calories}</Text>
-        <Text style={styles.normText}>stepsString : {additionalInfo.stepsString}</Text>
-        <Text style={styles.normText}>distance : {additionalInfo.distance}</Text>
-        <Button title="Start StepCounter Update" onPress={startStepCounter} />
-        <Button title="Stop StepCounter Updates" onPress={stopStepCounter} />
+        <Text style={styles.normal}>User Granted the Permission?: {granted ? 'yes' : 'no'}</Text>
+        <Text style={styles.normal}>Device has Pedometer Sensor?: {supported ? 'yes' : 'no'}</Text>
+        <Text style={styles.normal}>now Using : {sensorType}</Text>
+        <Text style={styles.normal}>dailyGoal : {additionalInfo.dailyGoal}</Text>
+        <Text style={styles.normal}>calories : {additionalInfo.calories}</Text>
+        <Text style={styles.normal}>stepsString : {additionalInfo.stepsString}</Text>
+        <Text style={styles.normal}>distance : {additionalInfo.distance}</Text>
+        <View style={styles.bGroup}>
+          <Button title="Start stepping" onPress={startStepCounter} />
+          <Button title="restart" onPress={forceUseAnotherSensor} />
+          <Button title="Stop stepping" onPress={stopStepCounter} />
+        </View>
+        <LogCat trigger={loaded} />
       </View>
     </SafeAreaView>
   );
@@ -113,8 +117,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     display: 'flex',
   },
-  normText: {
+  normal: {
     fontSize: 20,
     color: 'slategrey',
+  },
+  bGroup: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    display: 'flex',
+    marginVertical: 8,
   },
 });

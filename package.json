@@ -32,8 +32,8 @@
     "bootstrap": "yarn example && yarn install && yarn example pods",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build",
     "clear": "react-native clean --include watchman,yarn,metro,android",
-    "android": "yarn ready && yarn example run-android && yarn unwatch",
-    "ios": "yarn ready && yarn example run-ios && yarn unwatch",
+    "android": "yarn ready && yarn example run-android",
+    "ios": "yarn ready && yarn example run-ios",
     "gradle": "(cd example/android && ./gradlew installDebug)",
     "example": "yarn --cwd example",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -46,8 +46,7 @@
     "release": "release-it",
     "ready": "yarn install && yarn example install && yarn example pods && yarn gradle",
     "test": "jest",
-    "typecheck": "tsc --noEmit",
-    "unwatch": "watchman watch-del \"$PWD\""
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "activity-recognition-api",

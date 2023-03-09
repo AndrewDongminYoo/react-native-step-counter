@@ -2,5 +2,10 @@
   "version": "2023.01.23.00",
   "fsevents_latency": 0.05,
   "fsevents_try_resync": "true",
-  "prefer_split_fsevents_watcher": "true"
+  "prefer_split_fsevents_watcher": "true",
+  "fsevents_watch_root": "true",
+  "root_files": [
+    ".",
+    "./example"
+  ]
 }
