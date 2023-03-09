@@ -19,7 +19,11 @@
 RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"StepCounter.stepCounterUpdate"];
+    return @[
+        @"StepCounter.stepCounterUpdate",
+        @"StepCounter.stepDetected",
+        @"StepCounter.errorOccurred"
+    ];
 }
 
 RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
@@ -39,14 +43,18 @@ RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
     [self.pedometer queryPedometerDataFromDate:startDate
                                         toDate:endDate
       withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-          handler(@[error.description?:[NSNull null], [self dictionaryFromPedometerData:pedometerData]]);
+          handler(@[error.description?:[NSNull null],
+                   [self dictionaryFromPedometerData:pedometerData]]);
       }];
 }
 
 RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
     [self.pedometer startPedometerUpdatesFromDate:date?:[NSDate date]
                                       withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-        if (pedometerData) {
+        if(error) {
+            [self sendEventWithName:@"StepCounter.errorOccurred"
+                               body:error];
+        } else if (pedometerData) {
             [self sendEventWithName:@"StepCounter.stepCounterUpdate"
              body:[self dictionaryFromPedometerData:pedometerData]];
         }
@@ -54,10 +62,12 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
 }
 
 - (NSDictionary *)dictionaryFromPedometerData:(CMPedometerData *)data {
+    NSNumber *startDate = @((long long)(data.startDate.timeIntervalSince1970 * 1000.0));
+    NSNumber *endDate = @((long long)(data.endDate.timeIntervalSince1970 * 1000.0));
     return @{
         @"counterType": @"CMPedometer",
-          @"startDate": data.startDate?:[NSNull null],
-            @"endDate": data.endDate?:[NSNull null],
+          @"startDate": startDate?:[NSNull null],
+            @"endDate": endDate?:[NSNull null],
               @"steps": data.numberOfSteps?:[NSNull null],
            @"distance": data.distance?:[NSNull null],
      @"floorsAscended": data.floorsAscended?:[NSNull null],
@@ -74,7 +84,8 @@ RCT_EXPORT_METHOD(startStepsDetection) {
     [[SOMotionDetecter sharedInstance]
       startDetectionWithUpdateBlock:^(NSError *error) {
         if(error) {
-            return;
+            [self sendEventWithName:@"StepCounter.errorOccurred"
+                               body:error];
         } else {
             [self sendEventWithName:@"StepCounter.stepDetected"
                                body:@true];

@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import {
+  isSensorWorking,
   isStepCountingSupported,
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
+  type ParsedStepCountData,
 } from '@dongminyu/react-native-step-counter';
 import { getBodySensorPermission, getStepCounterPermission } from './permission';
 
 type SensorType<T = typeof Platform.OS> = T extends 'ios'
-  ? 'CMStepCounter' | 'CMPedometer'
+  ? 'CMPedometer'
   : T extends 'android'
-  ? 'STEP_COUNTER' | 'ACCELEROMETER'
+  ? 'Step Counter' | 'Accelerometer'
   : 'NONE';
 
 type SensorName = SensorType<Platform['OS']>;
@@ -23,11 +25,13 @@ const initState = {
   distance: '0.0m',
 };
 
+type AdditionalInfo = Partial<ParsedStepCountData>;
+
 export default function App() {
-  const [supported, setSupported] = useState(false);
-  const [granted, setGranted] = useState(false);
-  const [sensorType, setSensorType] = useState<SensorName>('NONE');
-  const [additionalInfo, setAdditionalInfo] = useState(initState);
+  const [supported, setSupported] = React.useState(false);
+  const [granted, setGranted] = React.useState(false);
+  const [sensorType, setSensorType] = React.useState<SensorName>('NONE');
+  const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(initState);
 
   /** get user's motion permission and check pedometer is available */
   const isPedometerSupported = () => {
@@ -54,25 +58,26 @@ export default function App() {
   };
 
   const forceUseAnotherSensor = () => {
-    if (sensorType !== 'NONE') {
+    if (isSensorWorking) {
       stopStepCounter();
-    }
-    if (sensorType === 'STEP_COUNTER') {
-      getBodySensorPermission().then(setGranted);
     } else {
-      getStepCounterPermission().then(setGranted);
+      if (sensorType === 'Step Counter') {
+        getBodySensorPermission().then(setGranted);
+      } else {
+        getStepCounterPermission().then(setGranted);
+      }
     }
     startStepCounter();
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     isPedometerSupported();
     return () => {
       stopStepCounter();
     };
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     console.debug(`🚀 stepCounter ${supported ? '' : 'not'} supported`);
     console.debug(`🚀 user ${granted ? 'granted' : 'denied'} stepCounter`);
     startStepCounter();

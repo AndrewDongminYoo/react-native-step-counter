@@ -30,7 +30,7 @@ const LINKING_ERROR =
  */
 type StepCountData = Data;
 
-type ParsedStepCountData = {
+export interface ParsedStepCountData {
   dailyGoal: string;
   steps: number;
   stepsString: string;
@@ -38,7 +38,7 @@ type ParsedStepCountData = {
   startDate: string;
   endDate: string;
   distance: string;
-};
+}
 
 /**
  * We keep TurboModuleManager alive until the JS VM is deleted.
@@ -85,14 +85,13 @@ const RNStepCounter = (
       )
 ) as Spec;
 
-const StepCounterEventEmitter = new NativeEventEmitter(RNStepCounter);
+const StepEventEmitter = new NativeEventEmitter(RNStepCounter);
 type StepCountUpdateCallback = (result: StepCountData) => void;
+export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
 /**
  * Transform the step count data into a more readable format.
  * you can use it or directly use the `StepCountData` type.
- * @param {StepCountData} data The step count data.
- * @returns {ParsedStepCountData} The parsed step count data.
  */
 export function parseStepData(data: StepCountData): ParsedStepCountData {
   const { steps, startDate, endDate, distance } = data;
@@ -153,7 +152,6 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
 /**
  * Start to subscribe stepCounter updates.
  * @param {Date} start A date indicating the start of the range over which to measure steps.
- * @param {StepCountUpdateCallback} callBack is provided with a single argument that is [StepCountData](StepCountData).
  * @return Returns a [Subscription](Subscription) that enables you to call.
  *
  * when you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
@@ -179,7 +177,7 @@ export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCal
   }
   const from = start.getTime();
   RNStepCounter.startStepCounterUpdate(from);
-  return StepCounterEventEmitter.addListener(eventName, callBack);
+  return StepEventEmitter.addListener(eventName, callBack);
 }
 
 /**
@@ -192,7 +190,7 @@ export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCal
  * @link [`CMStepCounter.stopStepCountingUpdates`](https://developer.apple.com/documentation/coremotion/cmstepcounter/1616157-stopstepcountingupdates)
  */
 export function stopStepCounterUpdate(): void {
-  StepCounterEventEmitter.removeAllListeners(eventName);
+  StepEventEmitter.removeAllListeners(eventName);
   RNStepCounter.stopStepCounterUpdate();
 }
 

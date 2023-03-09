@@ -98,31 +98,23 @@ abstract class SensorListenService(
      */
     val stepsParamsMap: WritableMap
         get() = Arguments.createMap().apply {
-            putDouble("steps", currentSteps)
-            putDouble("distance", distance)
-            putDouble("startDate", startDate.toDouble())
-            putDouble("endDate", endDate.toDouble())
+            putNumber("steps", currentSteps)
+            putNumber("distance", distance)
+            putNumber("startDate", startDate)
+            putNumber("endDate", endDate)
             putString("counterType", sensorTypeString)
-            putDouble("calories", calories)
+            putNumber("calories", calories)
         }
 
     val stepsSensorInfo: WritableMap
         get() = Arguments.createMap().apply {
-            putInt("type", detectedSensor.type)
-            putInt("version", detectedSensor.version)
-            putInt("fifoMaxEvents", detectedSensor.fifoMaxEventCount)
-            putInt("fifoReservedEvents", detectedSensor.fifoReservedEventCount)
-            putInt("minDelay", detectedSensor.minDelay)
-            putInt("maxDelay", detectedSensor.maxDelay)
-            putInt("reportingMode", detectedSensor.reportingMode)
+            putNumber("minDelay", detectedSensor.minDelay)
+            putNumber("maxDelay", detectedSensor.maxDelay)
             putString("name", detectedSensor.name)
             putString("vendor", detectedSensor.vendor)
-            putString("stringType", detectedSensor.stringType)
-            putDouble("power", detectedSensor.power.toDouble())
-            putDouble("resolution", detectedSensor.resolution.toDouble())
-            putDouble("maximumRange", detectedSensor.maximumRange.toDouble())
+            putNumber("power", detectedSensor.power)
+            putNumber("resolution", detectedSensor.resolution)
             putBoolean("wakeUpSensor", detectedSensor.isWakeUpSensor)
-            putBoolean("dynamicSensor", detectedSensor.isDynamicSensor)
             putBoolean("additionalInfoSupported", detectedSensor.isAdditionalInfoSupported)
         }
 
@@ -174,7 +166,7 @@ abstract class SensorListenService(
      * @see SensorManager.registerListener
      */
     fun startService() {
-        counterModule.sendStepCounterUpdateEvent(stepsSensorInfo)
+        counterModule.sendDeviceEvent("stepsSensorInfo", stepsSensorInfo)
         Log.d(TAG_NAME, "SensorManager.stepsSensorInfo: $stepsSensorInfo")
         sensorManager.registerListener(this, detectedSensor, samplingPeriodUs)
     }
@@ -222,7 +214,7 @@ abstract class SensorListenService(
             || event.sensor.type != detectedSensor.type
         ) return
         if (updateCurrentSteps(event.values)) {
-            counterModule.sendStepCounterUpdateEvent(stepsParamsMap)
+            counterModule.sendDeviceEvent("stepCounterUpdate", stepsParamsMap)
         }
     }
 
@@ -280,5 +272,13 @@ abstract class SensorListenService(
 
     companion object {
         val TAG_NAME: String = SensorListenService::class.java.name
+    }
+}
+
+private fun WritableMap.putNumber(key: String, number: Number) {
+    when (number) {
+        is Double -> putDouble(key, number)
+        is Int -> putInt(key, number)
+        else -> putDouble(key, number.toDouble())
     }
 }

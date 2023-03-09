@@ -38,15 +38,15 @@ class StepCounterService(
     override val sensorTypeString = "Step Counter"
     override val sensorType = Sensor.TYPE_STEP_COUNTER
     override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
-    private var previousSteps: Double = 0.toDouble()
+    private var previousSteps: Double = 0.0
         set(value) {
-            if (field.compareTo(value) < 0) {
+            if (field < value) {
                 field = value
             }
         }
-    override var currentSteps: Double = 0.toDouble()
+    override var currentSteps: Double = 0.0
         set(value) {
-            if (field.compareTo(value) < 0) {
+            if (field < value) {
                 field = value
             }
         }
@@ -62,7 +62,7 @@ class StepCounterService(
     override fun updateCurrentSteps(eventData: FloatArray): Boolean {
         // if the time difference is greater than the delay, set the current steps to the step count minus the initial steps
         // if the previous steps aren't initialized yet,
-        return if (previousSteps.compareTo(0) == 0) {
+        return if (previousSteps.equals(0.0)) {
             previousSteps = eventData[0].toDouble()
             false
         } else {

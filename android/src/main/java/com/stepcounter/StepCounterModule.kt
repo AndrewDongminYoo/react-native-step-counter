@@ -30,11 +30,9 @@ class StepCounterModule(context: ReactApplicationContext) :
     StepCounterSpec(context) {
     companion object {
         const val NAME: String = "RNStepCounter"
-        const val eventName: String = "StepCounter.stepCounterUpdate"
+        const val moduleName: String = "StepCounter"
         private val TAG_NAME: String = StepCounterModule::class.java.name
         private const val STEP_COUNTER = "android.permission.ACTIVITY_RECOGNITION"
-        const val STOPPED = 0
-        const val STARTED = 1
     }
 
     private val appContext: ReactApplicationContext = context
@@ -45,8 +43,8 @@ class StepCounterModule(context: ReactApplicationContext) :
         get() = AndroidVersionHelper.isHardwareAccelerometerEnabled(appContext)
     private val supported: Boolean
         get() = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
-    private val walkingStatus: Int
-        get() = if (stepCounterListener !== null) STARTED else STOPPED
+    private val walkingStatus: Boolean
+        get() = stepCounterListener !== null
 
     /**
      * gets the step counter listener
@@ -87,11 +85,12 @@ class StepCounterModule(context: ReactApplicationContext) :
         Log.d(TAG_NAME, "hardware_step_counter? $supported")
         Log.d(TAG_NAME, "step_counter granted? $stepsOK")
         Log.d(TAG_NAME, "accelerometer granted? $accelOK")
+        sendDeviceEvent("stepDetected", walkingStatus)
         promise.resolve(
             Arguments.createMap().apply {
                 putBoolean("supported", supported)
                 putBoolean("granted", stepsOK || accelOK)
-                putBoolean("working", walkingStatus == STARTED)
+                putBoolean("working", walkingStatus)
             }
         )
     }
@@ -140,20 +139,20 @@ class StepCounterModule(context: ReactApplicationContext) :
 
     /**
      * Send the step counter update event to the react-native code.
-     * @param paramsMap the map that contains the parameters for the steps
+     * @param eventPayload the object that contains information about the step counter update.
      * @return Nothing.
      * @see WritableMap
      * @see RCTDeviceEventEmitter
      * @see com.facebook.react.modules.core.DeviceEventManagerModule
      * @throws RuntimeException if the event emitter is not initialized.
      */
-    fun sendStepCounterUpdateEvent(paramsMap: WritableMap) {
+    fun sendDeviceEvent(eventType: String, eventPayload: Any) {
         try {
             appContext.getJSModule(RCTDeviceEventEmitter::class.java)
-                .emit(eventName, paramsMap)
+                .emit("$moduleName.$eventType", eventPayload)
         } catch (e: RuntimeException) {
             e.message?.let { Log.e(TAG_NAME, it) }
-            Log.e(TAG_NAME, eventName, e)
+            Log.e(TAG_NAME, eventType, e)
         }
     }
 }

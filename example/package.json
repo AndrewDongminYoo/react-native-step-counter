@@ -3,29 +3,21 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "preandroid": "(cd android && ./gradlew clean && ./gradlew installDebug)",
-    "android": "react-native run-android",
-    "run-android": "yarn run-android --mode=Debug && yarn unwatch",
+    "run-android": "react-native run-android --mode=Debug",
     "build-android": "react-native build-android --mode=Release",
-    "preios": "yarn pods",
+    "prepods": "react-native setup-ios-permissions",
     "ios": "react-native run-ios --scheme StepCounterExample",
     "run-ios": "yarn ios --configuration Debug",
     "build-ios": "yarn ios --configuration Release",
-    "postios": "yarn unwatch",
-    "clean": "del-cli android/build android/app/.cxx ios/build",
-    "clean:slow": "react-native clean --include cocoapods,npm",
     "clear": "react-native clean --include watchman,yarn,metro,android",
-    "clear:all": "yarn clear && yarn clear:slow && yarn clean",
     "doctor": "react-native doctor --fix",
     "pods": "(cd ios && pod install --no-repo-update)",
-    "postinstall": "yarn pods",
     "start": "react-native start --reset-cache",
-    "unwatch": "watchman watch-del \"$PWD\" && watchman watch-list",
     "watch": "tsc --noEmit --watch"
   },
   "dependencies": {
     "react": "18.2.0",
-    "react-native": "0.71.3",
+    "react-native": "0.71.4",
     "react-native-permissions": "^3.7.3"
   },
   "devDependencies": {
@@ -33,7 +25,7 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/runtime": "^7.21.0",
     "babel-plugin-module-resolver": "^5.0.0",
-    "metro-react-native-babel-preset": "0.75.1"
+    "metro-react-native-babel-preset": "0.76.0"
   },
   "reactNativePermissionsIOS": [
     "Motion"
