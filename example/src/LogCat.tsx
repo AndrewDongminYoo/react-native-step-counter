@@ -1,9 +1,23 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, type EmitterSubscription } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import type { EmitterSubscription } from 'react-native';
 import { NativeEventEmitter, NativeModules } from 'react-native';
 
 const eventEmitter = new NativeEventEmitter(NativeModules.RNStepCounter);
 
+/**
+ * A component that displays the logs from the native module.
+ * @param loaded A boolean that indicates whether the native module is loaded.
+ *   how this component is rendered:
+ *   - `true`: the component is rendered and the event listener is subscribed.
+ *   - `false`: the component is not rendered and the event listener is unsubscribed.
+ * @returns A React component.
+ * @example
+ * ``<LogCat trigger={loaded} />``
+ * @see {@link https://reactnative.dev/docs/native-modules-ios#sending-events-to-javascript}
+ * @see {@link https://reactnative.dev/docs/native-modules-android#sending-events-to-javascript}
+ * @see {@link https://reactnative.dev/docs/scrollview}
+ */
 const LogCat = ({ trigger: loaded }: { trigger: boolean }) => {
   const [rendered, setRendered] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
@@ -12,7 +26,7 @@ const LogCat = ({ trigger: loaded }: { trigger: boolean }) => {
 
   useEffect(() => {
     const supportedEvents = [
-      'StepCounter.stepCounterUpdate',
+      // 'StepCounter.stepCounterUpdate',
       'StepCounter.stepDetected',
       'StepCounter.errorOccurred',
       'StepCounter.stepsSensorInfo',
@@ -24,7 +38,7 @@ const LogCat = ({ trigger: loaded }: { trigger: boolean }) => {
         setLogs((prevLogs) => {
           return [...prevLogs, `[${eventName}]`, JSON.stringify(event)];
         });
-        scrollRef.current?.scrollToEnd();
+        scrollRef.current?.scrollToEnd({ animated: false });
       });
       setSubscriptions((prevSubs) => [...prevSubs, newSub]);
     }
@@ -50,29 +64,29 @@ const LogCat = ({ trigger: loaded }: { trigger: boolean }) => {
 
 const formatLog = (logs: string) => {
   const parts = logs.split(/\n/);
-  return (
-    <>
-      {parts.map((part, index) =>
-        part.startsWith('{') ? (
-          <Text key={index} style={styles.nString}>
-            {formatJson(part)}
-          </Text>
-        ) : part.startsWith('[') ? (
-          <Text key={index} style={styles.nTag}>
-            {part.substring(13, part.length - 1)}
-          </Text>
-        ) : (
-          <Text key={index}>{part}</Text>
-        )
-      )}
-    </>
-  );
+  return parts.map((part, index) => {
+    if (part.startsWith('{')) {
+      return (
+        <Text key={index} style={styles.nString}>
+          {formatJson(part)}
+        </Text>
+      );
+    } else if (part.startsWith('[')) {
+      return (
+        <Text key={index} style={styles.nTag}>
+          {part.substring(13, part.length - 1)}
+        </Text>
+      );
+    } else {
+      return <Text key={index}>{part}</Text>;
+    }
+  });
 };
 
 function formatJson(json: string) {
   const parsed = JSON.parse(json);
   return Object.entries(parsed).map(([key, value]) => {
-    const KEY = <Text style={styles.nString}>{`"${key}"`}: </Text>;
+    const KEY = <Text style={styles.nString}>{`"${key}": `}</Text>;
     let VAL = <></>;
     switch (typeof value) {
       case 'boolean':

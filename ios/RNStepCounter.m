@@ -22,30 +22,31 @@ RCT_EXPORT_MODULE();
     return @[
         @"StepCounter.stepCounterUpdate",
         @"StepCounter.stepDetected",
-        @"StepCounter.errorOccurred"
+        @"StepCounter.errorOccurred",
+        @"StepCounter.stepsSensorInfo"
     ];
 }
 
 RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
                                    reject:(RCTPromiseRejectBlock)reject) {
-    resolve(@{@"granted": @(self.authorizationStatus),
-            @"supported": @([CMPedometer isStepCountingAvailable]),
-                 @"pace": @([CMPedometer isPaceAvailable]),
-              @"cadence": @([CMPedometer isCadenceAvailable]),
-             @"distance": @([CMPedometer isDistanceAvailable]),
-           @"floorCount": @([CMPedometer isFloorCountingAvailable]),
+
+    resolve(@{
+        @"granted": @(self.authorizationStatus),
+        @"supported": @([CMPedometer isStepCountingAvailable]),
     });
+    [self sendEventWithName:@"StepCounter.stepsSensorInfo"
+                       body:[self dictionaryAboutSensorInfo]];
 }
 
 RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
-                                           endDate:(NSDate *)endDate
-                                           handler:(RCTResponseSenderBlock)handler) {
+                  endDate:(NSDate *)endDate
+                  handler:(RCTResponseSenderBlock)handler) {
     [self.pedometer queryPedometerDataFromDate:startDate
                                         toDate:endDate
-      withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-          handler(@[error.description?:[NSNull null],
-                   [self dictionaryFromPedometerData:pedometerData]]);
-      }];
+                                   withHandler:^(CMPedometerData *pedometerData, NSError *error) {
+        handler(@[error.description?:[NSNull null],
+                  [self dictionaryFromPedometerData:pedometerData]]);
+    }];
 }
 
 RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
@@ -56,9 +57,21 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
                                body:error];
         } else if (pedometerData) {
             [self sendEventWithName:@"StepCounter.stepCounterUpdate"
-             body:[self dictionaryFromPedometerData:pedometerData]];
+                               body:[self dictionaryFromPedometerData:pedometerData]];
         }
     }];
+}
+
+- (NSDictionary *)dictionaryAboutSensorInfo {
+    return @{
+        @"name": @"CMPedometer",
+        @"granted": @(self.authorizationStatus),
+        @"stepCounting": @([CMPedometer isStepCountingAvailable]),
+        @"pace": @([CMPedometer isPaceAvailable]),
+        @"cadence": @([CMPedometer isCadenceAvailable]),
+        @"distance": @([CMPedometer isDistanceAvailable]),
+        @"floorCounting": @([CMPedometer isFloorCountingAvailable]),
+    };
 }
 
 - (NSDictionary *)dictionaryFromPedometerData:(CMPedometerData *)data {
@@ -66,12 +79,12 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
     NSNumber *endDate = @((long long)(data.endDate.timeIntervalSince1970 * 1000.0));
     return @{
         @"counterType": @"CMPedometer",
-          @"startDate": startDate?:[NSNull null],
-            @"endDate": endDate?:[NSNull null],
-              @"steps": data.numberOfSteps?:[NSNull null],
-           @"distance": data.distance?:[NSNull null],
-     @"floorsAscended": data.floorsAscended?:[NSNull null],
-    @"floorsDescended": data.floorsDescended?:[NSNull null],
+        @"startDate": startDate?:[NSNull null],
+        @"endDate": endDate?:[NSNull null],
+        @"steps": data.numberOfSteps?:[NSNull null],
+        @"distance": data.distance?:[NSNull null],
+        @"floorsAscended": data.floorsAscended?:[NSNull null],
+        @"floorsDescended": data.floorsDescended?:[NSNull null],
     };
 }
 

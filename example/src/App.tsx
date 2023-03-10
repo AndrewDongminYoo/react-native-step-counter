@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import type { TextProps } from 'react-native';
 import {
   isSensorWorking,
   isStepCountingSupported,
@@ -45,7 +46,6 @@ export default function App() {
 
   const startStepCounter = () => {
     startStepCounterUpdate(new Date(), (data) => {
-      console.debug('🚀 data', data);
       setSensorType(data.counterType as SensorName);
       const parsedData = parseStepData(data);
       setAdditionalInfo({
@@ -90,13 +90,13 @@ export default function App() {
   return (
     <SafeAreaView>
       <View style={styles.container}>
-        <Text style={styles.normal}>User Granted the Permission?: {granted ? 'yes' : 'no'}</Text>
-        <Text style={styles.normal}>Device has Pedometer Sensor?: {supported ? 'yes' : 'no'}</Text>
-        <Text style={styles.normal}>now Using : {sensorType}</Text>
-        <Text style={styles.normal}>dailyGoal : {additionalInfo.dailyGoal}</Text>
-        <Text style={styles.normal}>calories : {additionalInfo.calories}</Text>
-        <Text style={styles.normal}>stepsString : {additionalInfo.stepsString}</Text>
-        <Text style={styles.normal}>distance : {additionalInfo.distance}</Text>
+        <NormalText>User Granted the Permission?: {granted ? 'yes' : 'no'}</NormalText>
+        <NormalText>Device has Pedometer Sensor?: {supported ? 'yes' : 'no'}</NormalText>
+        <NormalText>now Using : {sensorType}</NormalText>
+        <NormalText>dailyGoal : {additionalInfo.dailyGoal}</NormalText>
+        <NormalText>calories : {additionalInfo.calories}</NormalText>
+        <NormalText>stepsString : {additionalInfo.stepsString}</NormalText>
+        <NormalText>distance : {additionalInfo.distance}</NormalText>
         <View style={styles.bGroup}>
           <Button title="Start stepping" onPress={startStepCounter} />
           <Button title="restart" onPress={forceUseAnotherSensor} />
@@ -129,3 +129,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
 });
+
+/* A way to create a component with default props. */
+const NormalText = (props: TextProps) => <Text style={styles.normal} {...props} />;
