@@ -7,10 +7,10 @@ A simple React Native package to count the number of steps taken by the user. Th
 ## Installation
 
 ```zsh
-npm install @donminyu/react-native-step-counter
+npm install @dongminyu/react-native-step-counter
 
 # or if you use Yarn,
-yarn add @donminyu/react-native-step-counter
+yarn add @dongminyu/react-native-step-counter
 ```
 
 ## Requirements

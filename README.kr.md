@@ -7,10 +7,10 @@ English-speaking developers, please return to the repository main page or click 
 ## 설치 방법
 
 ```zsh
-npm install @donminyu/react-native-step-counter
+npm install @dongminyu/react-native-step-counter
 
 # Yarn을 선호하는 경우
-yarn add @donminyu/react-native-step-counter
+yarn add @dongminyu/react-native-step-counter
 ```
 
 ## 사전 요구사항
