@@ -1,5 +1,6 @@
 #ifdef RCT_NEW_ARCH_ENABLED
-#import "RNStepCounterSpec.h"
+#import <RNStepCounterSpec/RNStepCounterSpec.h>
+NS_ASSUME_NONNULL_BEGIN
 
 @interface RNStepCounter : NSObject <NativeStepCounterSpec>
 #else
@@ -12,3 +13,4 @@
 #endif
 
 @end
+NS_ASSUME_NONNULL_END

@@ -12,6 +12,7 @@
     "clear": "react-native clean --include watchman,yarn,metro,android",
     "doctor": "react-native doctor --fix",
     "pods": "(cd ios && pod install --no-repo-update)",
+    "postinstall": "node node_modules/react-native/scripts/generate-codegen-artifacts.js -p .",
     "start": "react-native start --reset-cache",
     "watch": "tsc --noEmit --watch"
   },

@@ -34,7 +34,7 @@
     "clear": "react-native clean --include watchman,yarn,metro,android",
     "android": "yarn ready && yarn example run-android",
     "ios": "yarn ready && yarn example run-ios",
-    "gradle": "(cd example/android && ./gradlew installDebug)",
+    "gradle": "(cd example/android && ./gradlew generateCodegenArtifactsFromSchema)",
     "example": "yarn --cwd example",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "format": "prettier --write \"**/*.{js,ts,tsx}\"",

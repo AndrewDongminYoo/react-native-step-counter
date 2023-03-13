@@ -4,6 +4,8 @@
 #import <CoreMotion/CoreMotion.h>
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
+#import "RNStepCounterSpec.h"
+#import "RNStepCounter.h"
 
 @interface RNStepCounter ()
 @property (nonatomic, readonly) CMPedometer *pedometer;
