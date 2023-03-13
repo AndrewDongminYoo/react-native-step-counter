@@ -15,7 +15,7 @@ example/android/app/build
 example/ios/build
 example/ios/DerivedData
 
-# unsupport platform
+# unsupported platform
 web
 linux
 windows
@@ -32,7 +32,6 @@ coverage
 
 # configs
 .gitattributes
-.flowconfig
 .yarn-metadata.json
 .yarn-error.log
 .package-lock.json

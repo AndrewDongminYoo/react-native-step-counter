@@ -7,8 +7,8 @@
     "build-android": "react-native build-android --mode=Release",
     "prepods": "react-native setup-ios-permissions",
     "ios": "react-native run-ios --scheme StepCounterExample",
-    "run-ios": "yarn ios --configuration Debug",
-    "build-ios": "yarn ios --configuration Release",
+    "run-ios": "yarn ios --mode Debug",
+    "build-ios": "yarn ios --mode Release",
     "clear": "react-native clean --include watchman,yarn,metro,android",
     "doctor": "react-native doctor --fix",
     "pods": "(cd ios && pod install --no-repo-update)",
@@ -16,6 +16,7 @@
     "watch": "tsc --noEmit --watch"
   },
   "dependencies": {
+    "@dongminyu/react-native-step-counter": "../",
     "react": "18.2.0",
     "react-native": "0.71.4",
     "react-native-permissions": "^3.7.3"

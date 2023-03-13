@@ -155,6 +155,9 @@
   "codegenConfig": {
     "name": "RNStepCounterSpec",
     "type": "modules",
-    "jsSrcsDir": "src"
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.stepcounter"
+    }
   }
 }
