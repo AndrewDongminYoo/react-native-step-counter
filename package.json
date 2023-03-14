@@ -131,27 +131,6 @@
     "node": ">= 16.0.0"
   },
   "packageManager": "^yarn@1.22.19",
-  "jest": {
-    "preset": "react-native",
-    "modulePathIgnorePatterns": [
-      "<rootDir>/example/node_modules",
-      "<rootDir>/lib/"
-    ]
-  },
-  "react-native-builder-bob": {
-    "source": "src",
-    "output": "lib",
-    "targets": [
-      "commonjs",
-      "module",
-      [
-        "typescript",
-        {
-          "project": "tsconfig.build.json"
-        }
-      ]
-    ]
-  },
   "codegenConfig": {
     "name": "RNStepCounterSpec",
     "type": "modules",
