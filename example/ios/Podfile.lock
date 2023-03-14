@@ -415,7 +415,7 @@ PODS:
     - React-perflogger (= 0.71.4)
   - RNPermissions (3.7.3):
     - React-Core
-  - RNStepCounter (0.1.9):
+  - RNStepCounter (0.1.10):
     - React-Core
   - SocketRocket (0.6.0)
   - Yoga (1.14.0)

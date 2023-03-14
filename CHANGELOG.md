@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.10](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.9...v0.1.10) (2023-03-14)
+
+### Performance Improvements v0.1.10
+
+- **iOS:** ⬆️ all .m files in StepCounter folder should be renamed to .mm ([983be85](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/983be85e414ebb400b69be3e54e3744d24cc1ae8)), closes [#1](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/1)
+
+### Documentation v0.1.10
+
+- **react:** ✏️ [@yusungLEVIT](https://github.com/yusungLEVIT) reported typo fixed ([09a3056](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/09a305600bea1d9ec14d75aa8ecbe0a4b7ccb3d2)), closes [#8](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/8)
+- **react:** 📝 wrote a detailed document on importing turbo-module ([8d8800a](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/8d8800a3bcd93d9621537408ff33e90ee9e7fa43)), closes [#10](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/10)
+
 ## [0.1.9](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.8...v0.1.9) (2023-03-09)
 
 ### Features v0.1.9

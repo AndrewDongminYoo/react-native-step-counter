@@ -1037,7 +1037,7 @@
     to-fast-properties "^2.0.0"
 
 "@dongminyu/react-native-step-counter@../":
-  version "0.1.9"
+  version "0.1.10"
 
 "@hapi/hoek@^9.0.0":
   version "9.3.0"
