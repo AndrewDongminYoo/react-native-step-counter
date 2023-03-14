@@ -2,7 +2,7 @@
 
 한국어 사용자는 [Korean version.](README.kr.md)를 참조하십시오.
 
-A simple React Native package to count the number of steps taken by the user. This package uses the `StepCounter` (or Custom accelerometer-based stepcounter) Sensor API on Android and the `Core Motion` framework on iOS to count the steps. It's built using Turbo Module, a new module development architecture for React Native. I made this library compatible with both new and legacy architectures. (Because the turbo module is still in the experimental stage. so it is not widely used.)
+A simple React Native package to count the number of steps taken by the user. This package uses the `StepCounter` (or Custom accelerometer-based step-counter) Sensor API on Android and the `Core Motion` framework on iOS to count the steps. It's built using Turbo Module, a new module development architecture for React Native. I made this library compatible with both new and legacy architectures. (Because the turbo module is still in the experimental stage. so it is not widely used.)
 
 ## Installation
 
@@ -39,11 +39,13 @@ Native modules will automatically connect after React Native 0.60 version. So yo
 
 - Applying a new architecture to React Native iOS applications
 
-  _1_. set platform version to [12.4](https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25) or higher.
+  _1_. set platform version to [12.4](https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25) or higher. ([min_ios_version_supported](https://github.com/facebook/react-native/blob/main/scripts/react_native_pods.rb#LL29-L31C4))
 
   ```diff
   - platform :ios, '11.0'
   + platform :ios, '12.4'
+  # ↓ or you can use the variable of (react_native_pods.rb)
+  + platform :ios, min_ios_version_supported
   ```
 
   _2_. set NODE_BINARY to .xcode.env file.
@@ -84,6 +86,7 @@ Native modules will automatically connect after React Native 0.60 version. So yo
     ```
 
   - [ios/StepCounterExample/AppDelegate.mm](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.mm)
+
     ```objective-c++
     #import "AppDelegate.h"
     #import <React/RCTBundleURLProvider.h>
@@ -108,7 +111,9 @@ Native modules will automatically connect after React Native 0.60 version. So yo
     }
     @end
     ```
+
   - Run `pod install`
+
     ```shell
     export RCT_NEW_ARCH_ENABLED=1
     cd ios && pod install

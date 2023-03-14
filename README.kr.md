@@ -12,12 +12,12 @@ npm install @dongminyu/react-native-step-counter
 ```
 
 ```shell
-# Yarn을 사용한다면, (병렬 설치를 지원해 빠른 속도를 제공하는 패키지 매니저입니다.)
+# Yarn을 선호한다면, (병렬 설치를 지원해 빠른 속도를 제공하는 패키지 매니저입니다.)
 yarn add @dongminyu/react-native-step-counter
 ```
 
 ```shell
-# pnpm을 사용한다면, (글로벌 패키지와 하드링크로 빠른 속도를 제공하는 패키지 매니저입니다.)
+# pnpm을 선호한다면, (글로벌 패키지와 하드링크로 빠른 속도를 제공하는 패키지 매니저입니다.)
 pnpm add @dongminyu/react-native-step-counter
 ```
 
@@ -28,6 +28,7 @@ pnpm add @dongminyu/react-native-step-counter
 ## 라이브러리를 의존성에 추가하기 전 사전세팅
 
 - 리액트 네이티브 애플리케이션 공통 변경사항 셋업
+
   1. React Native는 [`0.68.0`](https://reactnative.dev/blog/2022/03/30/version-068#opting-in-to-the-new-architecture) 버전 릴리스와 함께 새 아키텍처를 디폴트로 선언했습니다. 따라서 이 버전 이하의 리액트네이티브 라이브러리를 의존하고 있는 애플리케이션은 업데이트해야 합니다. 안드로이드는 0.71.0 이상으로 업데이트하는 것이 좋습니다.
   2. 대부분의 리액트 네이티브 문서와 마찬가지로 이 문서는 최신 리액트 네이티브 [릴리즈](https://github.com/facebook/react-native/releases/latest) 버전을 사용한다는 것을 전제로 작성되었습니다.
   3. 버전 업그레이드에 어려움을 겪고 있다면 다음 페이지를 참고하시길 바랍니다. [새로운 버전으로 업그레이드](https://reactnative.dev/docs/upgrading).
@@ -35,13 +36,16 @@ pnpm add @dongminyu/react-native-step-counter
   5. 헤르메스 엔진과 플리퍼 디버깅 도구를 사용합니다.
      - [Hermes](https://reactnative.dev/docs/hermes)는 Android 및 iOS에서 React Native 앱을 실행하도록 최적화된 새로운 JavaScript 엔진입니다. 최신 리액트 네이티브 버전에서 기본적으로 활성화되어 있으며, 기존의 JSC를 사용하려면 명시적으로 비활성화 해야합니다. 적은 리소스와 빠른 속도 퍼포먼스는 일반적으로 헤르메스가 강하지만, 디버그 모드에서 JSC를 사용하는 것이 더 간편한 면도 있습니다.
      - [Flipper](https://fbflipper.com/)는 리액트 네이티브의 새로운 디버깅 및 프로파일링 도구입니다. 헤르메스 엔진을 사용하는 경우, Flipper를 사용하는 것이 디버깅에서 보다 쾌적한 개발 경험을 제공합니다.
+
 - 리액트 네이티브 애플리케이션 iOS 변경사항 셋업
 
-  _1_. 대상 iOS 플랫폼 버전을 [12.4](https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25)혹은 그 이상으로 설정합니다. (13.0 이상으로 설정하는 것이 좋습니다.)
+  _1_. 대상 iOS 플랫폼 버전을 [12.4](https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25)혹은 그 이상으로 설정합니다. ([min_ios_version_supported](https://github.com/facebook/react-native/blob/main/scripts/react_native_pods.rb#LL29-L31C4))
 
   ```diff
   - platform :ios, '11.0'
   + platform :ios, '12.4'
+  # ↓ or you can use the variable of (react_native_pods.rb)
+  + platform :ios, min_ios_version_supported
   ```
 
   _2_. NODE_BINARY 환경 변수를 설정합니다. (이는 XCode 리액트 네이티브 빌드 스크립트에서 사용됩니다.)
@@ -82,6 +86,7 @@ pnpm add @dongminyu/react-native-step-counter
     ```
 
   - [ios/StepCounterExample/AppDelegate.mm](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.mm)
+
     ```objective-c++
     #import "AppDelegate.h"
     #import <React/RCTBundleURLProvider.h>
@@ -106,7 +111,9 @@ pnpm add @dongminyu/react-native-step-counter
     }
     @end
     ```
+
   - Run `pod install`
+
     ```shell
     export RCT_NEW_ARCH_ENABLED=1
     cd ios && pod install

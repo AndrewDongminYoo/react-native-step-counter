@@ -17,7 +17,6 @@
     "watch": "tsc --noEmit --watch"
   },
   "dependencies": {
-    "@dongminyu/react-native-step-counter": "../",
     "react": "18.2.0",
     "react-native": "0.71.4",
     "react-native-permissions": "^3.7.3"
