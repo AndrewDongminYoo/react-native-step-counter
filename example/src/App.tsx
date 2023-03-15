@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Button, Platform, SafeAreaView, StyleSheet, View } from 'react-native';
 import {
   isSensorWorking,
   isStepCountingSupported,

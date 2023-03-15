@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.11](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.10...v0.1.11) (2023-03-15)
+
+### Bug Fixes v0.1.11
+
+- ⬇️ iOS platform minimum target reduced, fix some typo of documents ([bc1366a](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/bc1366a154f9e31000aa40b4ad30278b7aa15a7f))
+
 ## [0.1.10](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.9...v0.1.10) (2023-03-14)
 
 ### Performance Improvements v0.1.10
