@@ -625,7 +625,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 8fa50b38df6b992c76537993a2b0553d3b088004
   ReactCommon: b49a4b00ca6d181ff74b17c12b2d59ac4add0bde
   RNPermissions: 3464be85b6aa90ef30745d46b5d61ac4e95a8df3
-  RNStepCounter: b84c6b3002fe8a24adf77b0c8a7650912b7309bb
+  RNStepCounter: fd56d3b0cd63a12f8f76610e2119c41056b980a3
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 79dd7410de6f8ad73a77c868d3d368843f0c93e0
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a

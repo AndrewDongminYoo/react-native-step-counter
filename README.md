@@ -134,15 +134,11 @@ Native modules will automatically connect after React Native 0.60 version. So yo
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.stepcounter">
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-  <uses-permission android:name="android.permission.BODY_SENSORS" />
   <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
 
   <uses-feature
     android:name="android.hardware.sensor.stepcounter"
-    android:required="true" />
-  <uses-feature
-    android:name="android.hardware.sensor.stepdetector"
-    android:required="true" />
+    android:required="false" />
   <uses-feature
     android:name="android.hardware.sensor.accelerometer"
     android:required="true" />
@@ -151,7 +147,7 @@ Native modules will automatically connect after React Native 0.60 version. So yo
 
 ### iOS
 
-> set NSMotionUsageDescription (+NSHealthUpdateUsageDescription)
+> set NSMotionUsageDescription
 
 ```xml plist
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
@@ -159,8 +155,6 @@ Native modules will automatically connect after React Native 0.60 version. So yo
   ...
   <key>NSMotionUsageDescription</key>
   <string>We want to access your motion data to count your steps.</string>
-  <key>NSHealthUpdateUsageDescription</key>
-  <string>We want to update your workout data to count your steps.</string>
   ...
 </plist>
 ```
