@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import type { TextProps } from 'react-native';
 import {
   isSensorWorking,
   isStepCountingSupported,
@@ -10,6 +9,7 @@ import {
   type ParsedStepCountData,
 } from '@dongminyu/react-native-step-counter';
 import { getBodySensorPermission, getStepCounterPermission } from './permission';
+import CircularProgress from 'react-native-circular-progress-indicator';
 import LogCat from './LogCat';
 
 type SensorType<T = typeof Platform.OS> = T extends 'ios'
@@ -22,8 +22,8 @@ type SensorName = SensorType<Platform['OS']>;
 
 const initState = {
   dailyGoal: '0/10000 steps',
-  stepsString: '0.0kCal',
-  calories: '0 steps',
+  stepsString: '0 steps',
+  calories: '0 kCal',
   distance: '0.0m',
 };
 
@@ -34,6 +34,7 @@ export default function App() {
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);
   const [sensorType, setSensorType] = React.useState<SensorName>('NONE');
+  const [stepCount, setStepCount] = React.useState(0);
   const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(initState);
 
   /** get user's motion permission and check pedometer is available */
@@ -48,6 +49,7 @@ export default function App() {
     startStepCounterUpdate(new Date(), (data) => {
       setSensorType(data.counterType as SensorName);
       const parsedData = parseStepData(data);
+      setStepCount(parsedData.steps);
       setAdditionalInfo({
         ...parsedData,
       });
@@ -90,17 +92,29 @@ export default function App() {
   return (
     <SafeAreaView>
       <View style={styles.container}>
-        <NormalText>User Granted the Permission?: {granted ? 'yes' : 'no'}</NormalText>
-        <NormalText>Device has Pedometer Sensor?: {supported ? 'yes' : 'no'}</NormalText>
-        <NormalText>now Using : {sensorType}</NormalText>
-        <NormalText>dailyGoal : {additionalInfo.dailyGoal}</NormalText>
-        <NormalText>calories : {additionalInfo.calories}</NormalText>
-        <NormalText>stepsString : {additionalInfo.stepsString}</NormalText>
-        <NormalText>distance : {additionalInfo.distance}</NormalText>
+        <View style={styles.indicator}>
+          <CircularProgress
+            value={stepCount}
+            maxValue={10000}
+            valueSuffix="steps"
+            progressValueFontSize={42}
+            radius={165}
+            activeStrokeColor="#cdd27e"
+            inActiveStrokeColor="#4c6394"
+            inActiveStrokeOpacity={0.5}
+            inActiveStrokeWidth={40}
+            subtitle={additionalInfo.calories === '0 kCal' ? '' : additionalInfo.calories}
+            activeStrokeWidth={40}
+            title="Step Count"
+            titleColor="#555"
+            titleFontSize={30}
+            titleStyle={{ fontWeight: 'bold' }}
+          />
+        </View>
         <View style={styles.bGroup}>
-          <Button title="Start stepping" onPress={startStepCounter} />
-          <Button title="restart" onPress={forceUseAnotherSensor} />
-          <Button title="Stop stepping" onPress={stopStepCounter} />
+          <Button title="START" onPress={startStepCounter} />
+          <Button title="RESTART" onPress={forceUseAnotherSensor} />
+          <Button title="STOP" onPress={stopStepCounter} />
         </View>
         <LogCat trigger={loaded} />
       </View>
@@ -111,15 +125,13 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     height: '100%',
-    width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    display: 'flex',
+    padding: 20,
+    backgroundColor: '#2f3774',
   },
-  normal: {
-    fontSize: 20,
-    color: 'slategrey',
+  indicator: {
+    marginTop: 10,
+    marginBottom: 20,
   },
   bGroup: {
     width: '100%',
@@ -129,6 +141,3 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
 });
-
-/* A way to create a component with default props. */
-const NormalText = (props: TextProps) => <Text style={styles.normal} {...props} />;
