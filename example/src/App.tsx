@@ -20,6 +20,7 @@ type SensorType<T = typeof Platform.OS> = T extends 'ios'
 
 type SensorName = SensorType<Platform['OS']>;
 
+/* Setting the initial state of the additionalInfo object. */
 const initState = {
   dailyGoal: '0/10000 steps',
   stepsString: '0 steps',
@@ -45,6 +46,9 @@ export default function App() {
     });
   };
 
+  /**
+   * It starts the step counter and sets the sensor type, step count, and additional info.
+   */
   const startStepCounter = () => {
     startStepCounterUpdate(new Date(), (data) => {
       setSensorType(data.counterType as SensorName);
@@ -57,12 +61,20 @@ export default function App() {
     setLoaded(true);
   };
 
+  /**
+   * It sets the state of the additionalInfo object to its initial state, stops the step counter update,
+   * and sets the loaded state to false
+   */
   const stopStepCounter = () => {
     setAdditionalInfo(initState);
     stopStepCounterUpdate();
     setLoaded(false);
   };
 
+  /**
+   * If the sensor is working, stop it. If it's not working,
+   * get permission for the other sensor and start it
+   */
   const forceUseAnotherSensor = () => {
     if (isSensorWorking) {
       stopStepCounter();
@@ -76,6 +88,10 @@ export default function App() {
     startStepCounter();
   };
 
+  /**
+   * A hook that runs when the component mounts. It calls the isPedometerSupported function
+   * and returns a function that stops the step counter.
+   */
   React.useEffect(() => {
     isPedometerSupported();
     return () => {
@@ -83,6 +99,11 @@ export default function App() {
     };
   }, []);
 
+  /**
+   * A hook that runs when the component mounts.
+   * It calls the isPedometerSupported function and returns a
+   * function that stops the step counter.
+   */
   React.useEffect(() => {
     console.debug(`🚀 stepCounter ${supported ? '' : 'not'} supported`);
     console.debug(`🚀 user ${granted ? 'granted' : 'denied'} stepCounter`);
@@ -123,16 +144,19 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  /* Styling the container. */
   container: {
     height: '100%',
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#2f3774',
   },
+  /* Styling the circular indicator. */
   indicator: {
     marginTop: 10,
     marginBottom: 20,
   },
+  /* Styling the button group. */
   bGroup: {
     width: '100%',
     flexDirection: 'row',
