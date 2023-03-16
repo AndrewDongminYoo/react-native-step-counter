@@ -11,7 +11,7 @@
   },
   "github": {
     "release": true,
-    "draft": true
+    "draft": false
   },
   "npm": {
     "publish": true,

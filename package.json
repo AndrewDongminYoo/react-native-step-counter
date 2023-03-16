@@ -29,12 +29,11 @@
     "!**/.*"
   ],
   "scripts": {
-    "bootstrap": "yarn example && yarn install && yarn example pods",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build",
+    "bootstrap": "yarn install && yarn example install && yarn example pods && yarn example gradle",
+    "clean": "node ./scripts/clean.js",
     "clear": "react-native clean --include watchman,yarn,metro,android",
-    "android": "yarn ready && yarn example run-android",
-    "ios": "yarn ready && yarn example run-ios",
-    "gradle": "(cd example/android && ./gradlew generateCodegenArtifactsFromSchema)",
+    "android": "yarn example run-android",
+    "ios": "yarn example run-ios",
     "example": "yarn --cwd example",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "format": "prettier --write \"**/*.{js,ts,tsx}\"",
@@ -44,7 +43,6 @@
     "release:info": "yarn release --release-version",
     "release:no-dump": "yarn release --no-increment",
     "release": "release-it",
-    "ready": "yarn install && yarn example install && yarn example pods && yarn gradle",
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
@@ -80,11 +78,11 @@
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.4.4",
-    "@evilmartians/lefthook": "^1.3.3",
+    "@evilmartians/lefthook": "^1.3.5",
     "@react-native-community/eslint-config": "^3.2.0",
     "@react-native-community/eslint-plugin": "^1.3.0",
     "@release-it/conventional-changelog": "^5.1.1",
-    "@types/jest": "^29.4.0",
+    "@types/jest": "^29.4.4",
     "@types/react-native": "0.71.3",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
