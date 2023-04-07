@@ -35,9 +35,10 @@ export interface ParsedStepCountData {
  * In such a case, we shouldn't de-alloc TurboModuleManager if there
  * aren't any strong references to it in ObjC. Hence, we give
  * __turboModuleProxy a strong reference to TurboModuleManager.
- * @link [`TurboModuleRegistry`](../node_modules/react-native/Libraries/TurboModule/TurboModuleRegistry.js)
- * @link [`RCTTurboModuleManager`](../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/RCTTurboModuleManager.mm)
- * @link [`TurboModuleBinding`](../node_modules/react-native/ReactCommon/react/nativemodule/core/ReactCommon/TurboModuleBinding.cpp)
+ *
+ * @see https://github.com/facebook/react-native/blob/main/packages/react-native/Libraries/TurboModule/TurboModuleRegistry.js
+ * @see https://github.com/facebook/react-native/blob/main/packages/react-native/ReactCommon/react/nativemodule/core/platform/ios/RCTTurboModuleManager.mm
+ * @see https://github.com/facebook/react-native/blob/main/packages/react-native/ReactCommon/react/nativemodule/core/ReactCommon/TurboModuleBinding.cpp
  */
 // @ts-ignore
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
@@ -46,14 +47,14 @@ const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').
 
 /**
  * A module that allows you to get the step count data.
- * iOS Only Properties
- * @property {number} floorsAscended - The number of floors ascended during the time period.
- * @property {number} floorsDescended - The number of floors descended during the time period.
  * `CMStepCounter` is deprecated in iOS 8.0. Used `CMPedometer` instead.
- * Android Only Properties
+ *
+ * @property {number} floorsAscended - The number of floors ascended during the time period. iOS Only.
+ * @property {number} floorsDescended - The number of floors descended during the time period. iOS Only.
  * @property {string} counterType - The type of counter used to count the steps.
+ * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
  * @example
- * import { StepCounter } from '@dongminyu/react-native-step-counter';
+ * import { RNStepCounter } from '@dongminyu/react-native-step-counter';
  */
 const RNStepCounter = (
   StepCounterModule
@@ -74,7 +75,10 @@ export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
 /**
  * Transform the step count data into a more readable format.
- * you can use it or directly use the `StepCountData` type.
+ * You can use it or directly use the `StepCountData` type.
+ *
+ * @param {StepCountData} data - Step Counter Sensor Event Data.
+ * @returns {ParsedStepCountData} - String Parsed Count Data.
  */
 export function parseStepData(data: StepCountData): ParsedStepCountData {
   const { steps, startDate, endDate, distance } = data;
@@ -98,13 +102,14 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
 
 /**
  * If you're using a method or property that's not available on the current platform, throw this error.
+ *
  * @param {string} moduleName The name of the module.
  * @param {string} propertyName The name of the property.
  * @returns {Error} The error.
  * @example
  *  if (!RNStepCounter.startStepCounterUpdate) {
  *     throw new UnavailabilityError(NativeModuleName, eventName);
- * ```
+ *  }
  */
 class UnavailabilityError extends Error {
   code: string;
@@ -120,8 +125,9 @@ class UnavailabilityError extends Error {
 /**
  * Returns whether the stepCounter is enabled on the device.
  * iOS 8.0+ only. Android is available since KitKat (4.4 / API 19).
- * @link https://developer.android.com/about/versions/android-4.4.html
- * @link https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
+ *
+ * @see https://developer.android.com/about/versions/android-4.4.html
+ * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
  * @returns {Promise<Record<string, boolean>>} A promise that resolves with an object containing the stepCounter availability.
  * @property {boolean} supported - Whether the stepCounter is supported on device.
  * @property {boolean} granted - Whether user granted the permission.
@@ -136,11 +142,13 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
  * Specifying a start date that is more than seven days in the past returns only the available data.
  * ### iOS
  * `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.
+ *
+ * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613950-startupdates
+ * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates
  * @param {Date} start A date indicating the start of the range over which to measure steps.
- * @return Returns a [Subscription](Subscription) that enables you to call.
+ * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
+ * @returns {Subscription} - Returns a Subscription that enables you to call.
  * When you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
- * @link [`CMPedometer.stopUpdates`](https://developer.apple.com/documentation/coremotion/cmpedometer/1613950-startupdates)
- * @link [`CMStepCounter.stopStepCountingUpdates`](https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates)
  * @example
  * const startDate = new Date();
  * startStepCounterUpdate(startDate).then((response) => {
@@ -161,8 +169,8 @@ export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCal
  * ### iOS
  * `CMStepCounter.stopStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.stopUpdates` instead.
  *
- * @link [`CMPedometer.stopUpdates`](https://developer.apple.com/documentation/coremotion/cmpedometer/1613973-stopupdates)
- * @link [`CMStepCounter.stopStepCountingUpdates`](https://developer.apple.com/documentation/coremotion/cmstepcounter/1616157-stopstepcountingupdates)
+ * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613973-stopupdates
+ * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616157-stopstepcountingupdates
  */
 export function stopStepCounterUpdate(): void {
   StepEventEmitter.removeAllListeners(eventName);

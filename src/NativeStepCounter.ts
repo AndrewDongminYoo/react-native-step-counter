@@ -3,6 +3,7 @@ import { TurboModuleRegistry } from 'react-native';
 
 /**
  * `StepCountData` is an object with four properties: `distance`, `steps`, `startDate`, and `endDate`.
+ *
  * @typedef StepCountData object - The Object that contains the step count data.
  * @property {string} counterType - The type of counter used to count the steps.
  * @property {number} steps - The number of steps taken during the time period.
@@ -28,8 +29,10 @@ export const eventName = 'StepCounter.stepCounterUpdate';
 
 export interface Spec extends TurboModule {
   /**
-   * check if the step counter is supported on the device.
-   * @return {Promise<Record<string, boolean>>} Returns the `Promise` object,
+   * Check if the step counter is supported on the device.
+   *
+   * @async
+   * @returns {Promise<Record<string, boolean>>} Returns the `Promise` object,
    * including information such as whether the user's device has a step counter sensor by default (`supported`)
    * and whether the user has allowed the app to measure the pedometer data. (`granted`)
    * @property {boolean} granted - The permission is granted or not.
@@ -48,8 +51,7 @@ export interface Spec extends TurboModule {
   startStepCounterUpdate(from: number): void;
   /**
    * Stop updating the step count data.
-   *
-   * removes all the listeners that were registered with `startStepCounterUpdate`.
+   * Removes all the listeners that were registered with `startStepCounterUpdate`.
    */
   stopStepCounterUpdate(): void;
 

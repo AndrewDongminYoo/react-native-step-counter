@@ -22,10 +22,14 @@
     <label for="nav-trigger" class="overlay"></label>
 
     <nav>
-      <h2><a href="index.html">Home</a></h2>
+      <h2>
+        <a href="index.html">Home</a>
+      </h2>
       <h3>Classes</h3>
       <ul>
-        <li><a href="module-StepCounter-UnavailabilityError.html">UnavailabilityError</a></li>
+        <li>
+          <a href="module-StepCounter-UnavailabilityError.html">UnavailabilityError</a>
+        </li>
       </ul>
       <h3>Modules</h3>
       <ul>
@@ -35,7 +39,9 @@
             <li data-type="method">
               <a href="module-StepCounter.html#.isStepCountingSupported">isStepCountingSupported</a>
             </li>
-            <li data-type="method"><a href="module-StepCounter.html#.parseStepData">parseStepData</a></li>
+            <li data-type="method">
+              <a href="module-StepCounter.html#.parseStepData">parseStepData</a>
+            </li>
             <li data-type="method">
               <a href="module-StepCounter.html#.startStepCounterUpdate">startStepCounterUpdate</a>
             </li>
@@ -47,7 +53,9 @@
       </ul>
       <h3>Global</h3>
       <ul>
-        <li><a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a></li>
+        <li>
+          <a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a>
+        </li>
       </ul>
     </nav>
 
@@ -57,7 +65,7 @@
       <section>
         <header>
           <h2>
-            <span class="ancestors"><a href="module-StepCounter.html">StepCounter</a>~</span>
+            <span class="ancestors"> <a href="module-StepCounter.html">StepCounter</a>~</span>
 
             UnavailabilityError
           </h2>
@@ -74,7 +82,8 @@
             <h4 class="name" id="UnavailabilityError">
               <span class="type-signature"></span>new UnavailabilityError<span class="signature"
                 >(moduleName, propertyName)</span
-              ><span class="type-signature"> &rarr; {Error}</span>
+              >
+              <span class="type-signature"> &rarr; {Error}</span>
             </h4>
 
             <h5>Parameters:</h5>
@@ -92,23 +101,31 @@
 
               <tbody>
                 <tr>
-                  <td class="name"><code>moduleName</code></td>
+                  <td class="name">
+                    <code>moduleName</code>
+                  </td>
 
                   <td class="type">
                     <span class="param-type">string</span>
                   </td>
 
-                  <td class="description last"><p>The name of the module.</p></td>
+                  <td class="description last">
+                    <p>The name of the module.</p>
+                  </td>
                 </tr>
 
                 <tr>
-                  <td class="name"><code>propertyName</code></td>
+                  <td class="name">
+                    <code>propertyName</code>
+                  </td>
 
                   <td class="type">
                     <span class="param-type">string</span>
                   </td>
 
-                  <td class="description last"><p>The name of the property.</p></td>
+                  <td class="description last">
+                    <p>The name of the property.</p>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -137,7 +154,8 @@
 
             <h5>Example</h5>
 
-            <pre class="prettyprint"><code>```ts
+            <pre class="prettyprint">
+                                    <code>```ts
  if (!RNStepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NativeModuleName, eventName);
  }

@@ -22,10 +22,14 @@
     <label for="nav-trigger" class="overlay"></label>
 
     <nav>
-      <h2><a href="index.html">Home</a></h2>
+      <h2>
+        <a href="index.html">Home</a>
+      </h2>
       <h3>Classes</h3>
       <ul>
-        <li><a href="module-StepCounter-UnavailabilityError.html">UnavailabilityError</a></li>
+        <li>
+          <a href="module-StepCounter-UnavailabilityError.html">UnavailabilityError</a>
+        </li>
       </ul>
       <h3>Modules</h3>
       <ul>
@@ -35,7 +39,9 @@
             <li data-type="method">
               <a href="module-StepCounter.html#.isStepCountingSupported">isStepCountingSupported</a>
             </li>
-            <li data-type="method"><a href="module-StepCounter.html#.parseStepData">parseStepData</a></li>
+            <li data-type="method">
+              <a href="module-StepCounter.html#.parseStepData">parseStepData</a>
+            </li>
             <li data-type="method">
               <a href="module-StepCounter.html#.startStepCounterUpdate">startStepCounterUpdate</a>
             </li>
@@ -47,7 +53,9 @@
       </ul>
       <h3>Global</h3>
       <ul>
-        <li><a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a></li>
+        <li>
+          <a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a>
+        </li>
       </ul>
     </nav>
 
@@ -59,7 +67,9 @@
 
         <article>
           <div class="container-overview">
-            <div class="description"><p>A module that allows you to get the step count data.</p></div>
+            <div class="description">
+              <p>A module that allows you to get the step count data.</p>
+            </div>
 
             <h5 class="subsection-title">Properties:</h5>
 
@@ -76,17 +86,23 @@
 
               <tbody>
                 <tr>
-                  <td class="name"><code>floorsAscended</code></td>
+                  <td class="name">
+                    <code>floorsAscended</code>
+                  </td>
 
                   <td class="type">
                     <span class="param-type">number</span>
                   </td>
 
-                  <td class="description last"><p>The number of floors ascended during the time period.</p></td>
+                  <td class="description last">
+                    <p>The number of floors ascended during the time period.</p>
+                  </td>
                 </tr>
 
                 <tr>
-                  <td class="name"><code>floorsDescended</code></td>
+                  <td class="name">
+                    <code>floorsDescended</code>
+                  </td>
 
                   <td class="type">
                     <span class="param-type">number</span>
@@ -102,13 +118,17 @@
                 </tr>
 
                 <tr>
-                  <td class="name"><code>counterType</code></td>
+                  <td class="name">
+                    <code>counterType</code>
+                  </td>
 
                   <td class="type">
                     <span class="param-type">string</span>
                   </td>
 
-                  <td class="description last"><h2>The type of counter used to count the steps.</h2></td>
+                  <td class="description last">
+                    <h2>The type of counter used to count the steps.</h2>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -124,7 +144,8 @@
 
             <h5>Example</h5>
 
-            <pre class="prettyprint"><code>```ts
+            <pre class="prettyprint">
+                        <code>```ts
 import { StepCounter } from '@dongminyu/react-native-step-counter';
 ```
 ---
@@ -134,15 +155,17 @@ import { StepCounter } from '@dongminyu/react-native-step-counter';
           <h3 class="subsection-title">Classes</h3>
 
           <dl>
-            <dt><a href="module-StepCounter-UnavailabilityError.html">UnavailabilityError</a></dt>
+            <dt>
+              <a href="module-StepCounter-UnavailabilityError.html">UnavailabilityError</a>
+            </dt>
             <dd></dd>
           </dl>
 
           <h3 class="subsection-title">Methods</h3>
 
           <h4 class="name" id=".isStepCountingSupported">
-            <span class="type-signature">(static) </span>isStepCountingSupported<span class="signature">()</span
-            ><span class="type-signature"> &rarr; {Promise.&lt;Record.&lt;string, boolean>>}</span>
+            <span class="type-signature">(static) </span>isStepCountingSupported<span class="signature">()</span>
+            <span class="type-signature"> &rarr; {Promise.&lt;Record.&lt;string, boolean>>}</span>
           </h4>
 
           <div class="description">
@@ -167,23 +190,31 @@ import { StepCounter } from '@dongminyu/react-native-step-counter';
 
             <tbody>
               <tr>
-                <td class="name"><code>supported</code></td>
+                <td class="name">
+                  <code>supported</code>
+                </td>
 
                 <td class="type">
                   <span class="param-type">boolean</span>
                 </td>
 
-                <td class="description last"><p>Whether the stepCounter is supported on device.</p></td>
+                <td class="description last">
+                  <p>Whether the stepCounter is supported on device.</p>
+                </td>
               </tr>
 
               <tr>
-                <td class="name"><code>granted</code></td>
+                <td class="name">
+                  <code>granted</code>
+                </td>
 
                 <td class="type">
                   <span class="param-type">boolean</span>
                 </td>
 
-                <td class="description last"><p>Whether user granted the permission.</p></td>
+                <td class="description last">
+                  <p>Whether user granted the permission.</p>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -211,8 +242,8 @@ import { StepCounter } from '@dongminyu/react-native-step-counter';
           </dl>
 
           <h4 class="name" id=".parseStepData">
-            <span class="type-signature">(static) </span>parseStepData<span class="signature">()</span
-            ><span class="type-signature"></span>
+            <span class="type-signature">(static) </span>parseStepData<span class="signature">()</span>
+            <span class="type-signature"></span>
           </h4>
 
           <div class="description">
@@ -232,8 +263,8 @@ import { StepCounter } from '@dongminyu/react-native-step-counter';
           </dl>
 
           <h4 class="name" id=".startStepCounterUpdate">
-            <span class="type-signature">(static) </span>startStepCounterUpdate<span class="signature">(start)</span
-            ><span class="type-signature"></span>
+            <span class="type-signature">(static) </span>startStepCounterUpdate<span class="signature">(start)</span>
+            <span class="type-signature"></span>
           </h4>
 
           <div class="description">
@@ -255,7 +286,9 @@ import { StepCounter } from '@dongminyu/react-native-step-counter';
 
             <tbody>
               <tr>
-                <td class="name"><code>start</code></td>
+                <td class="name">
+                  <code>start</code>
+                </td>
 
                 <td class="type">
                   <span class="param-type">Date</span>
@@ -289,7 +322,8 @@ import { StepCounter } from '@dongminyu/react-native-step-counter';
 
           <h5>Example</h5>
 
-          <pre class="prettyprint"><code>```ts
+          <pre class="prettyprint">
+                    <code>```ts
 const startDate = new Date();
 startStepCounterUpdate(startDate).then((response) => {
    const data = parseStepCountData(response);
@@ -299,8 +333,8 @@ startStepCounterUpdate(startDate).then((response) => {
 `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.</code></pre>
 
           <h4 class="name" id=".stopStepCounterUpdate">
-            <span class="type-signature">(static) </span>stopStepCounterUpdate<span class="signature">()</span
-            ><span class="type-signature"></span>
+            <span class="type-signature">(static) </span>stopStepCounterUpdate<span class="signature">()</span>
+            <span class="type-signature"></span>
           </h4>
 
           <div class="description">
@@ -319,7 +353,9 @@ startStepCounterUpdate(startDate).then((response) => {
           <h5>Returns:</h5>
 
           <div class="param-desc">
-            <p><code>void</code></p>
+            <p>
+              <code>void</code>
+            </p>
             <h3>iOS</h3>
             <p>
               <code>CMStepCounter.stopStepCountingUpdates</code> is deprecated since iOS 8.0. so used
