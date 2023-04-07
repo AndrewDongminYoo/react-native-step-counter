@@ -19,5 +19,16 @@ module.exports = {
         relativeSourceLocation: true,
       },
     ],
+    [
+      'module:react-native-dotenv',
+      {
+        envName: 'APP_ENV',
+        moduleName: '@env',
+        path: '.env',
+        safe: true,
+        allowUndefined: false,
+        verbose: false,
+      },
+    ],
   ],
 };
