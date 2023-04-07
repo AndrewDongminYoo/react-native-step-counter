@@ -1,34 +1,59 @@
-import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
-import type { EmitterSubscription as Subscription } from 'react-native';
-import type { StepCountData, Spec } from './NativeStepCounter';
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>index.js - Postman Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/ionicons.min.css" />
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css" />
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
+  </head>
+  <body>
+    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+    <label for="nav-trigger" class="navicon-button x">
+      <div class="navicon"></div>
+    </label>
+
+    <label for="nav-trigger" class="overlay"></label>
+
+    <nav>
+      <h2><a href="index.html">Home</a></h2>
+      <h3>Classes</h3>
+      <ul>
+        <li><a href="UnavailabilityError.html">UnavailabilityError</a></li>
+      </ul>
+      <h3>Global</h3>
+      <ul>
+        <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
+        <li><a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a></li>
+        <li><a href="global.html#parseStepData">parseStepData</a></li>
+        <li><a href="global.html#RNStepCounter">RNStepCounter</a></li>
+        <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
+        <li><a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a></li>
+      </ul>
+    </nav>
+
+    <div id="main">
+      <h1 class="page-title">index.js</h1>
+
+      <section>
+        <article>
+          <pre
+            class="prettyprint source linenums"
+          ><code>import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import { eventName, VERSION, NAME } from './NativeStepCounter';
 
 /* A way to check if the module is linked. */
-const LINKING_ERROR =
-  "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
-  Platform.select({
-    ios: '- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n',
-    android: '- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`',
-    default: '',
-  }) +
-  '- Use the "npx react-native clean" command to clean up the module\'s cache and select the ' +
-  '"watchman", "yarn", "metro", "android", "npm" options with comma-separated. ' +
-  'Re-Install packages and re-build the app again .' +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n' +
-  'If none of these fix the issue, please open an issue on the Github repository: ' +
-  'https://github.com/AndrewDongminYoo/react-native-step-counter`';
-
-export interface ParsedStepCountData {
-  dailyGoal: string;
-  steps: number;
-  stepsString: string;
-  calories: string;
-  startDate: string;
-  endDate: string;
-  distance: string;
-}
-
+const LINKING_ERROR = "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" + Platform.select({
+  ios: '- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n',
+  android: '- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`',
+  default: ''
+}) + '- Use the "npx react-native clean" command to clean up the module\'s cache and select the ' + '"watchman", "yarn", "metro", "android", "npm" options with comma-separated. ' + 'Re-Install packages and re-build the app again .' + '- You rebuilt the app after installing the package\n' + '- You are not using Expo Go\n' + 'If none of these fix the issue, please open an issue on the Github repository: ' + 'https://github.com/AndrewDongminYoo/react-native-step-counter`';
 /**
  * We keep TurboModuleManager alive until the JS VM is deleted.
  * It is perfectly valid to only use/create TurboModules from JS.
@@ -41,7 +66,6 @@ export interface ParsedStepCountData {
  */
 // @ts-ignore
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
-
 const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
 
 /**
@@ -55,29 +79,25 @@ const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').
  * @example
  * import { StepCounter } from '@dongminyu/react-native-step-counter';
  */
-const RNStepCounter = (
-  StepCounterModule
-    ? StepCounterModule
-    : new Proxy(
-        {},
-        {
-          get() {
-            throw new Error(LINKING_ERROR);
-          },
-        }
-      )
-) as Spec;
-
+const RNStepCounter = StepCounterModule ? StepCounterModule : new Proxy({}, {
+  get() {
+    throw new Error(LINKING_ERROR);
+  }
+});
 const StepEventEmitter = new NativeEventEmitter(RNStepCounter);
-type StepCountUpdateCallback = (result: StepCountData) => void;
 export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
 /**
  * Transform the step count data into a more readable format.
  * you can use it or directly use the `StepCountData` type.
  */
-export function parseStepData(data: StepCountData): ParsedStepCountData {
-  const { steps, startDate, endDate, distance } = data;
+export function parseStepData(data) {
+  const {
+    steps,
+    startDate,
+    endDate,
+    distance
+  } = data;
   const dailyGoal = 10000;
   const stepsString = steps + ' steps';
   const kCal = (steps * 0.045).toFixed(2) + 'kCal';
@@ -92,7 +112,7 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
     calories: kCal,
     startDate: startDateTime,
     endDate: endDateTime,
-    distance: roundedDistance,
+    distance: roundedDistance
   };
 }
 
@@ -107,12 +127,8 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
  * ```
  */
 class UnavailabilityError extends Error {
-  code: string;
-  constructor(moduleName: string, propertyName: string) {
-    super(
-      `The method or property ${moduleName}.${propertyName} is not available on ${Platform.OS}, ` +
-        "are you sure you've linked all the native dependencies properly?"
-    );
+  constructor(moduleName, propertyName) {
+    super(`The method or property ${moduleName}.${propertyName} is not available on ${Platform.OS}, ` + "are you sure you've linked all the native dependencies properly?");
     this.code = 'ERR_UNAVAILABLE';
   }
 }
@@ -122,11 +138,11 @@ class UnavailabilityError extends Error {
  * iOS 8.0+ only. Android is available since KitKat (4.4 / API 19).
  * @link https://developer.android.com/about/versions/android-4.4.html
  * @link https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
- * @returns {Promise<Record<string, boolean>>} A promise that resolves with an object containing the stepCounter availability.
+ * @returns {Promise&lt;Record&lt;string, boolean>>} A promise that resolves with an object containing the stepCounter availability.
  * @property {boolean} supported - Whether the stepCounter is supported on device.
  * @property {boolean} granted - Whether user granted the permission.
  */
-export function isStepCountingSupported(): Promise<Record<string, boolean>> {
+export function isStepCountingSupported() {
   return RNStepCounter.isStepCountingSupported();
 }
 
@@ -147,7 +163,7 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
  *    const data = parseStepCountData(response);
  * })
  */
-export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback): Subscription {
+export function startStepCounterUpdate(start, callBack) {
   if (!RNStepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
@@ -158,16 +174,31 @@ export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCal
 
 /**
  * Stop the step counter updates.
+ * @return `void`
  * ### iOS
  * `CMStepCounter.stopStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.stopUpdates` instead.
  *
  * @link [`CMPedometer.stopUpdates`](https://developer.apple.com/documentation/coremotion/cmpedometer/1613973-stopupdates)
  * @link [`CMStepCounter.stopStepCountingUpdates`](https://developer.apple.com/documentation/coremotion/cmstepcounter/1616157-stopstepcountingupdates)
  */
-export function stopStepCounterUpdate(): void {
+export function stopStepCounterUpdate() {
   StepEventEmitter.removeAllListeners(eventName);
   RNStepCounter.stopStepCounterUpdate();
 }
-
 export { NAME, VERSION };
 export default RNStepCounter;
+//# sourceMappingURL=index.js.map</code></pre>
+        </article>
+      </section>
+    </div>
+
+    <br class="clear" />
+
+    <footer>Documentation generated at Fri Apr 07 2023 16:28:09 GMT+0900 (Korean Standard Time)</footer>
+
+    <script>
+      prettyPrint();
+    </script>
+    <script src="scripts/linenumber.js"></script>
+  </body>
+</html>

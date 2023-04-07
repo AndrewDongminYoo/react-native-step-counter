@@ -37,7 +37,7 @@
     "example": "yarn --cwd example",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "format": "prettier --write \"**/*.{js,ts,tsx}\"",
-    "prepack": "bob build",
+    "prepack": "bob build && yarn build-docs",
     "build-docs": "./node_modules/.bin/jsdoc -c .jsdoc-config.json",
     "release:beta": "yarn release --preRelease=beta --no-npm",
     "release:dry": "yarn release --dry-run --no-npm",

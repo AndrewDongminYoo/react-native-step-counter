@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Home - Postman Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/ionicons.min.css" />
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css" />
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
+  </head>
+  <body>
+    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+    <label for="nav-trigger" class="navicon-button x">
+      <div class="navicon"></div>
+    </label>
+
+    <label for="nav-trigger" class="overlay"></label>
+
+    <nav>
+      <h2><a href="index.html">Home</a></h2>
+      <h3>Classes</h3>
+      <ul>
+        <li><a href="UnavailabilityError.html">UnavailabilityError</a></li>
+      </ul>
+      <h3>Global</h3>
+      <ul>
+        <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
+        <li><a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a></li>
+        <li><a href="global.html#parseStepData">parseStepData</a></li>
+        <li><a href="global.html#RNStepCounter">RNStepCounter</a></li>
+        <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
+        <li><a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a></li>
+      </ul>
+    </nav>
+
+    <div id="main">
+      <section class="readme">
+        <article>
+          <h1>React-Native Step Counter Library</h1>
+          <p>한국어 사용자는 <a href="README.kr.md">Korean version.</a>를 참조하십시오.</p>
+          <p>
+            A simple React Native package to count the number of steps taken by the user. This package uses the
+            <code>StepCounter</code> (or Custom accelerometer-based step-counter) Sensor API on Android and the
+            <code>Core Motion</code> framework on iOS to count the steps. It's built using Turbo Module, a new module
+            development architecture for React Native. I made this library compatible with both new and legacy
+            architectures. (Because the turbo module is still in the experimental stage. so it is not widely used.)
+          </p>
+          <h2>Installation</h2>
+          <pre class="prettyprint source lang-shell"><code># if you use pure npm (what a classic!),
+npm install @dongminyu/react-native-step-counter
+</code></pre>
+          <pre
+            class="prettyprint source lang-shell"
+          ><code># or if you prefer to use Yarn (I love it's parallel install feature),
+yarn add @dongminyu/react-native-step-counter
+</code></pre>
+          <pre class="prettyprint source lang-shell"><code># or if you use pnpm (it's fast and efficient),
+pnpm add @dongminyu/react-native-step-counter
+</code></pre>
+          <p>
+            Native modules will automatically connect after React Native 0.60 version. So you don't need to link the
+            native modules manually.
+          </p>
+          <p>
+            👣 if you are using the legacy architecture, you need to follow the guide below. otherwise, you can
+            <a href="README.md#android">skip</a> next step.
+          </p>
+          <h2>Setup the New Architecture</h2>
+          <ul>
+            <li>
+              <p>Applying a new architecture to React Native applications (Common)</p>
+              <ol>
+                <li>
+                  React Native released the support for the New Architecture with the release
+                  <a href="https://reactnative.dev/blog/2022/03/30/version-068#opting-in-to-the-new-architecture"
+                    ><code>0.68.0</code></a
+                  >.
+                </li>
+                <li>
+                  This is written with the expectation that you’re using the
+                  <a href="https://github.com/facebook/react-native/releases/latest">latest React Native release</a>.
+                </li>
+                <li>
+                  You can find instructions on how to upgrade in the
+                  <a href="https://reactnative.dev/docs/upgrading">page upgrading to new versions</a>.
+                </li>
+                <li>
+                  write all JS bridges with <a href="https://www.typescriptlang.org/">TypeScript</a> (or
+                  <a href="https://flow.org/">Flow.js</a>) because Codegen requires explicitly defined types. As you
+                  know, JavaScript is a dynamically typed language, so it is not possible to generate code.
+                </li>
+                <li>
+                  use hermes and flipper debugging tools.
+                  <ul>
+                    <li>
+                      <a href="https://reactnative.dev/docs/hermes">Hermes</a> is a new JavaScript engine optimized for
+                      running React Native apps on Android and iOS. enabled by default, and you want to use JSC,
+                      explicitly disable it.
+                    </li>
+                    <li>
+                      <a href="https://fbflipper.com/">Flipper</a> is a new debugging and profiling tool for React
+                      Native.
+                    </li>
+                  </ul>
+                </li>
+              </ol>
+            </li>
+            <li>
+              <p>Applying a new architecture to React Native iOS applications</p>
+              <p>
+                <em>1</em>. set platform version to
+                <a href="https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25">12.4</a> or
+                higher. (<a
+                  href="https://github.com/facebook/react-native/blob/main/scripts/react_native_pods.rb#LL29-L31C4"
+                  >min_ios_version_supported</a
+                >)
+              </p>
+              <pre class="prettyprint source lang-diff"><code>- platform :ios, '11.0'
++ platform :ios, '12.4'
+# ↓ or you can use the variable of (react_native_pods.rb)
++ platform :ios, min_ios_version_supported
+</code></pre>
+              <p><em>2</em>. set NODE_BINARY to .xcode.env file.</p>
+              <pre class="prettyprint source lang-shell"><code>echo 'export NODE_BINARY=$(command -v node)' > .xcode.env
+</code></pre>
+              <p><em>3</em>. Fix an API Change in the <code>AppDelegate.m</code> file.</p>
+              <pre class="prettyprint source lang-diff"><code> - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+ {
+ #if DEBUG
+-    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@&quot;index&quot; fallbackResource:nil];
++    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@&quot;index&quot;];
+ #else
+     return [[NSBundle mainBundle] URLForResource:@&quot;main&quot; withExtension:@&quot;jsbundle&quot;];
+ #endif
+ }
+</code></pre>
+              <p>
+                <em>4</em>. Rename all Objective-C(.m) files to Objective-C++ (.mm) <em>5</em>. Make your AppDelegate
+                conform to RCTAppDelegate
+              </p>
+              <ul>
+                <li>
+                  <p>
+                    <a
+                      href="https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h"
+                      >ios/StepCounterExample/AppDelegate.h</a
+                    >
+                  </p>
+                  <pre class="prettyprint source lang-diff"><code>- #import &lt;React/RCTBridgeDelegate.h>
++ #import &lt;RCTAppDelegate.h>
+#import &lt;UIKit/UIKit.h>
+
+- @interface AppDelegate : UIResponder &lt;UIApplicationDelegate, RCTBridgeDelegate>
++ @interface AppDelegate : RCTAppDelegate
+
+- @property (nonatomic, strong) UIWindow *window;
+@end
+</code></pre>
+                </li>
+                <li>
+                  <p>
+                    <a
+                      href="https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.mm"
+                      >ios/StepCounterExample/AppDelegate.mm</a
+                    >
+                  </p>
+                  <pre class="prettyprint source lang-objective-c++"><code>#import &quot;AppDelegate.h&quot;
+#import &lt;React/RCTBundleURLProvider.h>
+@implementation AppDelegate
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+  self.moduleName = @&quot;StepCounterExample&quot;;
+  self.initialProps = @{};
+  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
+- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+{
+#if DEBUG
+  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@&quot;index&quot;];
+#else
+  return [[NSBundle mainBundle] URLForResource:@&quot;main&quot; withExtension:@&quot;jsbundle&quot;];
+#endif
+}
+- (BOOL)concurrentRootEnabled
+{
+  return true;
+}
+@end
+</code></pre>
+                </li>
+                <li>
+                  <p>Run <code>pod install</code></p>
+                  <pre class="prettyprint source lang-shell"><code>export RCT_NEW_ARCH_ENABLED=1
+cd ios && pod install
+</code></pre>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Applying a new architecture to React Native Android applications</p>
+              <ol>
+                <li>
+                  If your project has React Native later than <code>v0.71.0</code>, you already meet all the
+                  prerequisites to use the New Architecture on Android.
+                </li>
+                <li>
+                  You will only need to set <code>newArchEnabled</code> to <code>true</code> in your
+                  <code>android/gradle.properties</code> file.
+                </li>
+              </ol>
+            </li>
+          </ul>
+          <blockquote>
+            <p>
+              If you prefer to read the official documentation, you can find it
+              <a href="https://reactnative.dev/docs/new-architecture-intro">here</a>.
+            </p>
+          </blockquote>
+          <h3>ANDROID</h3>
+          <blockquote>
+            <p>3 uses-permission, 3 uses-feature</p>
+          </blockquote>
+          <pre class="prettyprint source lang-xml"><code>&lt;!--  android/src/main/AndroidManifest.xml-->
+&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    package=&quot;com.stepcounter&quot;>
+  &lt;uses-permission android:name=&quot;android.permission.ACTIVITY_RECOGNITION&quot; />
+  &lt;uses-permission android:name=&quot;android.permission.BODY_SENSORS_BACKGROUND&quot; />
+
+  &lt;uses-feature
+    android:name=&quot;android.hardware.sensor.stepcounter&quot;
+    android:required=&quot;false&quot; />
+  &lt;uses-feature
+    android:name=&quot;android.hardware.sensor.accelerometer&quot;
+    android:required=&quot;true&quot; />
+&lt;/manifest>
+</code></pre>
+          <h3>iOS</h3>
+          <blockquote>
+            <p>set NSMotionUsageDescription</p>
+          </blockquote>
+          <pre
+            class="prettyprint source lang-xml"
+          ><code>&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot;>
+&lt;plist version=&quot;1.0&quot;>
+  ...
+  &lt;key>NSMotionUsageDescription&lt;/key>
+  &lt;string>We want to access your motion data to count your steps.&lt;/string>
+  ...
+&lt;/plist>
+</code></pre>
+          <h2>Interface</h2>
+          <ul>
+            <li>
+              <p>
+                <code>isStepCountingSupported()</code>: Promise&lt;Record&lt;string, boolean&gt;&gt;: method to check if
+                the device has a feature related step counter or accelerometer.
+              </p>
+              <ul>
+                <li>
+                  One key for the response object is <code>granted</code>, whether the app user has granted this feature
+                  permission, and <code>supported</code> is whether the device supports this feature.
+                </li>
+                <li>
+                  This NativeModule can apply algorithms to a raw accelerometer to extract walking event data without
+                  activity sensor privileges, regardless of this response, but it is not recommended. You must write a
+                  code that stops tracking sensor events if user denies read-permission - even if you can do that.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>
+                <code>startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)</code>:
+                EmitterSubscription:
+              </p>
+              <ul>
+                <li>
+                  If the pedometer sensor is available and supported on the device, register it with the listener in the
+                  sensor manager, and return the step count event listener.
+                </li>
+                <li>
+                  If the pedometer sensor is not supported by the device or is not available, register the accelerometer
+                  sensor with the listener, generate a accel event through an vector algorithm filter and receive it to
+                  the app.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p><code>stopStepCounterUpdate(): void</code>:</p>
+              <ul>
+                <li>unregister registered listener from <code>sensorManager</code> and release it.</li>
+              </ul>
+            </li>
+            <li>
+              <p><code>StepCountData</code>:</p>
+              <ul>
+                <li>
+                  <p><strong>Common Interface</strong></p>
+                  <ul>
+                    <li>
+                      <code>steps</code>: This is a number property that indicates the number of steps taken by the user
+                      during the specified time period.
+                    </li>
+                    <li>
+                      <code>startDate</code>: This is a number property that indicates the start date of the data in
+                      Unix timestamp format, measured in milliseconds.
+                    </li>
+                    <li>
+                      <code>endDate</code>: This is a number property that indicates the end date of the data in Unix
+                      timestamp format, measured in milliseconds.
+                    </li>
+                    <li>
+                      <code>distance</code>: This is a number property that indicates the distance in meters that the
+                      user has walked or run during the specified time period.
+                    </li>
+                    <li>
+                      <code>counterType</code>: The name of the sensor used to count the number of steps. In iOS, only
+                      the <code>CMPedometer</code> is returned, and in Android, the <code>StepCounter</code> or
+                      <code>Accelerometer</code> is returned depending on the device state.
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <p><strong>iOS Only</strong></p>
+                  <ul>
+                    <li>
+                      <code>floorsAscended</code>: This is a number property that indicates the number of floors the
+                      user has ascended during the specified time period. it can be nil if the device does not support
+                      this feature.
+                    </li>
+                    <li>
+                      <code>floorsDescended</code>: This is a number property that indicates the number of floors the
+                      user has descended during the specified time period. it can be nil if the device does not support
+                      this feature.
+                    </li>
+                    <li>
+                      <code>currentPace</code>: (iOS 9.0+) This is a number property that indicates the current pace of
+                      the user in meters per second.
+                    </li>
+                    <li>
+                      <code>currentCadence</code>: (iOS 9.0+) This is a number property that indicates the current
+                      cadence of the user in steps per second.
+                    </li>
+                    <li>
+                      <code>averageActivePace</code>: (iOS 10.0+) This is a number property that indicates the average
+                      pace of the user in meters per second.
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <h2>Usage</h2>
+          <p>To use the Step Counter Library in your React Native app, follow these steps:</p>
+          <p>Import the library into your React Native app.</p>
+          <pre class="prettyprint source lang-typescript"><code>import React, { useEffect, useState } from 'react';
+import {
+  isStepCountingSupported,
+  parseStepData,
+  startStepCounterUpdate,
+  stopStepCounterUpdate,
+} from '@dongminyu/react-native-step-counter';
+</code></pre>
+          <p>
+            Use the <code>isStepCountingSupported</code> method to check if the device has a step counter or
+            accelerometer sensor.
+          </p>
+          <pre class="prettyprint source lang-typescript"><code>const [supported, setSupported] = useState(false);
+const [granted, setGranted] = useState(false);
+
+async function askPermission() {
+  isStepCountingSupported().then((result) => {
+    console.debug('🚀 - isStepCountingSupported', result);
+    setGranted(result.granted === true);
+    setSupported(result.supported === true);
+  });
+}
+</code></pre>
+          <p>Call the <code>startStepCounterUpdate</code> method to start the step counter service.</p>
+          <pre class="prettyprint source lang-typescript"><code>const [steps, setSteps] = useState(0);
+
+async function startStepCounter() {
+  startStepCounterUpdate(new Date(), (data) => {
+    console.debug(parseStepData(data));
+    setSteps(data.steps);
+  });
+}
+</code></pre>
+          <p>Here's an example of a complete React component that uses the <code>NativeStepCounter</code>.</p>
+          <p>
+            Link to Example Application:
+            <a href="https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/src/App.tsx"
+              >here</a
+            >
+          </p>
+          <h2>Change Log</h2>
+          <p>
+            See the <a href="CHANGELOG.md"><code>Release Notes</code></a> for a list of changes.
+          </p>
+          <h2>Contributing</h2>
+          <p>
+            See the <a href="CONTRIBUTING.md"><code>Contributing Guide</code></a> to learn how to contribute to the
+            repository and the development workflow.
+          </p>
+          <h2>License</h2>
+          <p>MIT</p>
+          <hr />
+          <p>
+            Made with
+            <a
+              href="https://github.com/callstack/react-native-builder-bob/tree/main/packages/create-react-native-library"
+              >create-react-native-library</a
+            >
+            by <a href="https://callstack.com/">CallStack</a>.
+          </p>
+        </article>
+      </section>
+    </div>
+
+    <br class="clear" />
+
+    <footer>Documentation generated at Fri Apr 07 2023 16:28:09 GMT+0900 (Korean Standard Time)</footer>
+
+    <script>
+      prettyPrint();
+    </script>
+    <script src="scripts/linenumber.js"></script>
+  </body>
+</html>
