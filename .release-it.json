@@ -46,7 +46,7 @@
   },
   "hooks": {
     "before:init": ["npm run lint", "npm test", "npm run format"],
-    "after:bump": "npm run prepare",
+    "after:bump": "npm run prepack",
     "after:git:release": "echo After git push, before github release",
     "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
   }
