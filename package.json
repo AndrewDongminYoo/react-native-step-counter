@@ -1,6 +1,6 @@
 {
   "name": "@dongminyu/react-native-step-counter",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": false,
   "summary": "It is a multi-platform library that combines CoreMotionSensor from iOS with SensorEventListener from Android.",
   "description": "This library provides an interface for tracking the number of steps taken by the user in a React Native app.",
@@ -35,7 +35,7 @@
     "android": "yarn example run-android",
     "ios": "yarn example run-ios",
     "example": "yarn --cwd example",
-    "lint": "eslint . --fix --no-error-on-unmatched-pattern",
+    "lint": "eslint --ext .ts --ext .tsx . --fix",
     "format": "prettier \"**/*.{ts,js,jsx,tsx}\" --check --write",
     "prepack": "bob build",
     "release:beta": "yarn release --preRelease=beta --no-npm",

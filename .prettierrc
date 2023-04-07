@@ -4,5 +4,14 @@
   "singleQuote": true,
   "semi": true,
   "quoteProps": "consistent",
-  "trailingComma": "es5"
+  "trailingComma": "es5",
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+      "options": {
+        "parser": "babel-ts"
+      }
+    }
+  ]
 }

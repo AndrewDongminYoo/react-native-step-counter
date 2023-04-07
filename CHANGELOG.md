@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.12](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.11...v0.1.12) (2023-04-07)
+
+### Bug Fixes v0.1.12
+
+- **example:** 🔥 remove high vulnerability dependencies ([1cfdc7e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/1cfdc7e32735abc4342099d275f39942d699f463)), closes [#2](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/2)
+
+### Performance Improvements v0.1.12
+
+- **example:** ➕ install react-native-gesture-handler from peer-dependencies ([897547d](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/897547dde3900ce607e75723512bc84312126998))
+- **example:** ⬆️ upgraded all dependencies (react-native,trunk.io,node-version,gem,pods) ([cbe50f3](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/cbe50f310c4db18bf32c3ec99c0852b7f6c8f951))
+
+### Documentation v0.1.12
+
+- **example:** 📝 updated document build system ([d685238](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/d685238ab68acf4bf1c1a5090397e4e64a1bb0e4))
+
 ## [0.1.11](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.10...v0.1.11) (2023-03-15)
 
 ### Bug Fixes v0.1.11
