@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
+    "paths": {
+      "@dongminyu/react-native-step-counter": ["./src/index"]
+    },
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
@@ -8,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "remove",
     "isolatedModules": false,
-    "jsx": "react",
+    "jsx": "preserve",
     "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "node",
@@ -26,5 +29,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext"
-  }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["**/node_modules", "**/scripts/*.js"]
 }

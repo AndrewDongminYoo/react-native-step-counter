@@ -67,19 +67,6 @@ def enableSeparateBuildPerCPUArchitecture = false
 def enableProguardInReleaseBuilds = false
 
 /**
- * The preferred build flavor of JavaScriptCore (JSC)
- *
- * For example, to use the international variant, you can use:
- * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
- *
- * The international variant includes ICU i18n library and necessary data
- * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
- * give correct results when using with locales other than en-US. Note that
- * this variant is about 6MiB larger per architecture than default.
- */
-def jscFlavor = 'org.webkit:android-jsc:+'
-
-/**
  * Private function to get the list of Native Architectures you want to build.
  * This reads the value from reactNativeArchitectures in your gradle.properties
  * file and works together with the --active-arch-only flag of react-native run-android.
@@ -120,6 +107,10 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('~/development/release.keystore')
+            keyAlias 'my-key-release'
+        }
     }
 
     buildTypes {
@@ -129,7 +120,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -138,6 +129,11 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+    }
+
+    dependenciesInfo {
+        includeInApk true
+        includeInBundle true
     }
 
     // applicationVariants are e.g. debug, release
@@ -150,7 +146,7 @@ android {
             def abi = output.getFilter(OutputFile.ABI)
             if (abi != null) {  // null for the universal-debug, universal-release variants
                 output.versionCodeOverride =
-                    defaultConfig.versionCode * 1000 + versionCodes.get(abi)
+                        defaultConfig.versionCode * 1000 + versionCodes.get(abi)
             }
         }
     }
@@ -158,18 +154,18 @@ android {
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
-    //noinspection GradleDependency
     implementation('com.facebook.react:react-android:0.71.3')
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     debugImplementation("com.facebook.flipper:flipper:$FLIPPER_VERSION")
+    //noinspection GradleDependency
     debugImplementation("com.facebook.flipper:flipper-network-plugin:$FLIPPER_VERSION") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:$FRESCO_VERSION")
     if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
+        implementation 'com.facebook.react:hermes-android:+'
     } else {
-        implementation jscFlavor
+        implementation 'org.webkit:android-jsc-intl:+'
     }
 }
 

@@ -3,15 +3,11 @@
     package="com.stepcounter">
 
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-  <uses-permission android:name="android.permission.BODY_SENSORS" />
   <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
 
   <uses-feature
     android:name="android.hardware.sensor.stepcounter"
-    android:required="true" />
-  <uses-feature
-    android:name="android.hardware.sensor.stepdetector"
-    android:required="true" />
+    android:required="false" />
   <uses-feature
     android:name="android.hardware.sensor.accelerometer"
     android:required="true" />

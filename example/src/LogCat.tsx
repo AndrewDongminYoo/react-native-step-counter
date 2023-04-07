@@ -7,18 +7,17 @@ const eventEmitter = new NativeEventEmitter(NativeModules.RNStepCounter);
 
 /**
  * A component that displays the logs from the native module.
- * @param loaded A boolean that indicates whether the native module is loaded.
- *   how this component is rendered:
- *   - `true`: the component is rendered and the event listener is subscribed.
- *   - `false`: the component is not rendered and the event listener is unsubscribed.
- * @returns A React component.
+ *
+ * @param {object} props - View Component Props but only has one property.
+ * @param {boolean} props.triggered - A boolean that indicates whether the native module is loaded.
+ * @returns {React.ReactComponentElement} Logger Component.
+ * @see https://reactnative.dev/docs/native-modules-ios#sending-events-to-javascript
+ * @see https://reactnative.dev/docs/native-modules-android#sending-events-to-javascript
+ * @see https://reactnative.dev/docs/scrollview
  * @example
- * ``<LogCat trigger={loaded} />``
- * @see {@link https://reactnative.dev/docs/native-modules-ios#sending-events-to-javascript}
- * @see {@link https://reactnative.dev/docs/native-modules-android#sending-events-to-javascript}
- * @see {@link https://reactnative.dev/docs/scrollview}
+ *    <LogCat triggered={loaded} />
  */
-const LogCat = ({ trigger: loaded }: { trigger: boolean }) => {
+const LogCat = ({ triggered }: { triggered: boolean }) => {
   const [rendered, setRendered] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
   const [_, setSubscriptions] = useState<EmitterSubscription[]>([]);
@@ -42,12 +41,12 @@ const LogCat = ({ trigger: loaded }: { trigger: boolean }) => {
       });
       setSubscriptions((prevSubs) => [...prevSubs, newSub]);
     }
-    setRendered(loaded);
+    setRendered(triggered);
     // unsubscribe the event listener when the component unmounts
     return () => {
       setSubscriptions([]);
     };
-  }, [rendered, loaded]);
+  }, [rendered, triggered]);
 
   return (
     <View style={styles.container}>
@@ -83,7 +82,22 @@ const formatLog = (logs: string) => {
   });
 };
 
-function formatJson(json: string) {
+/**
+ * This function takes a JSON string and returns an array of React elements that
+ * display the key and value of each property in the JSON string. The key is
+ * displayed in a dark gray color, and the value is displayed in a light gray
+ * color. The value is also formatted as a string, boolean, or number.
+ *
+ * @param {string} json - JSON formatted String.
+ * @returns {React.ReactElement[]} - Formatted Console Text Element.
+ * @example
+ * eventEmitter.addListener(EVENT_NAME, (data) => {
+ *    return (
+ *       <Text>{formatJson(data)}</Text>
+ *    );
+ * });
+ */
+function formatJson(json: string): JSX.Element[] {
   const parsed = JSON.parse(json);
   return Object.entries(parsed).map(([key, value]) => {
     const KEY = <Text style={styles.nString}>{`"${key}": `}</Text>;
@@ -115,7 +129,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     height: 200,
-    width: '90%',
+    width: '100%',
     alignItems: 'stretch',
     justifyContent: 'center',
     margin: 10,
@@ -127,8 +141,8 @@ const styles = StyleSheet.create({
   },
   log: {
     fontFamily: 'Helvetica',
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 15,
+    lineHeight: 18,
     marginVertical: 2,
     color: 'white',
   },

@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.1.12](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.11...v0.1.12) (2023-04-07)
+
+### Bug Fixes v0.1.12
+
+- **example:** 🔥 remove high vulnerability dependencies ([1cfdc7e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/1cfdc7e32735abc4342099d275f39942d699f463)), closes [#2](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/2)
+
+### Performance Improvements v0.1.12
+
+- **example:** ➕ install react-native-gesture-handler from peer-dependencies ([897547d](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/897547dde3900ce607e75723512bc84312126998))
+- **example:** ⬆️ upgraded all dependencies (react-native,trunk.io,node-version,gem,pods) ([cbe50f3](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/cbe50f310c4db18bf32c3ec99c0852b7f6c8f951))
+
+### Documentation v0.1.12
+
+- **example:** 📝 updated document build system ([d685238](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/d685238ab68acf4bf1c1a5090397e4e64a1bb0e4))
+
+## [0.1.11](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.10...v0.1.11) (2023-03-15)
+
+### Bug Fixes v0.1.11
+
+- ⬇️ iOS platform minimum target reduced, fix some typo of documents ([bc1366a](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/bc1366a154f9e31000aa40b4ad30278b7aa15a7f))
+
+## [0.1.10](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.9...v0.1.10) (2023-03-14)
+
+### Performance Improvements v0.1.10
+
+- **iOS:** ⬆️ all .m files in StepCounter folder should be renamed to .mm ([983be85](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/983be85e414ebb400b69be3e54e3744d24cc1ae8)), closes [#1](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/1)
+
+### Documentation v0.1.10
+
+- **react:** ✏️ [@yusungLEVIT](https://github.com/yusungLEVIT) reported typo fixed ([09a3056](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/09a305600bea1d9ec14d75aa8ecbe0a4b7ccb3d2)), closes [#8](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/8)
+- **react:** 📝 wrote a detailed document on importing turbo-module ([8d8800a](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/8d8800a3bcd93d9621537408ff33e90ee9e7fa43)), closes [#10](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/10)
+
 ## [0.1.9](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.8...v0.1.9) (2023-03-09)
 
 ### Features v0.1.9

@@ -11,7 +11,7 @@
   },
   "github": {
     "release": true,
-    "draft": true
+    "draft": false
   },
   "npm": {
     "publish": true,
@@ -19,14 +19,34 @@
   },
   "plugins": {
     "@release-it/conventional-changelog": {
-      "preset": "angular",
       "infile": "CHANGELOG.md",
-      "header": "# Changelog"
+      "header": "# Changelog",
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          {
+            "type": "feat",
+            "section": "Features"
+          },
+          {
+            "type": "fix",
+            "section": "Bug Fixes"
+          },
+          {
+            "type": "perf",
+            "section": "Performance Improvements"
+          },
+          {
+            "type": "docs",
+            "section": "Documentation"
+          }
+        ]
+      }
     }
   },
   "hooks": {
     "before:init": ["npm run lint", "npm test", "npm run format"],
-    "after:bump": "npm run prepare",
+    "after:bump": "npm run prepack",
     "after:git:release": "echo After git push, before github release",
     "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
   }
