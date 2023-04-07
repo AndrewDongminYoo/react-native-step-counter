@@ -70,11 +70,12 @@
   "bugs": {
     "url": "https://github.com/AndrewDongminYoo/react-native-step-counter/issues"
   },
-  "homepage": "https://github.com/AndrewDongminYoo/react-native-step-counter#readme",
+  "homepage": "https://andrewdongminyoo.github.io/react-native-step-counter",
   "publishConfig": {
     "access": "public",
     "tag": "latest",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "@AndrewDongminYoo:registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "@babel/core": "^7.21.3",
