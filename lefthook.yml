@@ -1,3 +1,9 @@
+pre-push:
+  commands:
+    packages-audit:
+      tags: check vulnerability
+      run: yarn audit
+
 pre-commit:
   parallel: true
   commands:
