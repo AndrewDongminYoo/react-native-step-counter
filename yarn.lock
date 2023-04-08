@@ -8043,6 +8043,11 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha512-xTgYBc3fuo7Yt7JbiuFxSYGToMoz8fLoE6TC9Wx1P/u+LfeThMOAqmuyECnlBaaJb+u1m9hHiXUEtwW4OzfUJg==
 
+postman-jsdoc-theme@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/postman-jsdoc-theme/-/postman-jsdoc-theme-0.0.3.tgz#60e4fbf3b2175f772520b3c978c07a8bd32b5829"
+  integrity sha512-UBiDlVw56c++OYaisumfu6jwJY26ioUuiZtOowC763BiaVt+SazQIDdUr6TeBkaDG2HrvTfgypY43khweERwSg==
+
 prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
