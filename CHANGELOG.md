@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.13](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.12...v0.1.13) (2023-04-08)
+
+### Documentation
+
+- **react:** 📝 all codes are documented now ([1ab93b0](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/1ab93b0967b3f0e39ebd8335fecebdd30cb3ced6))
+
 ## [0.1.12](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.11...v0.1.12) (2023-04-07)
 
 ### Bug Fixes v0.1.12

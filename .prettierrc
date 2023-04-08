@@ -8,7 +8,7 @@
   "printWidth": 120,
   "overrides": [
     {
-      "files": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+      "files": ["**/*.ts", "**/*.tsx"],
       "options": {
         "parser": "babel-ts"
       }
