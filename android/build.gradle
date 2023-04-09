@@ -100,7 +100,6 @@ dependencies {
     // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
     //noinspection GradleDependency
     implementation 'com.facebook.react:react-android:0.71.3'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     implementation 'androidx.core:core-ktx:1.9.0'
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { sync as deleteSync } from 'del';
+const { sync: deleteSync } = require('del');
 
 const patterns = [
   '!**/node_modules',
