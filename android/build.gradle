@@ -12,7 +12,7 @@ buildscript {
     }
 }
 
-boolean isNewArchitectureEnabled() {
+def isNewArchitectureEnabled() {
     return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
 }
 
