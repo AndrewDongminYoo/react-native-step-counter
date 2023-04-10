@@ -10,7 +10,7 @@
     "build-ios": "yarn ios --mode Release",
     "clear": "react-native clean --include android,metro,watchman,yarn",
     "clear:all": "react-native clean --include android,cocoapods,metro,npm,watchman,yarn",
-    "doctor": "react-native doctor --fix",
+    "doctor": "react-native doctor --fix; react-native info",
     "gradle": "(cd android && ./gradlew generateCodegenArtifactsFromSchema)",
     "prepods": "react-native setup-ios-permissions",
     "pods": "(cd ios && pod install --no-repo-update)",
@@ -20,21 +20,40 @@
   },
   "dependencies": {
     "react": "18.2.0",
-    "react-native": "0.71.6",
+    "react-native": "^0.71.0",
     "react-native-circular-progress-indicator": "^4.4.2",
     "react-native-gesture-handler": "^2.9.0",
     "react-native-permissions": "^3.7.3",
-    "react-native-reanimated": "3.0.2",
-    "react-native-svg": "^13.8.0"
+    "react-native-reanimated": "^2.14.1",
+    "react-native-svg": "^13.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",
     "@babel/preset-env": "^7.20.2",
     "@babel/runtime": "^7.21.0",
+    "@rnx-kit/align-deps": "^2.2.1",
     "babel-plugin-module-resolver": "^5.0.0",
-    "metro-react-native-babel-preset": "0.76.0"
+    "metro-react-native-babel-preset": "^0.73.7"
   },
   "reactNativePermissionsIOS": [
     "Motion"
-  ]
+  ],
+  "rnx-kit": {
+    "kitType": "app",
+    "alignDeps": {
+      "requirements": [
+        "react-native@0.71"
+      ],
+      "capabilities": [
+        "animation",
+        "babel-preset-react-native",
+        "core",
+        "core-android",
+        "core-ios",
+        "gestures",
+        "react",
+        "svg"
+      ]
+    }
+  }
 }
