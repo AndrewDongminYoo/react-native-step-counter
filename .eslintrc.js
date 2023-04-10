@@ -8,7 +8,7 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
   ],
-  plugins: ['@typescript-eslint', 'jsdoc'],
+  plugins: ['@typescript-eslint', 'jsdoc', 'jest'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 2018,
@@ -31,6 +31,12 @@ module.exports = {
         ignoreComments: true,
       },
     ],
+    // JEST
+    'jest/no-disabled-tests': 'warn',
+    'jest/no-focused-tests': 'error',
+    'jest/no-identical-title': 'error',
+    'jest/prefer-to-have-length': 'warn',
+    'jest/valid-expect': 'error',
     // JsDoc
     'jsdoc/check-access': 'warn', // Recommended
     'jsdoc/check-alignment': 'warn', // Recommended

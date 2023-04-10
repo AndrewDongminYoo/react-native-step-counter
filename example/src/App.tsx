@@ -20,12 +20,12 @@ type SensorType<T = typeof Platform.OS> = T extends 'ios'
 
 type SensorName = SensorType<Platform['OS']>;
 
-/* Setting the initial state of the additionalInfo object. */
+/** Setting the initial state of the additionalInfo object. */
 const initState = {
   dailyGoal: '0/10000 steps',
   stepsString: '0 steps',
   calories: '0 kCal',
-  distance: '0.0m',
+  distance: '0.0 m',
 };
 
 type AdditionalInfo = Partial<ParsedStepCountData>;

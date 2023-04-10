@@ -1,5 +1,5 @@
 import type { TurboModule } from 'react-native/Libraries/TurboModule/RCTExport';
-import { TurboModuleRegistry } from 'react-native';
+import TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 /**
  * `StepCountData` is an object with four properties: `distance`, `steps`, `startDate`, and `endDate`.
@@ -61,4 +61,4 @@ export interface Spec extends TurboModule {
 }
 
 /* Getting enforcing the module from the registry. */
-export default TurboModuleRegistry.get<Spec>('RNStepCounter') as Spec | null;
+export default TurboModuleRegistry.getEnforcing<Spec>('RNStepCounter') as Spec;
