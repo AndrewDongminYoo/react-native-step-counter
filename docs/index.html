@@ -22,35 +22,19 @@
     <label for="nav-trigger" class="overlay"></label>
 
     <nav>
-      <h2>
-        <a href="index.html">Home</a>
-      </h2>
+      <h2><a href="index.html">Home</a></h2>
       <h3>Classes</h3>
       <ul>
-        <li>
-          <a href="UnavailabilityError.html">UnavailabilityError</a>
-        </li>
+        <li><a href="UnavailabilityError.html">UnavailabilityError</a></li>
       </ul>
       <h3>Global</h3>
       <ul>
-        <li>
-          <a href="global.html#isStepCountingSupported">isStepCountingSupported</a>
-        </li>
-        <li>
-          <a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a>
-        </li>
-        <li>
-          <a href="global.html#parseStepData">parseStepData</a>
-        </li>
-        <li>
-          <a href="global.html#RNStepCounter">RNStepCounter</a>
-        </li>
-        <li>
-          <a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a>
-        </li>
-        <li>
-          <a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a>
-        </li>
+        <li><a href="global.html#RNStepCounter">RNStepCounter</a></li>
+        <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
+        <li><a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a></li>
+        <li><a href="global.html#parseStepData">parseStepData</a></li>
+        <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
+        <li><a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a></li>
       </ul>
     </nav>
 
@@ -58,6 +42,14 @@
       <section class="readme">
         <article>
           <h1>React-Native Step Counter Library</h1>
+          <p>
+            <a
+              href="https://app.fossa.com/projects/git%2Bgithub.com%2FAndrewDongminYoo%2Freact-native-step-counter?ref=badge_shield"
+              ><img
+                src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FAndrewDongminYoo%2Freact-native-step-counter.svg?type=shield"
+                alt="FOSSA Status"
+            /></a>
+          </p>
           <p>한국어 사용자는 <a href="README.kr.md">Korean version.</a>를 참조하십시오.</p>
           <p>
             A simple React Native package to count the number of steps taken by the user. This package uses the
@@ -67,16 +59,15 @@
             architectures. (Because the turbo module is still in the experimental stage. so it is not widely used.)
           </p>
           <h2>Installation</h2>
-          <pre class="prettyprint source lang-shell">
-                    <code># if you use pure npm (what a classic!),
+          <pre class="prettyprint source lang-shell"><code># if you use pure npm (what a classic!),
 npm install @dongminyu/react-native-step-counter
 </code></pre>
-          <pre class="prettyprint source lang-shell">
-<code># or if you prefer to use Yarn (I love it's parallel install feature),
+          <pre
+            class="prettyprint source lang-shell"
+          ><code># or if you prefer to use Yarn (I love it's parallel install feature),
 yarn add @dongminyu/react-native-step-counter
 </code></pre>
-          <pre class="prettyprint source lang-shell">
-                    <code># or if you use pnpm (it's fast and efficient),
+          <pre class="prettyprint source lang-shell"><code># or if you use pnpm (it's fast and efficient),
 pnpm add @dongminyu/react-native-step-counter
 </code></pre>
           <p>
@@ -85,7 +76,7 @@ pnpm add @dongminyu/react-native-step-counter
           </p>
           <p>
             👣 if you are using the legacy architecture, you need to follow the guide below. otherwise, you can
-            <a href="README.md#android">skip</a> next step.
+            <a href="#android">skip</a> next step.
           </p>
           <h2>Setup the New Architecture</h2>
           <ul>
@@ -94,8 +85,8 @@ pnpm add @dongminyu/react-native-step-counter
               <ol>
                 <li>
                   React Native released the support for the New Architecture with the release
-                  <a href="https://reactnative.dev/blog/2022/03/30/version-068#opting-in-to-the-new-architecture">
-                    <code>0.68.0</code></a
+                  <a href="https://reactnative.dev/blog/2022/03/30/version-068#opting-in-to-the-new-architecture"
+                    ><code>0.68.0</code></a
                   >.
                 </li>
                 <li>
@@ -137,19 +128,16 @@ pnpm add @dongminyu/react-native-step-counter
                   >min_ios_version_supported</a
                 >)
               </p>
-              <pre class="prettyprint source lang-diff">
-                            <code>- platform :ios, '11.0'
+              <pre class="prettyprint source lang-diff"><code>- platform :ios, '11.0'
 + platform :ios, '12.4'
 # ↓ or you can use the variable of (react_native_pods.rb)
 + platform :ios, min_ios_version_supported
 </code></pre>
               <p><em>2</em>. set NODE_BINARY to .xcode.env file.</p>
-              <pre class="prettyprint source lang-shell">
-                            <code>echo 'export NODE_BINARY=$(command -v node)' > .xcode.env
+              <pre class="prettyprint source lang-shell"><code>echo 'export NODE_BINARY=$(command -v node)' > .xcode.env
 </code></pre>
               <p><em>3</em>. Fix an API Change in the <code>AppDelegate.m</code> file.</p>
-              <pre class="prettyprint source lang-diff">
-                            <code> - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+              <pre class="prettyprint source lang-diff"><code> - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
  {
  #if DEBUG
 -    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@&quot;index&quot; fallbackResource:nil];
@@ -171,8 +159,7 @@ pnpm add @dongminyu/react-native-step-counter
                       >ios/StepCounterExample/AppDelegate.h</a
                     >
                   </p>
-                  <pre class="prettyprint source lang-diff">
-                                    <code>- #import &lt;React/RCTBridgeDelegate.h>
+                  <pre class="prettyprint source lang-diff"><code>- #import &lt;React/RCTBridgeDelegate.h>
 + #import &lt;RCTAppDelegate.h>
 #import &lt;UIKit/UIKit.h>
 
@@ -190,8 +177,7 @@ pnpm add @dongminyu/react-native-step-counter
                       >ios/StepCounterExample/AppDelegate.mm</a
                     >
                   </p>
-                  <pre class="prettyprint source lang-objective-c++">
-                                    <code>#import &quot;AppDelegate.h&quot;
+                  <pre class="prettyprint source lang-objective-c++"><code>#import &quot;AppDelegate.h&quot;
 #import &lt;React/RCTBundleURLProvider.h>
 @implementation AppDelegate
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -217,8 +203,7 @@ pnpm add @dongminyu/react-native-step-counter
                 </li>
                 <li>
                   <p>Run <code>pod install</code></p>
-                  <pre class="prettyprint source lang-shell">
-                                    <code>export RCT_NEW_ARCH_ENABLED=1
+                  <pre class="prettyprint source lang-shell"><code>export RCT_NEW_ARCH_ENABLED=1
 cd ios && pod install
 </code></pre>
                 </li>
@@ -248,8 +233,7 @@ cd ios && pod install
           <blockquote>
             <p>3 uses-permission, 3 uses-feature</p>
           </blockquote>
-          <pre class="prettyprint source lang-xml">
-                    <code>&lt;!--  android/src/main/AndroidManifest.xml-->
+          <pre class="prettyprint source lang-xml"><code>&lt;!--  android/src/main/AndroidManifest.xml-->
 &lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
     package=&quot;com.stepcounter&quot;>
   &lt;uses-permission android:name=&quot;android.permission.ACTIVITY_RECOGNITION&quot; />
@@ -267,8 +251,9 @@ cd ios && pod install
           <blockquote>
             <p>set NSMotionUsageDescription</p>
           </blockquote>
-          <pre class="prettyprint source lang-xml">
-<code>&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot;>
+          <pre
+            class="prettyprint source lang-xml"
+          ><code>&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot;>
 &lt;plist version=&quot;1.0&quot;>
   ...
   &lt;key>NSMotionUsageDescription&lt;/key>
@@ -322,9 +307,7 @@ cd ios && pod install
               <p><code>StepCountData</code>:</p>
               <ul>
                 <li>
-                  <p>
-                    <strong>Common Interface</strong>
-                  </p>
+                  <p><strong>Common Interface</strong></p>
                   <ul>
                     <li>
                       <code>steps</code>: This is a number property that indicates the number of steps taken by the user
@@ -350,9 +333,7 @@ cd ios && pod install
                   </ul>
                 </li>
                 <li>
-                  <p>
-                    <strong>iOS Only</strong>
-                  </p>
+                  <p><strong>iOS Only</strong></p>
                   <ul>
                     <li>
                       <code>floorsAscended</code>: This is a number property that indicates the number of floors the
@@ -384,8 +365,7 @@ cd ios && pod install
           <h2>Usage</h2>
           <p>To use the Step Counter Library in your React Native app, follow these steps:</p>
           <p>Import the library into your React Native app.</p>
-          <pre class="prettyprint source lang-typescript">
-                    <code>import React, { useEffect, useState } from 'react';
+          <pre class="prettyprint source lang-typescript"><code>import React, { useEffect, useState } from 'react';
 import {
   isStepCountingSupported,
   parseStepData,
@@ -397,8 +377,7 @@ import {
             Use the <code>isStepCountingSupported</code> method to check if the device has a step counter or
             accelerometer sensor.
           </p>
-          <pre class="prettyprint source lang-typescript">
-                    <code>const [supported, setSupported] = useState(false);
+          <pre class="prettyprint source lang-typescript"><code>const [supported, setSupported] = useState(false);
 const [granted, setGranted] = useState(false);
 
 async function askPermission() {
@@ -410,8 +389,7 @@ async function askPermission() {
 }
 </code></pre>
           <p>Call the <code>startStepCounterUpdate</code> method to start the step counter service.</p>
-          <pre class="prettyprint source lang-typescript">
-                    <code>const [steps, setSteps] = useState(0);
+          <pre class="prettyprint source lang-typescript"><code>const [steps, setSteps] = useState(0);
 
 async function startStepCounter() {
   startStepCounterUpdate(new Date(), (data) => {
@@ -429,23 +407,26 @@ async function startStepCounter() {
           </p>
           <h2>Change Log</h2>
           <p>
-            See the <a href="CHANGELOG.md"> <code>Release Notes</code></a> for a list of changes.
+            See the <a href="CHANGELOG.md"><code>Release Notes</code></a> for a list of changes.
           </p>
           <h2>Contributing</h2>
           <p>
-            See the <a href="CONTRIBUTING.md"> <code>Contributing Guide</code></a> to learn how to contribute to the
+            See the <a href="CONTRIBUTING.md"><code>Contributing Guide</code></a> to learn how to contribute to the
             repository and the development workflow.
           </p>
           <h2>License</h2>
           <p>MIT</p>
           <hr />
           <p>
-            Made with
+            Made with <a href="https://github.com/callstack/react-native-builder-bob">create-react-native-library</a>
+          </p>
+          <p>
             <a
-              href="https://github.com/callstack/react-native-builder-bob/tree/main/packages/create-react-native-library"
-              >create-react-native-library</a
-            >
-            by <a href="https://callstack.com/">CallStack</a>.
+              href="https://app.fossa.com/projects/git%2Bgithub.com%2FAndrewDongminYoo%2Freact-native-step-counter?ref=badge_large"
+              ><img
+                src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FAndrewDongminYoo%2Freact-native-step-counter.svg?type=large"
+                alt="FOSSA Status"
+            /></a>
           </p>
         </article>
       </section>
@@ -453,7 +434,7 @@ async function startStepCounter() {
 
     <br class="clear" />
 
-    <footer>Documentation generated at Sat Apr 08 2023 02:22:20 GMT+0900 (Korean Standard Time)</footer>
+    <footer>Documentation generated at Tue Apr 11 2023 17:25:09 GMT+0900 (Korean Standard Time)</footer>
 
     <script>
       prettyPrint();

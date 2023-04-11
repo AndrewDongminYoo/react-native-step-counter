@@ -22,35 +22,19 @@
     <label for="nav-trigger" class="overlay"></label>
 
     <nav>
-      <h2>
-        <a href="index.html">Home</a>
-      </h2>
+      <h2><a href="index.html">Home</a></h2>
       <h3>Classes</h3>
       <ul>
-        <li>
-          <a href="UnavailabilityError.html">UnavailabilityError</a>
-        </li>
+        <li><a href="UnavailabilityError.html">UnavailabilityError</a></li>
       </ul>
       <h3>Global</h3>
       <ul>
-        <li>
-          <a href="global.html#isStepCountingSupported">isStepCountingSupported</a>
-        </li>
-        <li>
-          <a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a>
-        </li>
-        <li>
-          <a href="global.html#parseStepData">parseStepData</a>
-        </li>
-        <li>
-          <a href="global.html#RNStepCounter">RNStepCounter</a>
-        </li>
-        <li>
-          <a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a>
-        </li>
-        <li>
-          <a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a>
-        </li>
+        <li><a href="global.html#RNStepCounter">RNStepCounter</a></li>
+        <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
+        <li><a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a></li>
+        <li><a href="global.html#parseStepData">parseStepData</a></li>
+        <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
+        <li><a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a></li>
       </ul>
     </nav>
 
@@ -59,12 +43,13 @@
 
       <section>
         <article>
-          <pre class="prettyprint source linenums">
-          <code>import { TurboModuleRegistry } from 'react-native';
+          <pre
+            class="prettyprint source linenums"
+          ><code>import TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 /**
  * `StepCountData` is an object with four properties: `distance`, `steps`, `startDate`, and `endDate`.
-*
+ *
  * @typedef StepCountData object - The Object that contains the step count data.
  * @property {string} counterType - The type of counter used to count the steps.
  * @property {number} steps - The number of steps taken during the time period.
@@ -76,10 +61,10 @@
  */
 
 export const NAME = 'RNStepCounter';
-export const VERSION = '0.1.11';
+export const VERSION = '0.1.15';
 export const eventName = 'StepCounter.stepCounterUpdate';
 /* Getting enforcing the module from the registry. */
-export default TurboModuleRegistry.get('RNStepCounter');
+export default TurboModuleRegistry.getEnforcing('RNStepCounter');
 //# sourceMappingURL=NativeStepCounter.js.map</code></pre>
         </article>
       </section>
@@ -87,7 +72,7 @@ export default TurboModuleRegistry.get('RNStepCounter');
 
     <br class="clear" />
 
-    <footer>Documentation generated at Sat Apr 08 2023 02:22:20 GMT+0900 (Korean Standard Time)</footer>
+    <footer>Documentation generated at Tue Apr 11 2023 17:25:09 GMT+0900 (Korean Standard Time)</footer>
 
     <script>
       prettyPrint();

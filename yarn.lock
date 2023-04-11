@@ -7919,11 +7919,6 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.npmjs.org/posix-character-classes/-/posix-character-classes-0.1.1.tgz"
   integrity sha512-xTgYBc3fuo7Yt7JbiuFxSYGToMoz8fLoE6TC9Wx1P/u+LfeThMOAqmuyECnlBaaJb+u1m9hHiXUEtwW4OzfUJg==
 
-postman-jsdoc-theme@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.npmjs.org/postman-jsdoc-theme/-/postman-jsdoc-theme-0.0.3.tgz"
-  integrity sha512-UBiDlVw56c++OYaisumfu6jwJY26ioUuiZtOowC763BiaVt+SazQIDdUr6TeBkaDG2HrvTfgypY43khweERwSg==
-
 prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.2.1.tgz"
