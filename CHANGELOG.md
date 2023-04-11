@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.1.16](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.14...v0.1.16) (2023-04-11)
+
 ## [0.1.15](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.14...v0.1.15) (2023-04-08)
 
 ## [0.1.14](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.13...v0.1.14) (2023-04-08)
