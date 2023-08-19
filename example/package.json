@@ -3,37 +3,42 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "run-android": "react-native run-android --mode=Debug",
-    "build-android": "react-native build-android --mode=Release",
-    "ios": "react-native run-ios --scheme StepCounterExample",
-    "run-ios": "yarn ios --mode Debug",
-    "build-ios": "yarn ios --mode Release",
-    "clear": "react-native clean --include android,metro,watchman,yarn",
-    "clear:all": "react-native clean --include android,cocoapods,metro,npm,watchman,yarn",
-    "doctor": "react-native doctor --fix; react-native info",
-    "gradle": "(cd android && ./gradlew generateCodegenArtifactsFromSchema)",
-    "prepods": "react-native setup-ios-permissions",
-    "pods": "(cd ios && pod install --no-repo-update)",
-    "postpods": "node node_modules/react-native/scripts/generate-codegen-artifacts.js -p . -o ios",
+    "run-android": "react-native run-android",
+    "run-ios": "react-native run-ios",
     "start": "react-native start --reset-cache",
+    "clear": "react-native clean --include android,metro,watchman,yarn",
+    "doctor": "react-native doctor --fix; react-native info",
+    "prepods": "react-native setup-ios-permissions",
+    "pods": "(cd ios && pod install --no-repo-update || pod update hermes-engine --no-repo-update)",
+    "postinstall": "yarn rnx-align-deps --write",
     "watch": "tsc --noEmit --watch"
   },
   "dependencies": {
     "react": "18.2.0",
-    "react-native": "^0.71.7",
+    "react-native": "^0.72.0",
     "react-native-circular-progress-indicator": "^4.4.2",
-    "react-native-gesture-handler": "^2.11.0",
-    "react-native-permissions": "^3.7.3",
-    "react-native-reanimated": "^3.2.0",
-    "react-native-svg": "^13.7.0"
+    "react-native-gesture-handler": "^2.12.0",
+    "react-native-permissions": "^3.8.4",
+    "react-native-reanimated": "^3.3.0",
+    "react-native-svg": "^13.9.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.0",
-    "@babel/preset-env": "^7.20.2",
-    "@babel/runtime": "^7.21.0",
-    "@rnx-kit/align-deps": "^2.2.1",
+    "@babel/core": "^7.22.10",
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0-0",
+    "@babel/plugin-proposal-optional-chaining": "^7.0.0-0",
+    "@babel/plugin-transform-arrow-functions": "^7.0.0-0",
+    "@babel/plugin-transform-shorthand-properties": "^7.0.0-0",
+    "@babel/plugin-transform-template-literals": "^7.0.0-0",
+    "@babel/preset-env": "^7.22.10",
+    "@babel/runtime": "^7.22.10",
+    "@react-native/metro-config": "^0.72.0",
+    "@rnx-kit/align-deps": "^2.2.4",
     "babel-plugin-module-resolver": "^5.0.0",
-    "metro-react-native-babel-preset": "^0.73.7"
+    "metro-react-native-babel-preset": "^0.76.5"
+  },
+  "engines": {
+    "node": ">=16"
   },
   "reactNativePermissionsIOS": [
     "Motion"
@@ -42,7 +47,7 @@
     "kitType": "app",
     "alignDeps": {
       "requirements": [
-        "react-native@0.71"
+        "react-native@0.72"
       ],
       "capabilities": [
         "animation",
@@ -50,6 +55,7 @@
         "core",
         "core-android",
         "core-ios",
+        "core/metro-config",
         "gestures",
         "react",
         "svg"
