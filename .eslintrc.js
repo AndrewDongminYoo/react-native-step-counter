@@ -54,7 +54,7 @@ module.exports = {
     'jsdoc/implements-on-classes': 'warn', // Recommended
     'jsdoc/match-description': 'off',
     'jsdoc/multiline-blocks': 'warn', // Recommended
-    'jsdoc/newline-after-description': 'warn', // Recommended
+    // 'jsdoc/newline-after-description': 'warn', // Recommended
     'jsdoc/no-bad-blocks': 'off',
     'jsdoc/no-defaults': 'off',
     'jsdoc/no-missing-syntax': 'off',

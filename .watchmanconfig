@@ -1,18 +1,1 @@
-{
-  "version": "2023.01.23.00",
-  "fsevents_latency": 0.05,
-  "gc_age_seconds": 3600,
-  "gc_interval_seconds": 7200,
-  "hint_num_dirs": 218537089,
-  "hint_num_files_per_dir": 64,
-  "idle_reap_age_seconds": 86400,
-  "ignore_dirs": [
-    "node_modules",
-    "build",
-    "lib",
-    ".idea"
-  ],
-  "ignore_vcs": [
-    ".git"
-  ]
-}
+{}

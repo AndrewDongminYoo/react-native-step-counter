@@ -4,7 +4,7 @@
 
 한국어 사용자는 [Korean version.](README.kr.md)를 참조하십시오.
 
-A simple React Native package to count the number of steps taken by the user. This package uses the `StepCounter` (or Custom accelerometer-based step-counter) Sensor API on Android and the `Core Motion` framework on iOS to count the steps. It's built using Turbo Module, a new module development architecture for React Native. I made this library compatible with both new and legacy architectures. (Because the turbo module is still in the experimental stage. so it is not widely used.)
+This library provides an interface for tracking the number of steps taken by the user in a React Native app. This package uses the `StepCounter` (or Custom accelerometer-based step-counter) Sensor API on Android and the `Core Motion` framework on iOS to count the steps. It's built using Turbo Module, a new module development architecture for React Native. I made this library compatible with both new and legacy architectures. (Because the turbo module is still in the experimental stage. so it is not widely used.)
 
 ## Installation
 
