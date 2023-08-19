@@ -1,14 +1,14 @@
 #import <CoreMotion/CoreMotion.h>
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
-#import "RNStepCounter.h"
+#import "StepCounter.h"
 #import "SOMotionDetecter.h"
 
-@interface RNStepCounter ()
+@interface StepCounter ()
 @property (nonatomic, readonly) CMPedometer *pedometer;
 @end
 
-@implementation RNStepCounter
+@implementation StepCounter
 + (BOOL)requiresMainQueueSetup {
     return YES;
 }
