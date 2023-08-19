@@ -211,7 +211,10 @@ nav ul a {
   padding: 0;
   display: block;
   font-size: 12px;
-  transition: padding 0.2s, color 0.2s, font-weight 0.2s;
+  transition:
+    padding 0.2s,
+    color 0.2s,
+    font-weight 0.2s;
 }
 
 nav ul a:hover {

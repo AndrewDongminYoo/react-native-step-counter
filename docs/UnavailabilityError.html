@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -10,7 +10,10 @@
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <link type="text/css" rel="stylesheet" href="styles/ionicons.min.css" />
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css" />
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="styles/prettify-tomorrow.css" />
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
   </head>
   <body>
@@ -30,11 +33,23 @@
       <h3>Global</h3>
       <ul>
         <li><a href="global.html#RNStepCounter">RNStepCounter</a></li>
-        <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
-        <li><a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a></li>
+        <li>
+          <a href="global.html#isStepCountingSupported"
+            >isStepCountingSupported</a
+          >
+        </li>
+        <li>
+          <a href="global.html#isTurboModuleEnabled">isTurboModuleEnabled</a>
+        </li>
         <li><a href="global.html#parseStepData">parseStepData</a></li>
-        <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
-        <li><a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a></li>
+        <li>
+          <a href="global.html#startStepCounterUpdate"
+            >startStepCounterUpdate</a
+          >
+        </li>
+        <li>
+          <a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a>
+        </li>
       </ul>
     </nav>
 
@@ -46,7 +61,10 @@
           <h2>UnavailabilityError</h2>
 
           <div class="class-description">
-            <p>If you're using a method or property that's not available on the current platform, throw this error.</p>
+            <p>
+              If you're using a method or property that's not available on the
+              current platform, throw this error.
+            </p>
           </div>
         </header>
 
@@ -55,7 +73,8 @@
             <h2>Constructor</h2>
 
             <h4 class="name" id="UnavailabilityError">
-              <span class="type-signature"></span>new UnavailabilityError<span class="signature"
+              <span class="type-signature"></span>new UnavailabilityError<span
+                class="signature"
                 >(moduleName, propertyName)</span
               ><span class="type-signature"> &rarr; {Error}</span>
             </h4>
@@ -81,7 +100,9 @@
                     <span class="param-type">string</span>
                   </td>
 
-                  <td class="description last"><p>The name of the module.</p></td>
+                  <td class="description last">
+                    <p>The name of the module.</p>
+                  </td>
                 </tr>
 
                 <tr>
@@ -91,7 +112,9 @@
                     <span class="param-type">string</span>
                   </td>
 
-                  <td class="description last"><p>The name of the property.</p></td>
+                  <td class="description last">
+                    <p>The name of the property.</p>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -100,7 +123,10 @@
               <dt class="tag-source">Source:</dt>
               <dd class="tag-source">
                 <ul class="dummy">
-                  <li><a href="index.js.html">index.js</a>, <a href="index.js.html#line87">line 87</a></li>
+                  <li>
+                    <a href="index.js.html">index.js</a>,
+                    <a href="index.js.html#line87">line 87</a>
+                  </li>
                 </ul>
               </dd>
             </dl>
@@ -120,7 +146,8 @@
 
             <h5>Example</h5>
 
-            <pre class="prettyprint"><code>if (!RNStepCounter.startStepCounterUpdate) {
+            <pre
+              class="prettyprint"><code>if (!RNStepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NativeModuleName, eventName);
  }</code></pre>
           </div>
@@ -130,7 +157,10 @@
 
     <br class="clear" />
 
-    <footer>Documentation generated at Tue Apr 11 2023 17:25:09 GMT+0900 (Korean Standard Time)</footer>
+    <footer>
+      Documentation generated at Tue Apr 11 2023 17:25:09 GMT+0900 (Korean
+      Standard Time)
+    </footer>
 
     <script>
       prettyPrint();
