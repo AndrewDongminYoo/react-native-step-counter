@@ -26,11 +26,10 @@ import com.stepcounter.utils.AndroidVersionHelper
  * @see ReactApplicationContext
  * @see StepCounterSpec
  */
-class StepCounterModule(context: ReactApplicationContext) :
+class StepCounterModule internal constructor(context: ReactApplicationContext) :
     StepCounterSpec(context) {
     companion object {
-        const val NAME: String = "RNStepCounter"
-        const val moduleName: String = "StepCounter"
+        const val NAME: String = "StepCounter"
         private val TAG_NAME: String = StepCounterModule::class.java.name
         private const val STEP_COUNTER = "android.permission.ACTIVITY_RECOGNITION"
     }
@@ -149,7 +148,7 @@ class StepCounterModule(context: ReactApplicationContext) :
     fun sendDeviceEvent(eventType: String, eventPayload: Any) {
         try {
             appContext.getJSModule(RCTDeviceEventEmitter::class.java)
-                .emit("$moduleName.$eventType", eventPayload)
+                .emit("$NAME.$eventType", eventPayload)
         } catch (e: RuntimeException) {
             e.message?.let { Log.e(TAG_NAME, it) }
             Log.e(TAG_NAME, eventType, e)

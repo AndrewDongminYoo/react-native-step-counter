@@ -24,7 +24,7 @@ import com.stepcounter.StepCounterModule
  */
 abstract class SensorListenService(
     private val counterModule: StepCounterModule,
-    private val sensorManager: SensorManager,
+    private val sensorManager: SensorManager
 ) : SensorEventListener, LifecycleEventListener {
     /**
      * the accelerometer sensor type
@@ -208,11 +208,13 @@ abstract class SensorListenService(
      * @see <a href="https://developer.android.com/reference/android/hardware/Sensor#REPORTING_MODE_ON_CHANGE">Reporting Mode On Change</a>
      */
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor == null
-            || event.sensor != detectedSensor
-            || event.sensor.type != sensorType
-            || event.sensor.type != detectedSensor.type
-        ) return
+        if (event?.sensor == null ||
+            event.sensor != detectedSensor ||
+            event.sensor.type != sensorType ||
+            event.sensor.type != detectedSensor.type
+        ) {
+            return
+        }
         if (updateCurrentSteps(event.values)) {
             counterModule.sendDeviceEvent("stepCounterUpdate", stepsParamsMap)
         }
@@ -258,7 +260,6 @@ abstract class SensorListenService(
      * @see Activity.onPause
      */
     override fun onHostPause() {
-
     }
 
     /**

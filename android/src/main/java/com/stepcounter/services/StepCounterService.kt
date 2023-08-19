@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit
  */
 class StepCounterService(
     counterModule: StepCounterModule,
-    sensorManager: SensorManager,
+    sensorManager: SensorManager
 ) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "Step Counter"
     override val sensorType = Sensor.TYPE_STEP_COUNTER

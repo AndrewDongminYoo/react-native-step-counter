@@ -5,7 +5,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 
 abstract class StepCounterSpec internal constructor(context: ReactApplicationContext) :
     NativeStepCounterSpec(context) {
-    override fun getName(): String = "RNStepCounter"
+    override fun getName(): String = "StepCounter"
 
     abstract override fun isStepCountingSupported(promise: Promise)
 
