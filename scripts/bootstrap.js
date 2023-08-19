@@ -2,13 +2,9 @@
 const os = require('os');
 const path = require('path');
 const subprocesses = require('child_process');
-const process = require('process');
 
 const root = path.resolve(__dirname, '..');
-const { argv, cwd, env } = process;
-const args = argv.slice(2);
-const stdio = 'inherit';
-const encoding = 'utf-8';
+const args = process.argv.slice(2);
 
 /**
  * It's creating an object with the following properties:
@@ -18,7 +14,12 @@ const encoding = 'utf-8';
  * @prop {BufferEncoding} encoding: The encoding of the standard input/output/error streams of the current process.
  * @prop {string} cwd: The current working directory of the current process.
  */
-const options = { env, stdio, encoding, cwd: cwd() };
+const options = {
+  cwd: process.cwd(),
+  env: process.env,
+  stdio: 'inherit',
+  encoding: 'utf-8',
+};
 
 /**
  * It's setting the `shell` property of the `options` object to `true`
@@ -36,9 +37,12 @@ let result;
  * then forward the command to `yarn`. Otherwise,
  * otherwise, `yarn` is run without arguments, perform bootstrap.
  */
-if (cwd() !== root || args.length) {
+if (process.cwd() !== root || args.length) {
+  // We're not in the root of the project, or additional arguments were passed
+  // In this case, forward the command to `yarn`
   result = subprocesses.spawnSync('yarn', args, options);
 } else {
+  // If `yarn` is run without arguments, perform bootstrap
   result = subprocesses.spawnSync('yarn', ['bootstrap'], options);
 }
 
