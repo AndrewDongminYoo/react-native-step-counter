@@ -1,4 +1,11 @@
-import { check, openSettings, type PermissionStatus, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import {
+  check,
+  openSettings,
+  type PermissionStatus,
+  PERMISSIONS,
+  request,
+  RESULTS,
+} from 'react-native-permissions';
 import { Platform, type Rationale } from 'react-native';
 import appInformation from '../package.json';
 
@@ -10,12 +17,14 @@ import appInformation from '../package.json';
 const bodySensor = PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND;
 const activityRecognition = PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION;
 const motion = PERMISSIONS.IOS.MOTION;
-type Permission = typeof bodySensor | typeof activityRecognition | typeof motion;
+type Permission =
+  | typeof bodySensor
+  | typeof activityRecognition
+  | typeof motion;
 
 /**
- * This function checks the result and returns true if the permission is granted
+ * @description This function checks the result and returns true if the permission is granted
  * It is used to check the result of the permission request
- *
  * @param {PermissionStatus} result - Permission Request's Result.
  * @returns {boolean} - Returns if the permission is granted.
  */
@@ -47,11 +56,10 @@ const getRational = (permission: Permission): Rationale => {
 };
 
 /**
- * This function requests permission to access the user's location.
+ * @description This function requests permission to access the user's location.
  * If the user has already granted permission, it returns true.
  * If the user has not granted permission, it prompts the user to grant permission.
  * It uses the following parameters:
- *
  * @param {Permission} permission - The permission to request.
  * @returns {boolean} - It returns a boolean value.
  */
@@ -61,10 +69,9 @@ const requestPermission = async (permission: Permission) => {
 };
 
 /**
- * This code checks for the permission passed in as an argument
+ * @description This code checks for the permission passed in as an argument
  * and returns a boolean that indicates whether or not the permission
  * is granted.
- *
  * @param {Permission} permission - The Permission to check.
  * @returns {Promise<boolean>} - Boolean value whether permission is granted or not.
  */
@@ -73,10 +80,9 @@ const checkPermission = async (permission: Permission) => {
 };
 
 /**
- * If permission has not been granted, the user is prompted to grant permission
+ * @description If permission has not been granted, the user is prompted to grant permission
  * If the user has denied permission, the user is redirected to the app's settings page
  * After that, check the permissions status and return.
- *
  * @returns {Promise<boolean>} - A boolean indicating whether the user has granted permission to access the device's step counter.
  */
 export const getStepCounterPermission = async () => {
@@ -89,8 +95,7 @@ export const getStepCounterPermission = async () => {
 };
 
 /**
- * This function ask a permission for the app to access the device's body sensor data.
- *
+ * @description This function ask a permission for the app to access the device's body sensor data.
  * @returns {Promise<boolean>} - Returns true if the user has granted permission for the body sensor data. Otherwise false.
  */
 export async function getBodySensorPermission() {
