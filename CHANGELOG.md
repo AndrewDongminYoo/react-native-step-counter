@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.2.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.16...v0.2.0) (2023-08-20)
+
+### Features
+
+- upgrade react-native-reanimated from 2.17.0 to 3.2.0 ([#23](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/23)) ([31aa2c8](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/31aa2c874046cad9854a04e1046e6885f2117248))
+
+### Bug Fixes
+
+- 🎨 redefine of namespace `StepCounter` ([b8931ea](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/b8931eacdca6be176d16874c69fe39059d154a03))
+- 🚚 modified Android Code and Some Namespaces ([5dcfa6d](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/5dcfa6da7dd64399b15c647f36cae9bdd32b16a6))
+- 🚨 updated eslint, editorconfig, git, prettier, nvm, watchman, commitlint, ts ([a0a2bfb](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a0a2bfbe986dce754d0c64ccf80c5604d3446300))
+- upgrade react-native from 0.71.6 to 0.71.7 ([531f12c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/531f12ccad8422cb229d6b04137392271bae0c45))
+- upgrade react-native-gesture-handler from 2.10.2 to 2.11.0 ([27b5a5e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/27b5a5e11f8b615abbcd4c0e694076bab90ee9c8))
+- upgrade react-native-gesture-handler from 2.9.0 to 2.10.0 ([e66302e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/e66302e67f94d21056715cc846765be2cd0a6bbc))
+- upgrade react-native-reanimated from 2.15.0 to 2.16.0 ([07283ba](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/07283ba094ac3e37f2477f6f34380407280972ec))
+
+### Performance Improvements
+
+- ⚡️ updated iOS example application configuration ([81561af](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/81561af56c0ba56ee8ccf5795fc76c8600b02219))
+
+### Documentation
+
+- 📝 reformatted jsdoc generated api-document ([4d52438](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/4d52438651c637134b6ce2da5649fa7db949bd2d))
+- **example:** 📝 jsdoc-theme updated ([f7196b6](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f7196b624bda9ea1e6fc8ad020aab87bec4c5d88))
+
 ## [0.1.16](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.14...v0.1.16) (2023-04-11)
 
 ## [0.1.15](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.14...v0.1.15) (2023-04-08)

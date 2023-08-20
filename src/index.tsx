@@ -8,7 +8,8 @@ const LINKING_ERROR =
   "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
   Platform.select({
     ios: '- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n',
-    android: '- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`',
+    android:
+      '- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`',
     default: '',
   }) +
   '- Use the "npx react-native clean" command to clean up the module\'s cache and select the ' +
@@ -42,7 +43,9 @@ export interface ParsedStepCountData {
 // @ts-ignore
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
-const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
+const StepCounterModule = isTurboModuleEnabled
+  ? require('./NativeStepCounter').default
+  : NativeModules.RNStepCounter;
 
 /**
  * A module that allows you to get the step count data.
@@ -85,7 +88,8 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
   const endDateTime = new Date(endDate).toLocaleTimeString('en-gb');
   const startDateTime = new Date(startDate).toLocaleTimeString('en-gb');
   const roundedDistance = distance.toFixed(1) + 'm';
-  const stepGoalStatus = steps >= dailyGoal ? 'Goal Reached' : `${steps}/${dailyGoal} steps`;
+  const stepGoalStatus =
+    steps >= dailyGoal ? 'Goal Reached' : `${steps}/${dailyGoal} steps`;
   return {
     dailyGoal: stepGoalStatus,
     steps,
@@ -149,7 +153,10 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
  *    const data = parseStepCountData(response);
  * })
  */
-export function startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback): Subscription {
+export function startStepCounterUpdate(
+  start: Date,
+  callBack: StepCountUpdateCallback
+): Subscription {
   if (!RNStepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
