@@ -17,7 +17,7 @@
     "highlightTutorialCode": true
   },
   "opts": {
-    "template": "./node_modules/postman-jsdoc-theme",
+    "template": "https://github.com/postmanlabs/postman-jsdoc-theme",
     "encoding": "utf8",
     "destination": "./docs",
     "recurse": true,

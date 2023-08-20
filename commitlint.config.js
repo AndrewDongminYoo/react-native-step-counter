@@ -1,6 +1,8 @@
 module.exports = {
+  extends: ['@commitlint/config-conventional'],
   formatter: './node_modules/@commitlint/format/lib/index.js',
-  helpUrl: 'https://github.com/conventional-changelog/commitlint/#what-is-commitlint',
+  helpUrl:
+    'https://github.com/conventional-changelog/commitlint/#what-is-commitlint',
   parserPreset: 'conventional-changelog-conventionalcommits',
   rules: {
     'body-leading-blank': [1, 'always'],
@@ -8,7 +10,11 @@ module.exports = {
     'footer-leading-blank': [1, 'always'],
     'footer-max-line-length': [2, 'always', 100],
     'header-max-length': [2, 'always', 100],
-    'subject-case': [2, 'never', ['sentence-case', 'start-case', 'pascal-case', 'upper-case']],
+    'subject-case': [
+      2,
+      'never',
+      ['sentence-case', 'start-case', 'pascal-case', 'upper-case'],
+    ],
     'subject-empty': [2, 'never'],
     'subject-full-stop': [2, 'never', '.'],
     'type-case': [2, 'always', 'lower-case'],
@@ -16,7 +22,19 @@ module.exports = {
     'type-enum': [
       2,
       'always',
-      ['build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'revert', 'style', 'test'],
+      [
+        'build',
+        'chore',
+        'ci',
+        'docs',
+        'feat',
+        'fix',
+        'perf',
+        'refactor',
+        'revert',
+        'style',
+        'test',
+      ],
     ],
   },
   prompt: {
@@ -46,7 +64,8 @@ module.exports = {
             emoji: '💎',
           },
           refactor: {
-            description: 'A code change that neither fixes a bug nor adds a feature',
+            description:
+              'A code change that neither fixes a bug nor adds a feature',
             title: 'Code Refactoring',
             emoji: '📦',
           },
@@ -85,10 +104,12 @@ module.exports = {
         },
       },
       scope: {
-        description: 'What is the scope of this change (e.g. component or file name)',
+        description:
+          'What is the scope of this change (e.g. component or file name)',
       },
       subject: {
-        description: 'Write a short, imperative tense description of the change',
+        description:
+          'Write a short, imperative tense description of the change',
       },
       body: {
         description: 'Provide a longer description of the change',
@@ -97,7 +118,8 @@ module.exports = {
         description: 'Are there any breaking changes?',
       },
       breakingBody: {
-        description: 'A BREAKING CHANGE commit requires a body. Please enter a longer description of the commit itself',
+        description:
+          'A BREAKING CHANGE commit requires a body. Please enter a longer description of the commit itself',
       },
       breaking: {
         description: 'Describe the breaking changes',

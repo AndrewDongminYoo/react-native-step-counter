@@ -6,8 +6,7 @@ import { NativeEventEmitter, NativeModules } from 'react-native';
 const eventEmitter = new NativeEventEmitter(NativeModules.RNStepCounter);
 
 /**
- * A component that displays the logs from the native module.
- *
+ * @description A component that displays the logs from the native module.
  * @param {object} props - View Component Props but only has one property.
  * @param {boolean} props.triggered - A boolean that indicates whether the native module is loaded.
  * @returns {React.ReactComponentElement} Logger Component.
@@ -83,11 +82,10 @@ const formatLog = (logs: string) => {
 };
 
 /**
- * This function takes a JSON string and returns an array of React elements that
+ * @description This function takes a JSON string and returns an array of React elements that
  * display the key and value of each property in the JSON string. The key is
  * displayed in a dark gray color, and the value is displayed in a light gray
  * color. The value is also formatted as a string, boolean, or number.
- *
  * @param {string} json - JSON formatted String.
  * @returns {React.ReactElement[]} - Formatted Console Text Element.
  * @example

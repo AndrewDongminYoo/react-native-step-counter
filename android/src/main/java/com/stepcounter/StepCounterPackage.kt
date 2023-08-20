@@ -5,6 +5,7 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
+import java.util.HashMap
 
 /**
  * This class is responsible for the creation of the ReactNative package.
@@ -48,10 +49,10 @@ class StepCounterPackage : TurboReactPackage() {
             moduleInfo[StepCounterModule.NAME] = ReactModuleInfo(
                 StepCounterModule.NAME,
                 StepCounterModule.NAME,
-                false,  // canOverrideExistingModule
-                false,  // needsEagerInit
-                true,  // hasConstants
-                false,  // isCxxModule
+                false, // canOverrideExistingModule
+                false, // needsEagerInit
+                true, // hasConstants
+                false, // isCxxModule
                 isTurboModule // isTurboModule
             )
             moduleInfo

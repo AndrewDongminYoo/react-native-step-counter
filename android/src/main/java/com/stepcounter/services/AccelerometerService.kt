@@ -39,7 +39,7 @@ import kotlin.math.min
  */
 class AccelerometerService(
     counterModule: StepCounterModule,
-    sensorManager: SensorManager,
+    sensorManager: SensorManager
 ) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "Accelerometer"
     override val sensorType = Sensor.TYPE_ACCELEROMETER
@@ -98,8 +98,8 @@ class AccelerometerService(
         // If the velocity estimate is greater than the threshold and the previous
         val isWalkingOrRunning: Boolean =
             velocityEstimate > STEP_THRESHOLD &&
-                    oldVelocityEstimate <= STEP_THRESHOLD &&
-                    timeNs - lastStepTimeNs > STEP_DELAY_NS
+                oldVelocityEstimate <= STEP_THRESHOLD &&
+                timeNs - lastStepTimeNs > STEP_DELAY_NS
         if (isWalkingOrRunning) {
             currentSteps = currentSteps.plus(1)
             Log.d(TAG_NAME, "STATUS: $currentSteps steps. TIMESTAMP: $timeNs")
@@ -114,14 +114,17 @@ class AccelerometerService(
          * The delay between steps in nanoseconds
          */
         private const val STEP_DELAY_NS = 250000000 // 250ms
+
         /**
          * The size of the acceleration sensor data ring
          */
         private const val ACCEL_RING_SIZE = 50
+
         /**
          * The size of the acceleration's velocity ring
          */
         private const val VELOCITY_RING_SIZE = 10
+
         /**
          * The minimum acceleration that is considered a step
          */

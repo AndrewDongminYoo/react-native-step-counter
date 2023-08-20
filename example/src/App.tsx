@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Button, Platform, SafeAreaView, StyleSheet, View } from 'react-native';
 import {
   isSensorWorking,
@@ -8,7 +8,10 @@ import {
   stopStepCounterUpdate,
   type ParsedStepCountData,
 } from '@dongminyu/react-native-step-counter';
-import { getBodySensorPermission, getStepCounterPermission } from './permission';
+import {
+  getBodySensorPermission,
+  getStepCounterPermission,
+} from './permission';
 import CircularProgress from 'react-native-circular-progress-indicator';
 import LogCat from './LogCat';
 
@@ -31,7 +34,8 @@ const initState = {
 type AdditionalInfo = Partial<ParsedStepCountData>;
 
 /**
- * This module represents the root component of the app.
+ * @returns {React.ReactComponentElement} - Returns Application Component.
+ * @description This module represents the root component of the app.
  * 1. It imports the necessary components and libraries.
  * 2. It defines the initial state of the additionalInfo state.
  * 3. It defines the functions that will be used in the app.
@@ -39,17 +43,6 @@ type AdditionalInfo = Partial<ParsedStepCountData>;
  * 5. It uses the useEffect hook to run the isPedometerSupported function when the component mounts.
  * 6. It uses the useEffect hook to call the startStepCounter function when the component mounts.
  * 7. It returns the JSX code for the app.
- *
- * @module App
- * @requires react
- * @requires react-native
- * @requires react-native-permissions
- * @requires react-native-svg
- * @requires react-native-reanimated
- * @requires react-native-gesture-handler
- * @requires react-native-circular-progress-indicator
- * @returns {React.ReactComponentElement} - Returns Application Component.
- * @example
  */
 export default function App(): JSX.Element {
   const [loaded, setLoaded] = React.useState(false);
@@ -57,7 +50,8 @@ export default function App(): JSX.Element {
   const [granted, setGranted] = React.useState(false);
   const [sensorType, setSensorType] = React.useState<SensorName>('NONE');
   const [stepCount, setStepCount] = React.useState(0);
-  const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(initState);
+  const [additionalInfo, setAdditionalInfo] =
+    React.useState<AdditionalInfo>(initState);
 
   /**
    * Get user's motion permission and check pedometer is available.
@@ -156,7 +150,11 @@ export default function App(): JSX.Element {
             inActiveStrokeColor="#4c6394"
             inActiveStrokeOpacity={0.5}
             inActiveStrokeWidth={40}
-            subtitle={additionalInfo.calories === '0 kCal' ? '' : additionalInfo.calories}
+            subtitle={
+              additionalInfo.calories === '0 kCal'
+                ? ''
+                : additionalInfo.calories
+            }
             activeStrokeWidth={40}
             title="Step Count"
             titleColor="#555"

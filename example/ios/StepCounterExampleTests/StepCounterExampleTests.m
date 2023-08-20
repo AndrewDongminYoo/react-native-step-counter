@@ -18,7 +18,7 @@
   if (test(view)) {
     return YES;
   }
-  for (UIView *subview in view.subviews) {
+  for (UIView *subview in [view subviews]) {
     if ([self findSubviewInView:subview matching:test]) {
       return YES;
     }
@@ -28,7 +28,7 @@
 
 - (void)testRendersWelcomeScreen
 {
-  UIViewController *vc = RCTSharedApplication().delegate.window.rootViewController;
+  UIViewController *vc = [[[RCTSharedApplication() delegate] window] rootViewController];
   NSDate *date = [NSDate dateWithTimeIntervalSinceNow:TIMEOUT_SECONDS];
   BOOL foundElement = NO;
 
@@ -42,7 +42,7 @@
       });
 #endif
 
-  while (date.timeIntervalSinceNow > 0 && !foundElement && !redboxError) {
+  while ([date timeIntervalSinceNow] > 0 && !foundElement && !redboxError) {
     [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     [[NSRunLoop mainRunLoop] runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
 

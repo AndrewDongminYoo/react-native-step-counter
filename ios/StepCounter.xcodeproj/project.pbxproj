@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B2217B4329B5901C00F454BC /* SOMotionDetecter.m in Sources */ = {isa = PBXBuildFile; fileRef = B2217B3F29B5901C00F454BC /* SOMotionDetecter.m */; };
-		B2217B4A29B5AAFB00F454BC /* RNStepCounter.m in Sources */ = {isa = PBXBuildFile; fileRef = B2217B4929B5AAFB00F454BC /* RNStepCounter.m */; };
+		B2217B4A29B5AAFB00F454BC /* StepCounter.mm in Sources */ = {isa = PBXBuildFile; fileRef = B2217B4929B5AAFB00F454BC /* StepCounter.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,8 +27,8 @@
 		134814201AA4EA6300B7C361 /* libStepCounter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libStepCounter.a; path = libRNStepCounter.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2217B3F29B5901C00F454BC /* SOMotionDetecter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SOMotionDetecter.m; sourceTree = "<group>"; };
 		B2217B4029B5901C00F454BC /* SOMotionDetecter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SOMotionDetecter.h; sourceTree = "<group>"; };
-		B2217B4929B5AAFB00F454BC /* RNStepCounter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNStepCounter.m; sourceTree = "<group>"; };
-		B3E7B5881CC2AC0600A0062D /* RNStepCounter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNStepCounter.h; sourceTree = "<group>"; };
+		B2217B4929B5AAFB00F454BC /* StepCounter.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StepCounter.mm; sourceTree = "<group>"; };
+		B3E7B5881CC2AC0600A0062D /* StepCounter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StepCounter.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,8 +55,8 @@
 			children = (
 				B2217B4029B5901C00F454BC /* SOMotionDetecter.h */,
 				B2217B3F29B5901C00F454BC /* SOMotionDetecter.m */,
-				B3E7B5881CC2AC0600A0062D /* RNStepCounter.h */,
-				B2217B4929B5AAFB00F454BC /* RNStepCounter.m */,
+				B3E7B5881CC2AC0600A0062D /* StepCounter.h */,
+				B2217B4929B5AAFB00F454BC /* StepCounter.mm */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,9 +64,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		58B511DA1A9E6C8500147676 /* RNStepCounter */ = {
+		58B511DA1A9E6C8500147676 /* StepCounter */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "RNStepCounter" */;
+			buildConfigurationList = 58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "StepCounter" */;
 			buildPhases = (
 				58B511D71A9E6C8500147676 /* Sources */,
 				58B511D81A9E6C8500147676 /* Frameworks */,
@@ -76,7 +76,7 @@
 			);
 			dependencies = (
 			);
-			name = RNStepCounter;
+			name = StepCounter;
 			productName = RCTDataManager;
 			productReference = 134814201AA4EA6300B7C361 /* libStepCounter.a */;
 			productType = "com.apple.product-type.library.static";
@@ -95,7 +95,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "RNStepCounter" */;
+			buildConfigurationList = 58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "StepCounter" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -108,7 +108,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				58B511DA1A9E6C8500147676 /* RNStepCounter */,
+				58B511DA1A9E6C8500147676 /* StepCounter */,
 			);
 		};
 /* End PBXProject section */
@@ -118,7 +118,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2217B4A29B5AAFB00F454BC /* RNStepCounter.m in Sources */,
+				B2217B4A29B5AAFB00F454BC /* StepCounter.mm in Sources */,
 				B2217B4329B5901C00F454BC /* SOMotionDetecter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -169,7 +169,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -212,7 +212,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -230,7 +230,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = RNStepCounter;
+				PRODUCT_NAME = StepCounter;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -246,7 +246,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = RNStepCounter;
+				PRODUCT_NAME = StepCounter;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -254,7 +254,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "RNStepCounter" */ = {
+		58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "StepCounter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58B511ED1A9E6C8500147676 /* Debug */,
@@ -263,7 +263,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "RNStepCounter" */ = {
+		58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "StepCounter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58B511F01A9E6C8500147676 /* Debug */,

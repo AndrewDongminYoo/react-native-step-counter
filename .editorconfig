@@ -10,7 +10,6 @@ end_of_line = lf
 indent_size = 2
 indent_style = space
 insert_final_newline = true
-max_line_length = 120
 trim_trailing_whitespace = true
 
 [*.bat]
@@ -128,7 +127,6 @@ ij_wrap_on_typing = false
 indent_size = 4
 insert_final_newline = false
 tab_width = 4
-
 
 [*.properties]
 ij_properties_align_group_field_declarations = false

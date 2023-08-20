@@ -21,7 +21,9 @@ const options = {
     const deleteFileCount = deletedFiles.toLocaleString();
     const totalFileCount = totalFiles.toLocaleString();
     const percentComplete = (percent * 100).toFixed(1);
-    console.log(`${deleteFileCount}/${totalFileCount} files deleted (${percentComplete} %)`);
+    console.log(
+      `${deleteFileCount}/${totalFileCount} files deleted (${percentComplete} %)`
+    );
   },
 };
 
