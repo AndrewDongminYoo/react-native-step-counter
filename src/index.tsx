@@ -43,6 +43,13 @@ export interface ParsedStepCountData {
 // @ts-ignore
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
+/**
+ * The `StepCounterModule` constant is used to import the native module `NativeStepCounter` if
+ * TurboModules are enabled. If TurboModules are not enabled, it falls back to using the
+ * `NativeModules.StepCounter` module. This allows the code to work with both TurboModules and
+ * non-TurboModules environments.
+ * https://github.com/AndrewDongminYoo/react-native-step-counter/issues/29#issue-1857677086
+ */
 const StepCounterModule = isTurboModuleEnabled
   ? require('./NativeStepCounter').default
   : NativeModules.StepCounter;
