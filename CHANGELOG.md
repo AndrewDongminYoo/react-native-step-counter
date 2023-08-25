@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.0...v0.2.1) (2023-08-25)
+
+### Bug Fixes
+
+- 🚨 RNStepCounter -> StepCounter ([2441e3e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/2441e3e88853e647abcd8cb2d0c5759790fb4297))
+- 🚨 RNStepCounter -> StepCounter [#29](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/29) ([df1f904](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/df1f904e9a14c7d0698a22fa9269767936cc09ef))
+
 ## [0.2.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.16...v0.2.0) (2023-08-20)
 
 ### Features
