@@ -45,7 +45,7 @@ const isTurboModuleEnabled = global.__turboModuleProxy != null;
 
 const StepCounterModule = isTurboModuleEnabled
   ? require('./NativeStepCounter').default
-  : NativeModules.RNStepCounter;
+  : NativeModules.StepCounter;
 
 /**
  * A module that allows you to get the step count data.
