@@ -23,7 +23,7 @@ export type StepCountData = {
 };
 
 export const NAME = 'RNStepCounter';
-export const VERSION = '0.1.16';
+export const VERSION = '0.2.1';
 export const eventName = 'StepCounter.stepCounterUpdate';
 
 export interface Spec extends TurboModule {

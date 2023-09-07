@@ -64,7 +64,7 @@ const StepCounterModule = isTurboModuleEnabled
  * @example
  * import { RNStepCounter } from '@dongminyu/react-native-step-counter';
  */
-const RNStepCounter = (
+const StepCounter = (
   StepCounterModule
     ? StepCounterModule
     : new Proxy(
@@ -77,7 +77,7 @@ const RNStepCounter = (
       )
 ) as Spec;
 
-const StepEventEmitter = new NativeEventEmitter(RNStepCounter);
+const StepEventEmitter = new NativeEventEmitter(StepCounter);
 type StepCountUpdateCallback = (result: StepCountData) => void;
 export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
@@ -139,7 +139,7 @@ class UnavailabilityError extends Error {
  * granted - Whether user granted the permission.
  */
 export function isStepCountingSupported(): Promise<Record<string, boolean>> {
-  return RNStepCounter.isStepCountingSupported();
+  return StepCounter.isStepCountingSupported();
 }
 
 /**
@@ -164,11 +164,11 @@ export function startStepCounterUpdate(
   start: Date,
   callBack: StepCountUpdateCallback
 ): Subscription {
-  if (!RNStepCounter.startStepCounterUpdate) {
+  if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
   const from = start.getTime();
-  RNStepCounter.startStepCounterUpdate(from);
+  StepCounter.startStepCounterUpdate(from);
   return StepEventEmitter.addListener(eventName, callBack);
 }
 
@@ -181,8 +181,8 @@ export function startStepCounterUpdate(
  */
 export function stopStepCounterUpdate(): void {
   StepEventEmitter.removeAllListeners(eventName);
-  RNStepCounter.stopStepCounterUpdate();
+  StepCounter.stopStepCounterUpdate();
 }
 
 export { NAME, VERSION };
-export default RNStepCounter;
+export default StepCounter;

@@ -375,7 +375,7 @@ PODS:
   - React-jsinspector (0.72.4)
   - React-logger (0.72.4):
     - glog
-  - react-native-step-counter (0.1.16):
+  - react-native-step-counter (0.2.1):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - React-NativeModulesApple (0.72.4):
@@ -490,7 +490,7 @@ PODS:
     - React-perflogger (= 0.72.4)
   - RNGestureHandler (2.12.1):
     - React-Core
-  - RNPermissions (3.8.4):
+  - RNPermissions (3.9.0):
     - React-Core
   - RNReanimated (3.4.2):
     - DoubleConversion
@@ -521,7 +521,7 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (13.11.0):
+  - RNSVG (13.13.0):
     - React-Core
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
@@ -740,7 +740,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: c7f826e40fa9cab5d37cab6130b1af237332b594
   React-jsinspector: aaed4cf551c4a1c98092436518c2d267b13a673f
   React-logger: da1ebe05ae06eb6db4b162202faeafac4b435e77
-  react-native-step-counter: 377d1478bed2d3c500e8ecb03c77fd1c6ba7a2bc
+  react-native-step-counter: 7732086196052d11d5f1445f44b2c4e24d707809
   React-NativeModulesApple: edb5ace14f73f4969df6e7b1f3e41bef0012740f
   React-perflogger: 496a1a3dc6737f964107cb3ddae7f9e265ddda58
   React-RCTActionSheet: 02904b932b50e680f4e26e7a686b33ebf7ef3c00
@@ -759,9 +759,9 @@ SPEC CHECKSUMS:
   React-utils: b79f2411931f9d3ea5781404dcbb2fa8a837e13a
   ReactCommon: 4b2bdcb50a3543e1c2b2849ad44533686610826d
   RNGestureHandler: c0d04458598fcb26052494ae23dda8f8f5162b13
-  RNPermissions: 27fb2b8d7e7ae975b32e5d427ecfad9f647ed457
+  RNPermissions: 2e68b2e82a93ad09327dee8822846fead91ca3ad
   RNReanimated: 726395a2fa2f04cea340274ba57a4e659bc0d9c1
-  RNSVG: 03e4d258ca355d7836a0a5dd4d4dc63c1eb49cbb
+  RNSVG: ed492aaf3af9ca01bc945f7a149d76d62e73ec82
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 3efc43e0d48686ce2e8c60f99d4e6bd349aff981
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
