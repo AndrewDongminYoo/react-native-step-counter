@@ -80,6 +80,7 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
      * @see VERSION_CODES.KITKAT
      * @see WritableMap
      */
+    @ReactMethod
     override fun isStepCountingSupported(promise: Promise) {
         Log.d(TAG_NAME, "hardware_step_counter? $supported")
         Log.d(TAG_NAME, "step_counter granted? $stepsOK")
@@ -98,6 +99,7 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
      * Start the step counter sensor.
      * @param from the number of steps to start from
      */
+    @ReactMethod
     override fun startStepCounterUpdate(from: Double) {
         stepCounterListener = stepCounterListener ?: if (stepsOK) {
             StepCounterService(this, sensorManager)
@@ -112,6 +114,7 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
      * Stop the step counter sensor.
      * @return Nothing.
      */
+    @ReactMethod
     override fun stopStepCounterUpdate() {
         Log.d(TAG_NAME, "stopStepCounterUpdate")
         stepCounterListener!!.stopService()
@@ -121,6 +124,7 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
      * Keep: Required for RN built in Event Emitter Support.
      * @param eventName the name of the event. usually "stepCounterUpdate".
      */
+    @ReactMethod
     override fun addListener(eventName: String) {}
 
     /**
@@ -128,6 +132,7 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
      * @param count the number of listeners to remove.
      * not implemented.
      */
+    @ReactMethod
     override fun removeListeners(count: Double) {}
 
     /**
