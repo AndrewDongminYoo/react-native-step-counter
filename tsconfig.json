@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
+    "rootDir": ".",
     "paths": {
       "@dongminyu/react-native-step-counter": ["./src/index"]
     },
