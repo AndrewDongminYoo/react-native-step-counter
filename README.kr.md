@@ -2,28 +2,28 @@
 
 English-speaking developers, please return to the repository main page or click [the following link](README.md)
 
-사용자가 일정시간 걸은 걸음 수를 계산하기 위한 간단한 리액트 네이티브 모듈입니다. 이 패키지는 Android의 `StepCounter`(또는 가속도계 기반 자체 만보계 센서) 센서 `API`와 iOS의 `Core Motion` 프레임워크를 사용하여 스텝을 카운트합니다. 리액트 네이티브의 새로운 모듈 개발 아키텍처인 터보 모듈을 사용하여 제작되었습니다. 새로운 아키텍처와 레거시 아키텍처 둘다 호환되도록 만들었습니다. (터보 모듈과 패브릭 컴포넌트 모두 아직 실험 단계에 있기 때문에 보편적으로 사용되지는 않는 것 같습니다.)
+사용자가 일정시간 걸은 걸음 수를 계산하기 위한 간단한 리액트 네이티브 모듈입니다. 이 패키지는 Android의 `StepCounter`(또는 가속도계 기반 자체 만보계 센서) 센서 `API`와 iOS의 `Core Motion` 프레임워크를 사용하여 스텝을 카운트합니다. 리액트 네이티브의 새로운 모듈 개발 아키텍처인 터보 모듈을 사용하여 제작되었습니다. 새로운 아키텍처와 레거시 아키텍처 둘다 호환되도록 만들었습니다. (터보 모듈과 패브릭 컴포넌트 모두 아직 실험 단계에 있기 때문에 보편적으로 사용되지는 않는 것 같습니다.)
 
 ## 설치 방법
 
-```shell
+```shell
 # npm을 사용한다면, (기본 패키지 매니저입니다.)
-npm install @dongminyu/react-native-step-counter
+npm install react-native-step-counter
 ```
 
-```shell
+```shell
 # Yarn을 선호한다면, (병렬 설치를 지원해 빠른 속도를 제공하는 패키지 매니저입니다.)
-yarn add @dongminyu/react-native-step-counter
+yarn add react-native-step-counter
 ```
 
-```shell
+```shell
 # pnpm을 선호한다면, (글로벌 패키지와 하드링크로 빠른 속도를 제공하는 패키지 매니저입니다.)
-pnpm add @dongminyu/react-native-step-counter
+pnpm add react-native-step-counter
 ```
 
-리액트네이티브 0.60 버전 이후 설치된 네이티브 모듈은 오토 링크됩니다. 네이티브 모듈을 수동으로 연결할 필요가 없습니다.
+리액트네이티브 0.60 버전 이후 설치된 네이티브 모듈은 오토 링크됩니다. 네이티브 모듈을 수동으로 연결할 필요가 없습니다.
 
-👣 리액트 네이티브의 새로운 아키텍쳐를 사용하기 때문에 원하지 않는 경우 아래 가이드를 따라야 합니다. 이미 New Architecture를 활성화하고 사전설정을 마친 상태라면, [다음 단계](#android)로 넘어갑니다.
+👣 리액트 네이티브의 새로운 아키텍쳐를 사용하기 때문에 원하지 않는 경우 아래 가이드를 따라야 합니다. 이미 New Architecture를 활성화하고 사전설정을 마친 상태라면, [다음 단계](#android)로 넘어갑니다.
 
 ## 라이브러리를 의존성에 추가하기 전 사전세팅
 
@@ -31,8 +31,8 @@ pnpm add @dongminyu/react-native-step-counter
 
   1. React Native는 [`0.68.0`](https://reactnative.dev/blog/2022/03/30/version-068#opting-in-to-the-new-architecture) 버전 릴리스와 함께 새 아키텍처를 디폴트로 선언했습니다. 따라서 이 버전 이하의 리액트네이티브 라이브러리를 의존하고 있는 애플리케이션은 업데이트해야 합니다. 안드로이드는 0.71.0 이상으로 업데이트하는 것이 좋습니다.
   2. 대부분의 리액트 네이티브 문서와 마찬가지로 이 문서는 최신 리액트 네이티브 [릴리즈](https://github.com/facebook/react-native/releases/latest) 버전을 사용한다는 것을 전제로 작성되었습니다.
-  3. 버전 업그레이드에 어려움을 겪고 있다면 다음 페이지를 참고하시길 바랍니다. [새로운 버전으로 업그레이드](https://reactnative.dev/docs/upgrading).
-  4. 리액트 네이티브 코드젠(네이티브 코드 생성 변환 모듈)은 모호한 타입과 다이나믹한 타입을 지원해주지 않기 때문에, 모든 자바스크립트 브릿지 파일들은 [TypeScript](https://www.typescriptlang.org/) 또는 [Flow.js](https://flow.org/)로 작성되어야 합니다. (코드 제너레이터에 입력되지 않는 코드들은 타입 세이프하지 않아도 무관하지만, 최신의 리액트 네이티브 디폴트 랭귀지로 타입스크립트가 선택된 점을 고려하세요.)
+  3. 버전 업그레이드에 어려움을 겪고 있다면 다음 페이지를 참고하시길 바랍니다. [새로운 버전으로 업그레이드](https://reactnative.dev/docs/upgrading).
+  4. 리액트 네이티브 코드젠(네이티브 코드 생성 변환 모듈)은 모호한 타입과 다이나믹한 타입을 지원해주지 않기 때문에, 모든 자바스크립트 브릿지 파일들은 [TypeScript](https://www.typescriptlang.org/) 또는 [Flow.js](https://flow.org/)로 작성되어야 합니다. (코드 제너레이터에 입력되지 않는 코드들은 타입 세이프하지 않아도 무관하지만, 최신의 리액트 네이티브 디폴트 랭귀지로 타입스크립트가 선택된 점을 고려하세요.)
   5. 헤르메스 엔진과 플리퍼 디버깅 도구를 사용합니다.
      - [Hermes](https://reactnative.dev/docs/hermes)는 Android 및 iOS에서 React Native 앱을 실행하도록 최적화된 새로운 JavaScript 엔진입니다. 최신 리액트 네이티브 버전에서 기본적으로 활성화되어 있으며, 기존의 JSC를 사용하려면 명시적으로 비활성화 해야합니다. 적은 리소스와 빠른 속도 퍼포먼스는 일반적으로 헤르메스가 강하지만, 디버그 모드에서 JSC를 사용하는 것이 더 간편한 면도 있습니다.
      - [Flipper](https://fbflipper.com/)는 리액트 네이티브의 새로운 디버깅 및 프로파일링 도구입니다. 헤르메스 엔진을 사용하는 경우, Flipper를 사용하는 것이 디버깅에서 보다 쾌적한 개발 경험을 제공합니다.
@@ -69,7 +69,7 @@ pnpm add @dongminyu/react-native-step-counter
   ```
 
   _4_. ios 애플리케이션 폴더 내의 모든 Objective-C(.m) 파일의 이름을 Objective-C++(.mm)으로 변경합니다. (Objective-C++의 문법은 Objective-C의 확장입니다.)
-  _5_. ios 애플리케이션 폴더 내의 AppDelegate 파일(헤더파일/소스파일)들이 RCTAppDelegate 인터페이스를 구현하도록 변경합니다.
+  _5_. ios 애플리케이션 폴더 내의 AppDelegate 파일(헤더파일/소스파일)들이 RCTAppDelegate 인터페이스를 구현하도록 변경합니다.
 
   - [ios/StepCounterExample/AppDelegate.h](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h)
 
@@ -163,7 +163,7 @@ pnpm add @dongminyu/react-native-step-counter
 
 - `isStepCountingSupported()`: Promise<Record<string, boolean>>: 장치에 기능 관련 스텝 카운터 또는 가속도계가 있는지 확인하는 메서드입니다.
 
-  - 응답 객체의 키 `granted`의 Boolean 값은 앱 사용자가 이 기능 사용 권한을 부여했는지 권한 허용 여부이며, `supported`는 장치가 이 기능을 지원하는지 여부입니다. 장치에 스텝 카운터 센서가 존재하는지만을 체크하기 때문에 실제로 사용가능한 상태인지는 알 수 없습니다.
+  - 응답 객체의 키 `granted`의 Boolean 값은 앱 사용자가 이 기능 사용 권한을 부여했는지 권한 허용 여부이며, `supported`는 장치가 이 기능을 지원하는지 여부입니다. 장치에 스텝 카운터 센서가 존재하는지만을 체크하기 때문에 실제로 사용가능한 상태인지는 알 수 없습니다.
   - 이 응답의 참/거짓 값과 실제 센서의 작동 여부는 일치하지 않을 수 있습니다. 만보계 센서를 찾지 못하거나 사용자가 접근을 거부한 경우에도, 모듈은 동작센서 권한 허용과 관계없이 원시 가속도계에 알고리즘을 적용하여 보행 이벤트 데이터를 추출하는 것이 가능하지만 권장되지 않습니다. 사용자가 읽기 권한을 거부할 경우 센서 이벤트 추적을 중지하는 코드를 반드시 작성해야 합니다.
 
 - `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: EmitterSubscription:
@@ -196,7 +196,7 @@ pnpm add @dongminyu/react-native-step-counter
 
 ## Usage
 
-리액트 네이티브 앱에서 이 라이브러리를 실제로 사용하려면 다음 단계를 따르세요.:
+리액트 네이티브 앱에서 이 라이브러리를 실제로 사용하려면 다음 단계를 따르세요.:
 
 라이브러리를 리액트 네이티브 앱으로 임포트합니다.
 
@@ -207,7 +207,7 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from '@dongminyu/react-native-step-counter';
+} from 'react-native-step-counter';
 ```
 
 `isStepCountingSupported` 메소드를 사용하여 장치에 스텝 카운터 또는 가속도계 센서가 있는지 확인합니다.
@@ -238,9 +238,9 @@ async function startStepCounter() {
 }
 ```
 
-다음은 `NativeStepCounter`를 사용하는 리액트 네이티브 애플리케이션의 예시입니다.
+다음은 `NativeStepCounter`를 사용하는 리액트 네이티브 애플리케이션의 예시입니다.
 
-예제 앱 코드 보기: [링크](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/src/App.tsx)
+예제 앱 코드 보기: [링크](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/src/App.tsx)
 
 ## Change Log
 
