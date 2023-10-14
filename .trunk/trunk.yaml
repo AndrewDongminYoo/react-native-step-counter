@@ -39,6 +39,14 @@ lint:
         - '**/package-lock.json'
         - '**/yarn.lock'
         - '**/vendor/**'
+    - linters:
+        - checkov
+        - osv-scanner
+        - trivy
+        - trufflehog
+      paths:
+        - yarn.lock
+        - '**/releases/yarn-3.6.1.cjs'
 runtimes:
   enabled:
     - python@3.10.8
