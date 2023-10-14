@@ -1,15 +1,17 @@
 {
-  "name": "step-counter-example",
+  "name": "react-native-step-counter-example",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "run-android": "react-native run-android",
-    "run-ios": "react-native run-ios",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
     "start": "react-native start --reset-cache",
     "clear": "react-native clean --include android,metro,watchman,yarn",
     "doctor": "react-native doctor --fix; react-native info",
     "prepods": "react-native setup-ios-permissions",
-    "pods": "(cd ios && pod install --no-repo-update || pod update hermes-engine --no-repo-update)",
+    "pods": "yarn pod-install",
+    "build:android": "(cd android && ./gradlew assembleDebug --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a)",
+    "build:ios": "(cd ios && xcodebuild -workspace StepCounterExample.xcworkspace -scheme StepCounterExample -configuration Debug -sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO)",
     "postinstall": "yarn rnx-align-deps --write",
     "watch": "tsc --noEmit --watch"
   },
@@ -24,17 +26,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.23.2",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0-0",
-    "@babel/plugin-proposal-optional-chaining": "^7.0.0-0",
-    "@babel/plugin-transform-arrow-functions": "^7.0.0-0",
-    "@babel/plugin-transform-shorthand-properties": "^7.0.0-0",
-    "@babel/plugin-transform-template-literals": "^7.0.0-0",
     "@babel/preset-env": "^7.23.2",
     "@babel/runtime": "^7.23.2",
     "@react-native/metro-config": "^0.72.0",
     "@rnx-kit/align-deps": "^2.2.5",
     "babel-plugin-module-resolver": "^5.0.0",
-    "metro-react-native-babel-preset": "^0.76.5"
+    "metro-react-native-babel-preset": "^0.76.5",
+    "pod-install": "^0.1.0"
   },
   "engines": {
     "node": ">=16"
