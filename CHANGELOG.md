@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.2](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.1...v0.2.2) (2023-10-14)
+
+### Bug Fixes
+
+- 🚨 RNStepCounter -> StepCounter [#29](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/29) ([279c1f5](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/279c1f52e662aeed58b9852349e60251842e7c23))
+- **android:** 🔥 remove unnecessary Gradle scripts ([06e6dc9](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/06e6dc96ae19427c5f8cd56b6f7e62a3fe6f5c73))
+- **both:** 🔥 remove related to Concurrent React ([f7abb92](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f7abb9241a40afc69456ecbba77b020dd73209fc))
+- **ios:** 🔥 remove dev-staged StepCounterExample ([5ae2eec](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/5ae2eec783e4fc2f4bfd50f4b5518e37a39e7c90))
+- remove required toolchain java 8 ([a24c40a](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a24c40a8306763f482611ca377784aefd5d53732))
+- step counter module backward compatibility ([e114df6](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/e114df601056bf247d661127b67f5bea9276b09b))
+
+### Performance Improvements
+
+- **deps:** ⬆️ updated all dependencies ([23c6f23](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/23c6f230a7363057cafb4f8045a45608f86e9894))
+
+### Documentation
+
+- **doc:** 📝 changed contribute, license details ([7fbf7b7](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/7fbf7b712f9e1a2df8c7e9ed1b14af520122779c))
+
 ## [0.2.1](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.0...v0.2.1) (2023-08-25)
 
 ### Bug Fixes
