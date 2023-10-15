@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.2...v0.2.3) (2023-10-15)
+
+### Chore Changes
+
+- Add Example App Link and Notices (walking_tracker)
+
 ## [0.2.2](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.1...v0.2.2) (2023-10-14)
 
 ### Bug Fixes

@@ -62,7 +62,7 @@ const StepCounterModule = isTurboModuleEnabled
  * counterType - The type of counter used to count the steps.
  * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
  * @example
- * import { RNStepCounter } from '@dongminyu/react-native-step-counter';
+ * import { StepCounter } from '@dongminyu/react-native-step-counter';
  */
 const StepCounter = (
   StepCounterModule
@@ -114,7 +114,7 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
  * @param {string} propertyName The name of the property.
  * @returns {Error} The error.
  * @example
- *  if (!RNStepCounter.startStepCounterUpdate) {
+ *  if (!StepCounter.startStepCounterUpdate) {
  *     throw new UnavailabilityError(NativeModuleName, eventName);
  *  }
  */

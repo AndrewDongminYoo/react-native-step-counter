@@ -32,7 +32,7 @@
       </ul>
       <h3>Global</h3>
       <ul>
-        <li><a href="global.html#RNStepCounter">RNStepCounter</a></li>
+        <li><a href="global.html#StepCounter">StepCounter</a></li>
         <li>
           <a href="global.html#isStepCountingSupported"
             >isStepCountingSupported</a
@@ -81,7 +81,7 @@ const LINKING_ERROR = "The package '@dongminyu/react-native-step-counter' doesn'
  */
 // @ts-ignore
 const isTurboModuleEnabled = global.__turboModuleProxy != null;
-const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.RNStepCounter;
+const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').default : NativeModules.StepCounter;
 
 /**
  * A module that allows you to get the step count data.
@@ -92,14 +92,14 @@ const StepCounterModule = isTurboModuleEnabled ? require('./NativeStepCounter').
  * @property {string} counterType - The type of counter used to count the steps.
  * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
  * @example
- * import { RNStepCounter } from '@dongminyu/react-native-step-counter';
+ * import { StepCounter } from '@dongminyu/react-native-step-counter';
  */
-const RNStepCounter = StepCounterModule ? StepCounterModule : new Proxy({}, {
+const StepCounter = StepCounterModule ? StepCounterModule : new Proxy({}, {
   get() {
     throw new Error(LINKING_ERROR);
   }
 });
-const StepEventEmitter = new NativeEventEmitter(RNStepCounter);
+const StepEventEmitter = new NativeEventEmitter(StepCounter);
 export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
 /**
@@ -141,7 +141,7 @@ export function parseStepData(data) {
  * @param {string} propertyName The name of the property.
  * @returns {Error} The error.
  * @example
- *  if (!RNStepCounter.startStepCounterUpdate) {
+ *  if (!StepCounter.startStepCounterUpdate) {
  *     throw new UnavailabilityError(NativeModuleName, eventName);
  *  }
  */
@@ -163,7 +163,7 @@ class UnavailabilityError extends Error {
  * @property {boolean} granted - Whether user granted the permission.
  */
 export function isStepCountingSupported() {
-  return RNStepCounter.isStepCountingSupported();
+  return StepCounter.isStepCountingSupported();
 }
 
 /**
@@ -186,11 +186,11 @@ export function isStepCountingSupported() {
  * })
  */
 export function startStepCounterUpdate(start, callBack) {
-  if (!RNStepCounter.startStepCounterUpdate) {
+  if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
   const from = start.getTime();
-  RNStepCounter.startStepCounterUpdate(from);
+  StepCounter.startStepCounterUpdate(from);
   return StepEventEmitter.addListener(eventName, callBack);
 }
 
@@ -204,10 +204,10 @@ export function startStepCounterUpdate(start, callBack) {
  */
 export function stopStepCounterUpdate() {
   StepEventEmitter.removeAllListeners(eventName);
-  RNStepCounter.stopStepCounterUpdate();
+  StepCounter.stopStepCounterUpdate();
 }
 export { NAME, VERSION };
-export default RNStepCounter;
+export default StepCounter;
 //# sourceMappingURL=index.js.map</code></pre>
         </article>
       </section>

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import type { EmitterSubscription } from 'react-native';
 import { NativeEventEmitter, NativeModules } from 'react-native';
 
-const eventEmitter = new NativeEventEmitter(NativeModules.RNStepCounter);
+const eventEmitter = new NativeEventEmitter(NativeModules.StepCounter);
 
 /**
  * @description A component that displays the logs from the native module.

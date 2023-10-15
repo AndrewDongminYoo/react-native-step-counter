@@ -22,8 +22,8 @@ export type StepCountData = {
   floorsDescended?: number; // number of floors descended (iOS only)
 };
 
-export const NAME = 'RNStepCounter';
-export const VERSION = '0.2.1';
+export const NAME = 'StepCounter';
+export const VERSION = '0.2.3';
 export const eventName = 'StepCounter.stepCounterUpdate';
 
 export interface Spec extends TurboModule {
