@@ -137,7 +137,7 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
 
     /**
      * StepCounterPackage requires this property for the module.
-     * @return the name of the module. usually "RNStepCounter".
+     * @return the name of the module. usually "StepCounter".
      */
     override fun getName(): String = NAME
 

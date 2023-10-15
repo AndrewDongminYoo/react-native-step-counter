@@ -27,6 +27,12 @@ Native modules will automatically connect after React Native 0.60 version. So yo
 
 👣 if you are using the legacy architecture, you need to follow the guide below. otherwise, you can [skip](#android) next step.
 
+## IF YOU WANT SEE A DEMO IN STANDALONE REACT-NATIVE APPLICATION, SEE [WALKING_TRACKER EXAMPLE](https://github.com/AndrewDongminYoo/walking_tracker) REPO
+
+Thank you for your interest in my first NPM open source package! I've received a lot of issue reports on various issues, especially the react-native's `NEW ARCHITECTURE` backwards compatibility, and I've more or less finalized those issues by fixing the code structure across the board. We had generated an example folder from [create-react-native-library](https://github.com/callstack/react-native-builder-bob)'s template and used it for this project, but due to the structure of that template, we found that the example folder contained a lot of code that was not suitable for reference in a working app, as it was part of the overall development process rather than a standalone application. For this reason, I'm going to independently manage the example application, which we had been developing informally as a sub-repository, as a repository named [walking_tracker](https://github.com/AndrewDongminYoo/walking_tracker). I'd really appreciate it if you could take this into consideration.
+
+---
+
 ## Setup the New Architecture
 
 - Applying a new architecture to React Native applications (Common)

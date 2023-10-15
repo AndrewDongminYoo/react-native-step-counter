@@ -25,6 +25,12 @@ pnpm add react-native-step-counter
 
 👣 리액트 네이티브의 새로운 아키텍쳐를 사용하기 때문에 원하지 않는 경우 아래 가이드를 따라야 합니다. 이미 New Architecture를 활성화하고 사전설정을 마친 상태라면, [다음 단계](#android)로 넘어갑니다.
 
+## 독립 앱에서 사용할 수 있는 리얼월드 예제 앱을 원하시는 분들은 [walking_tracker](https://github.com/AndrewDongminYoo/walking_tracker) 참고
+
+저의 첫 NPM 오픈소스 패키지에 많은 관심 가져주셔서 감사합니다! 배포 이후 사용자 분들로부터 특히 리액트 네이티브 신규 아키텍쳐 하위호환에 관한 이슈 제보가 많았습니다. 전반적으로 코드 구조를 고치면서 해당 이슈를 어느 정도 마무리했습니다. [create-react-native-library](https://github.com/callstack/react-native-builder-bob)의 템플릿으로부터 생성되는 example 폴더에 예제 앱을 작성했고 저도 개발 중에 사용해왔지만, 해당 템플릿의 구조 상 example 폴더가 하나의 standalone 애플리케이션보다는 전체 개발 프로세스의 한 부분을 맡고 있는 관계로, 실제 사용하는 앱에서 참고하기에는 부적합한 코드들이 다수 포함되어 있는 점을 발견했습니다. 이 때문에 비공식적으로 서브 리포지토리로 개발 중이던 example 애플리케이션을 [walking_tracker](https://github.com/AndrewDongminYoo/walking_tracker)라는 이름의 리포지토리로 독립 관리하려고 합니다. 이 점을 꼭 참고해 주시면 감사하겠습니다.
+
+---
+
 ## 라이브러리를 의존성에 추가하기 전 사전세팅
 
 - 리액트 네이티브 애플리케이션 공통 변경사항 셋업
