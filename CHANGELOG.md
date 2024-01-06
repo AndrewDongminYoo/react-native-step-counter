@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.2...v0.2.4) (2024-01-06)
+
+### Performance Improvements
+
+- ⬆️ upgrade cocoapods version ([5fd2625](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/5fd26254265f04d3b647f411a4cf56c51b9799e9))
+- upgrade npm dependencies ([17de3ea](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/17de3ea54a64c9e23a1fbc3e2fbba4f40fb6c892))
+
 ## [0.2.3](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.2...v0.2.3) (2023-10-15)
 
 ### Chore Changes
