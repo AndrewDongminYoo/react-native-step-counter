@@ -37,7 +37,7 @@ class StepCounterService(
 ) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "Step Counter"
     override val sensorType = Sensor.TYPE_STEP_COUNTER
-    override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
+    override val detectedSensor: Sensor? = sensorManager?.getDefaultSensor(sensorType)
     private var previousSteps: Double = 0.0
         set(value) {
             if (field < value) {

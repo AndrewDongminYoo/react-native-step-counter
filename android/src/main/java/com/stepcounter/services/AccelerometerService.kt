@@ -43,7 +43,7 @@ class AccelerometerService(
 ) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "Accelerometer"
     override val sensorType = Sensor.TYPE_ACCELEROMETER
-    override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
+    override val detectedSensor: Sensor? = sensorManager?.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
