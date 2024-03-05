@@ -145,10 +145,6 @@
       ]
     }
   },
-  "peerDependencies": {
-    "react": "18.2.0",
-    "react-native": "^0.71.0 || ^0.72.0"
-  },
   "dependencies": {
     "@types/react-native": "0.73.0"
   }
