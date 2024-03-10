@@ -3,7 +3,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    '@react-native-community',
+    '@react-native',
     'plugin:jsdoc/recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
