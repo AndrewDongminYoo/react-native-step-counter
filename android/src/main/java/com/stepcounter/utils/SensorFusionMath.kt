@@ -39,7 +39,10 @@ object SensorFusionMath {
      * @param vectorB The second array.
      * @see <a href="https://en.wikipedia.org/wiki/Cross_product">Cross product</a>
      */
-    fun cross(vectorA: FloatArray, vectorB: FloatArray): FloatArray {
+    fun cross(
+        vectorA: FloatArray,
+        vectorB: FloatArray
+    ): FloatArray {
         val outVector = FloatArray(3)
         outVector[0] = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
         outVector[1] = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
@@ -74,7 +77,10 @@ object SensorFusionMath {
      * @returns The dot product(single number) of the two sequences of numbers.
      * @see <a href="https://en.wikipedia.org/wiki/Dot_product">Dot product</a>
      */
-    fun dot(a: FloatArray, b: FloatArray): Float {
+    fun dot(
+        a: FloatArray,
+        b: FloatArray
+    ): Float {
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
     }
 

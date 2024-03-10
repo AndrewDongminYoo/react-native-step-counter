@@ -26,7 +26,10 @@ class StepCounterPackage : TurboReactPackage() {
      * @see StepCounterModule
      * @see StepCounterModule.NAME
      */
-    override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
+    override fun getModule(
+        name: String,
+        reactContext: ReactApplicationContext
+    ): NativeModule? {
         return if (name == StepCounterModule.NAME) StepCounterModule(reactContext) else null
     }
 
@@ -46,15 +49,16 @@ class StepCounterPackage : TurboReactPackage() {
         return ReactModuleInfoProvider {
             val moduleInfo: MutableMap<String, ReactModuleInfo> = HashMap()
             val isTurboModule: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-            moduleInfo[StepCounterModule.NAME] = ReactModuleInfo(
-                StepCounterModule.NAME,
-                StepCounterModule.NAME,
-                false, // canOverrideExistingModule
-                false, // needsEagerInit
-                true, // hasConstants
-                false, // isCxxModule
-                isTurboModule // isTurboModule
-            )
+            moduleInfo[StepCounterModule.NAME] =
+                ReactModuleInfo(
+                    StepCounterModule.NAME,
+                    StepCounterModule.NAME,
+                    false, // canOverrideExistingModule
+                    false, // needsEagerInit
+                    true, // hasConstants
+                    false, // isCxxModule
+                    isTurboModule // isTurboModule
+                )
             moduleInfo
         }
     }

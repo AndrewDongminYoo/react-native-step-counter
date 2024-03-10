@@ -43,7 +43,7 @@ class AccelerometerService(
 ) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "Accelerometer"
     override val sensorType = Sensor.TYPE_ACCELEROMETER
-    override val detectedSensor: Sensor = sensorManager.getDefaultSensor(sensorType)
+    override val detectedSensor: Sensor? = sensorManager?.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
@@ -81,11 +81,12 @@ class AccelerometerService(
         accelRingY[accelRingCounter % ACCEL_RING_SIZE] = eventData[1]
         accelRingZ[accelRingCounter % ACCEL_RING_SIZE] = eventData[2]
         // Next we'll calculate the average of the last 50 vectors in the ring
-        val gravity: FloatArray = floatArrayOf(
-            sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE),
-            sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE),
-            sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
-        )
+        val gravity: FloatArray =
+            floatArrayOf(
+                sum(accelRingX) / min(accelRingCounter, ACCEL_RING_SIZE),
+                sum(accelRingY) / min(accelRingCounter, ACCEL_RING_SIZE),
+                sum(accelRingZ) / min(accelRingCounter, ACCEL_RING_SIZE)
+            )
         // Next step is to figure out the component of the current acceleration
         // in the direction of world_z and subtract gravity's contribution
         val currentZ: Float = dot(normalize(gravity), eventData) - norm(gravity)

@@ -24,7 +24,7 @@ import com.stepcounter.StepCounterModule
  */
 abstract class SensorListenService(
     private val counterModule: StepCounterModule,
-    private val sensorManager: SensorManager
+    private val sensorManager: android.hardware.SensorManager
 ) : SensorEventListener, LifecycleEventListener {
     /**
      * the accelerometer sensor type
@@ -62,11 +62,12 @@ abstract class SensorListenService(
      * </pre>
      */
     private val samplingPeriodUs
-        get() = when (sensorType) {
-            Sensor.TYPE_ACCELEROMETER -> SensorManager.SENSOR_DELAY_GAME
-            Sensor.TYPE_STEP_COUNTER -> SensorManager.SENSOR_DELAY_NORMAL
-            else -> SensorManager.SENSOR_DELAY_UI
-        }
+        get() =
+            when (sensorType) {
+                Sensor.TYPE_ACCELEROMETER -> SensorManager.SENSOR_DELAY_GAME
+                Sensor.TYPE_STEP_COUNTER -> SensorManager.SENSOR_DELAY_NORMAL
+                else -> SensorManager.SENSOR_DELAY_UI
+            }
 
     /**
      * @return if the [sensor][detectedSensor] is
@@ -84,7 +85,7 @@ abstract class SensorListenService(
      * @see Sensor.TYPE_ACCELEROMETER
      * @see Sensor.TYPE_STEP_COUNTER
      */
-    abstract val detectedSensor: Sensor
+    abstract val detectedSensor: Sensor?
 
     /**
      * the current steps data of the user
@@ -97,26 +98,28 @@ abstract class SensorListenService(
      * @see Arguments.createMap
      */
     val stepsParamsMap: WritableMap
-        get() = Arguments.createMap().apply {
-            putNumber("steps", currentSteps)
-            putNumber("distance", distance)
-            putNumber("startDate", startDate)
-            putNumber("endDate", endDate)
-            putString("counterType", sensorTypeString)
-            putNumber("calories", calories)
-        }
+        get() =
+            Arguments.createMap().apply {
+                putNumber("steps", currentSteps)
+                putNumber("distance", distance)
+                putNumber("startDate", startDate)
+                putNumber("endDate", endDate)
+                putString("counterType", sensorTypeString)
+                putNumber("calories", calories)
+            }
 
     val stepsSensorInfo: WritableMap
-        get() = Arguments.createMap().apply {
-            putNumber("minDelay", detectedSensor.minDelay)
-            putNumber("maxDelay", detectedSensor.maxDelay)
-            putString("name", detectedSensor.name)
-            putString("vendor", detectedSensor.vendor)
-            putNumber("power", detectedSensor.power)
-            putNumber("resolution", detectedSensor.resolution)
-            putBoolean("wakeUpSensor", detectedSensor.isWakeUpSensor)
-            putBoolean("additionalInfoSupported", detectedSensor.isAdditionalInfoSupported)
-        }
+        get() =
+            Arguments.createMap().apply {
+                putNumber("minDelay", detectedSensor!!.minDelay)
+                putNumber("maxDelay", detectedSensor!!.maxDelay)
+                putString("name", detectedSensor!!.name)
+                putString("vendor", detectedSensor!!.vendor)
+                putNumber("power", detectedSensor!!.power)
+                putNumber("resolution", detectedSensor!!.resolution)
+                putBoolean("wakeUpSensor", detectedSensor!!.isWakeUpSensor)
+                putBoolean("additionalInfoSupported", detectedSensor!!.isAdditionalInfoSupported)
+            }
 
     /**
      * Number of in-database-saved calories.
@@ -151,13 +154,14 @@ abstract class SensorListenService(
         get() = System.currentTimeMillis()
 
     private val sensorDelay: Int
-        get() = when (samplingPeriodUs) {
-            SensorManager.SENSOR_DELAY_FASTEST -> 0
-            SensorManager.SENSOR_DELAY_GAME -> 20000
-            SensorManager.SENSOR_DELAY_UI -> 66667
-            SensorManager.SENSOR_DELAY_NORMAL -> 200000
-            else -> samplingPeriodUs
-        }
+        get() =
+            when (samplingPeriodUs) {
+                SensorManager.SENSOR_DELAY_FASTEST -> 0
+                SensorManager.SENSOR_DELAY_GAME -> 20000
+                SensorManager.SENSOR_DELAY_UI -> 66667
+                SensorManager.SENSOR_DELAY_NORMAL -> 200000
+                else -> samplingPeriodUs
+            }
 
     /**
      * this class is not implemented Service class now, but made it work so
@@ -211,7 +215,7 @@ abstract class SensorListenService(
         if (event?.sensor == null ||
             event.sensor != detectedSensor ||
             event.sensor.type != sensorType ||
-            event.sensor.type != detectedSensor.type
+            detectedSensor?.type != event.sensor.type
         ) {
             return
         }
@@ -240,7 +244,10 @@ abstract class SensorListenService(
      * @param accuracy The new accuracy of this sensor, one of
      * `SensorManager.SENSOR_STATUS_*`
      */
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+    override fun onAccuracyChanged(
+        sensor: Sensor?,
+        accuracy: Int
+    ) {
         Log.d(TAG_NAME, "onAccuracyChanged.accuracy $accuracy")
         Log.d(TAG_NAME, "onAccuracyChanged.sensor: $sensor")
     }
@@ -276,7 +283,10 @@ abstract class SensorListenService(
     }
 }
 
-private fun WritableMap.putNumber(key: String, number: Number) {
+private fun WritableMap.putNumber(
+    key: String,
+    number: Number
+) {
     when (number) {
         is Double -> putDouble(key, number)
         is Int -> putInt(key, number)
