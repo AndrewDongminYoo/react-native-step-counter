@@ -5,7 +5,7 @@ import { eventName, VERSION, NAME } from './NativeStepCounter';
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
-  "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
+  "The package '@uguratakan/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
   Platform.select({
     ios: '- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n',
     android:
@@ -18,16 +18,13 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n' +
   'If none of these fix the issue, please open an issue on the Github repository: ' +
-  'https://github.com/AndrewDongminYoo/react-native-step-counter`';
+  'https://github.com/Ugur-Atakan/react-native-step-counter-fixed`';
 
 export interface ParsedStepCountData {
-  dailyGoal: string;
   steps: number;
-  stepsString: string;
-  calories: string;
-  startDate: string;
-  endDate: string;
-  distance: string;
+  startDate: Date;
+  endDate: Date;
+  distance: number;
 }
 
 /**
@@ -48,7 +45,7 @@ const isTurboModuleEnabled = global.__turboModuleProxy != null;
  * TurboModules are enabled. If TurboModules are not enabled, it falls back to using the
  * `NativeModules.StepCounter` module. This allows the code to work with both TurboModules and
  * non-TurboModules environments.
- * https://github.com/AndrewDongminYoo/react-native-step-counter/issues/29#issue-1857677086
+ * https://github.com/Ugur-Atakan/react-native-step-counter-fixed/issues/29#issue-1857677086
  */
 const StepCounterModule = isTurboModuleEnabled
   ? require('./NativeStepCounter').default
@@ -62,7 +59,7 @@ const StepCounterModule = isTurboModuleEnabled
  * counterType - The type of counter used to count the steps.
  * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
  * @example
- * import { StepCounter } from '@dongminyu/react-native-step-counter';
+ * import { StepCounter } from '@uguratakan/react-native-step-counter';
  */
 const StepCounter = (
   StepCounterModule
@@ -89,19 +86,12 @@ export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
  */
 export function parseStepData(data: StepCountData): ParsedStepCountData {
   const { steps, startDate, endDate, distance } = data;
-  const dailyGoal = 10000;
-  const stepsString = steps + ' steps';
-  const kCal = (steps * 0.045).toFixed(2) + 'kCal';
-  const endDateTime = new Date(endDate).toLocaleTimeString('en-gb');
-  const startDateTime = new Date(startDate).toLocaleTimeString('en-gb');
-  const roundedDistance = distance.toFixed(1) + 'm';
-  const stepGoalStatus =
-    steps >= dailyGoal ? 'Goal Reached' : `${steps}/${dailyGoal} steps`;
+  const endDateTime = new Date(endDate);
+  const startDateTime = new Date(startDate);
+  const roundedDistance = Number(distance.toFixed(1));
+
   return {
-    dailyGoal: stepGoalStatus,
     steps,
-    stepsString,
-    calories: kCal,
     startDate: startDateTime,
     endDate: endDateTime,
     distance: roundedDistance,
@@ -167,6 +157,10 @@ export function startStepCounterUpdate(
   if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
+
+  /*
+  @from not implemented yet 
+  */
   const from = start.getTime();
   StepCounter.startStepCounterUpdate(from);
   return StepEventEmitter.addListener(eventName, callBack);

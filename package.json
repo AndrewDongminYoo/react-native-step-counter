@@ -1,7 +1,7 @@
 {
-  "name": "@dongminyu/react-native-step-counter",
+  "name": "@uguratakan/react-native-step-counter",
   "displayName": "react-native-step-counter",
-  "version": "0.2.4",
+  "version": "0.3.1",
   "summary": "It is a multi-platform library that combines CoreMotionSensor from iOS with SensorEventListener from Android.",
   "description": "This library provides an interface for tracking the number of steps taken by the user in a React Native app.",
   "main": "lib/commonjs/index.js",
@@ -65,11 +65,11 @@
     "step-detection-api",
     "step-detection"
   ],
-  "repository": "https://github.com/AndrewDongminYoo/react-native-step-counter",
+  "repository": "https://github.com/Ugur-Atakan/react-native-step-counter-fixed",
   "author": "Dongmin,Yoo <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/AndrewDongminYoo/react-native-step-counter/issues"
+    "url": "https://github.com/Ugur-Atakan/react-native-step-counter-fixed/issues"
   },
   "homepage": "https://andrewdongminyoo.github.io/react-native-step-counter",
   "publishConfig": {

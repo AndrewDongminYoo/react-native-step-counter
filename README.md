@@ -81,7 +81,7 @@ Thank you for your interest in my first NPM open source package! I've received a
   _4_. Rename all Objective-C(.m) files to Objective-C++ (.mm)
   _5_. Make your AppDelegate conform to RCTAppDelegate
 
-  - [ios/StepCounterExample/AppDelegate.h](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h)
+  - [ios/StepCounterExample/AppDelegate.h](https://github.com/Ugur-Atakan/react-native-step-counter-fixed/blob/main/example/ios/StepCounterExample/AppDelegate.h)
 
     ```diff
     - #import <React/RCTBridgeDelegate.h>
@@ -95,7 +95,7 @@ Thank you for your interest in my first NPM open source package! I've received a
     @end
     ```
 
-  - [ios/StepCounterExample/AppDelegate.mm](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.mm)
+  - [ios/StepCounterExample/AppDelegate.mm](https://github.com/Ugur-Atakan/react-native-step-counter-fixed/blob/main/example/ios/StepCounterExample/AppDelegate.mm)
 
     ```objective-c++
     #import "AppDelegate.h"
@@ -248,7 +248,7 @@ async function startStepCounter() {
 
 Here's an example of a complete React component that uses the `NativeStepCounter`.
 
-Link to Example Application: [here](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/src/App.tsx)
+Link to Example Application: [here](https://github.com/Ugur-Atakan/react-native-step-counter-fixed/blob/main/example/src/App.tsx)
 
 ## Change Log
 

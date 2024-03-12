@@ -7,7 +7,7 @@ import {
   startStepCounterUpdate,
   stopStepCounterUpdate,
   type ParsedStepCountData,
-} from '@dongminyu/react-native-step-counter';
+} from '@uguratakan/react-native-step-counter';
 import {
   getBodySensorPermission,
   getStepCounterPermission,
@@ -18,8 +18,8 @@ import LogCat from './LogCat';
 type SensorType<T = typeof Platform.OS> = T extends 'ios'
   ? 'CMPedometer'
   : T extends 'android'
-  ? 'Step Counter' | 'Accelerometer'
-  : 'NONE';
+    ? 'Step Counter' | 'Accelerometer'
+    : 'NONE';
 
 type SensorName = SensorType<Platform['OS']>;
 

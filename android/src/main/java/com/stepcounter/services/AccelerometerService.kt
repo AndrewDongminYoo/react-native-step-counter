@@ -113,22 +113,22 @@ class AccelerometerService(
         /**
          * The delay between steps in nanoseconds
          */
-        private const val STEP_DELAY_NS = 250000000 // 250ms
+        private const val STEP_DELAY_NS = 300000000 // 300ms
 
         /**
          * The size of the acceleration sensor data ring
          */
-        private const val ACCEL_RING_SIZE = 50
+        private const val ACCEL_RING_SIZE = 60
 
         /**
          * The size of the acceleration's velocity ring
          */
-        private const val VELOCITY_RING_SIZE = 10
+        private const val VELOCITY_RING_SIZE = 15
 
         /**
          * The minimum acceleration that is considered a step
          */
-        private const val STEP_THRESHOLD = 12f // 4f-16f
+        private const val STEP_THRESHOLD = 16f // 4f-16f
 
         val TAG_NAME: String = AccelerometerService::class.java.name
     }
