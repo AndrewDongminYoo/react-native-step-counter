@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.5](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.4...v0.2.5) (2024-03-16)
+
+### Bug Fixes
+
+- ➖ remove peer dependencies in package.json ([b3e7191](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/b3e7191dca62b6ba7b68fd7f39a2a18d30b004a6))
+- ➖ remove yarn-specific `resolutions` field that doesn't apply to npm developers ([c16ea2f](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c16ea2f05aff5af6365cc72107160f5d2d045211))
+- ⬆️ upgrade gradle versions and removing deprecated settings ([d962093](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/d96209328ae95699d3cf829a34d6a2d376bf7c69))
+- 🐛 merge forked branch 'Ugur-Atakan/main' ([952c196](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/952c196318c6be1276716f1803043dde8cf8cc1f)), closes [#40](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/40)
+- 📌 cocoapods 1.15 introduced a bug which break the build ([a634d22](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a634d2236a53cc8d63136c9500913f236c9e7979))
+
+### Performance Improvements
+
+- ➕ add @react-native/typescript-config package as dev dependencies ([7845558](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/7845558ed61c0a2aba92adddd21ab9e947b3558e))
+- ⬆️ apply audit and upgrade flags across packages ([ab8a509](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/ab8a509ad1e15e87e436d689b84524247e28e659))
+- ⬆️ replaced `metro-react-native-babel-preset` to `@react-native/babel-preset` ([2b10ae5](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/2b10ae5922a8523ff42005435953e7f28182cbe3))
+- ⬆️ replaced `metro-react-native-babel-preset` to `@react-native/babel-preset` ([26b1e19](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/26b1e19e765854cf73a469fceba6f9fd86cceb67))
+- 📦️ upgrade npm packages version ([fa0b47b](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/fa0b47b6420a662c0fdc8ab2e6cb4ee39419819e))
+
 ## [0.2.4](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.2...v0.2.4) (2024-01-06)
 
 ### Performance Improvements
