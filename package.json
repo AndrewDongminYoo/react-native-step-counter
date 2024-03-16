@@ -31,8 +31,8 @@
   "scripts": {
     "bootstrap": "yarn example && yarn install && yarn example pods",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build",
-    "android": "yarn example run-android",
-    "ios": "yarn example run-ios",
+    "android": "yarn example android",
+    "ios": "yarn example ios",
     "start": "yarn example start",
     "example": "yarn --cwd example",
     "lint": "eslint \"**/*.{js,ts,tsx}\" --fix",
