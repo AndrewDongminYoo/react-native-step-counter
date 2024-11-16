@@ -25,7 +25,8 @@ import com.stepcounter.StepCounterModule
 abstract class SensorListenService(
     private val counterModule: StepCounterModule,
     private val sensorManager: android.hardware.SensorManager
-) : SensorEventListener, LifecycleEventListener {
+) : SensorEventListener,
+    LifecycleEventListener {
     /**
      * the accelerometer sensor type
      * [TYPE_ACCELEROMETER][Sensor.TYPE_ACCELEROMETER]: 1<br/>
