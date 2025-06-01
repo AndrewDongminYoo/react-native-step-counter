@@ -31,33 +31,7 @@
     "@react-native/babel-preset": "^0.73.0",
     "@react-native/metro-config": "^0.73.0",
     "@react-native/typescript-config": "0.74.0",
-    "@rnx-kit/align-deps": "^2.3.4",
     "babel-plugin-module-resolver": "^5.0.0",
     "pod-install": "^0.2.0"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "reactNativePermissionsIOS": [
-    "Motion"
-  ],
-  "rnx-kit": {
-    "kitType": "app",
-    "alignDeps": {
-      "requirements": [
-        "react-native@0.73"
-      ],
-      "capabilities": [
-        "animation",
-        "babel-preset-react-native",
-        "core",
-        "core-android",
-        "core-ios",
-        "core/metro-config",
-        "gestures",
-        "react",
-        "svg"
-      ]
-    }
   }
 }
