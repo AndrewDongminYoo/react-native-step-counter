@@ -44,7 +44,7 @@ type AdditionalInfo = Partial<ParsedStepCountData>;
  * 6. It uses the useEffect hook to call the startStepCounter function when the component mounts.
  * 7. It returns the JSX code for the app.
  */
-export default function App(): JSX.Element {
+export default function App(): React.JSX.Element {
   const [loaded, setLoaded] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);

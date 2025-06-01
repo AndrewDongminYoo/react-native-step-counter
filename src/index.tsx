@@ -2,6 +2,7 @@ import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import type { EmitterSubscription as Subscription } from 'react-native';
 import type { StepCountData, Spec } from './NativeStepCounter';
 import { eventName, VERSION, NAME } from './NativeStepCounter';
+console.debug('🚀 - StepCounterModule:', NativeModules.StepCounter);
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =

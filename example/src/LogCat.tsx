@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import type { EmitterSubscription } from 'react-native';
 import { NativeEventEmitter, NativeModules } from 'react-native';
+console.debug('🚀 - NativeModules.StepCounter:', NativeModules.StepCounter);
 
 const eventEmitter = new NativeEventEmitter(NativeModules.StepCounter);
 
@@ -95,7 +96,7 @@ const formatLog = (logs: string) => {
  *    );
  * });
  */
-function formatJson(json: string): JSX.Element[] {
+function formatJson(json: string): React.JSX.Element[] {
   const parsed = JSON.parse(json);
   return Object.entries(parsed).map(([key, value]) => {
     const KEY = <Text style={styles.nString}>{`"${key}": `}</Text>;
