@@ -1,4 +1,4 @@
-package com.stepcounterexample
+package stepcounter.example
 
 import android.app.Application
 import com.facebook.react.PackageList
