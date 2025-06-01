@@ -1,7 +1,5 @@
 # React-Native Step Counter Library
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FAndrewDongminYoo%2Freact-native-step-counter.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FAndrewDongminYoo%2Freact-native-step-counter?ref=badge_shield)
-
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M8Q4QZ7)
 
 한국어 사용자는 [Korean version.](README.kr.md)를 참조하십시오.
