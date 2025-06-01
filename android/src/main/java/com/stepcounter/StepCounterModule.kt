@@ -26,8 +26,9 @@ import com.stepcounter.utils.AndroidVersionHelper
  * @see ReactApplicationContext
  * @see StepCounterSpec
  */
-class StepCounterModule internal constructor(context: ReactApplicationContext) :
-    StepCounterSpec(context) {
+class StepCounterModule internal constructor(
+    context: ReactApplicationContext
+) : StepCounterSpec(context) {
     companion object {
         const val NAME: String = "StepCounter"
         private val TAG_NAME: String = StepCounterModule::class.java.name
@@ -61,14 +62,16 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
      * It checks the permission and the availability for the step counter sensor and initializes the step counter service.
      */
     init {
-        sensorManager = context.getSystemService(
-            Context.SENSOR_SERVICE
-        ) as SensorManager
-        stepCounterListener = if (stepsOK) {
-            StepCounterService(this, sensorManager)
-        } else {
-            AccelerometerService(this, sensorManager)
-        }
+        sensorManager =
+            context.getSystemService(
+                Context.SENSOR_SERVICE
+            ) as SensorManager
+        stepCounterListener =
+            if (stepsOK) {
+                StepCounterService(this, sensorManager)
+            } else {
+                AccelerometerService(this, sensorManager)
+            }
         appContext.addLifecycleEventListener(stepCounterListener)
     }
 
@@ -150,9 +153,13 @@ class StepCounterModule internal constructor(context: ReactApplicationContext) :
      * @see com.facebook.react.modules.core.DeviceEventManagerModule
      * @throws RuntimeException if the event emitter is not initialized.
      */
-    fun sendDeviceEvent(eventType: String, eventPayload: Any) {
+    fun sendDeviceEvent(
+        eventType: String,
+        eventPayload: Any
+    ) {
         try {
-            appContext.getJSModule(RCTDeviceEventEmitter::class.java)
+            appContext
+                .getJSModule(RCTDeviceEventEmitter::class.java)
                 .emit("$NAME.$eventType", eventPayload)
         } catch (e: RuntimeException) {
             e.message?.let { Log.e(TAG_NAME, it) }
