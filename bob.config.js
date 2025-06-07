@@ -2,8 +2,12 @@ module.exports = {
   source: 'src',
   output: 'lib',
   targets: [
-    'commonjs',
-    'module',
+    [
+      'module',
+      {
+        esm: true,
+      },
+    ],
     [
       'typescript',
       {

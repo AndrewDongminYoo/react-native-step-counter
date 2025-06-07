@@ -12,20 +12,20 @@
   "files": [
     "src",
     "lib",
-    "!**/__tests__",
-    "!**/__fixtures__",
-    "!**/__mocks__",
     "android",
     "ios",
     "cpp",
     "*.podspec",
-    "!lib/typescript/example",
+    "react-native.config.js",
     "!ios/build",
     "!android/build",
     "!android/gradle",
     "!android/gradlew",
     "!android/gradlew.bat",
     "!android/local.properties",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
     "!**/.*"
   ],
   "scripts": {
@@ -65,7 +65,10 @@
     "step-detection-api",
     "step-detection"
   ],
-  "repository": "https://github.com/AndrewDongminYoo/react-native-step-counter",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndrewDongminYoo/react-native-step-counter.git"
+  },
   "author": "Dongmin,Yoo <ydm2790@gmail.com> (https://github.com/AndrewDongminYoo)",
   "license": "MIT",
   "bugs": {
@@ -113,7 +116,7 @@
   },
   "packageManager": "yarn@3.6.1",
   "codegenConfig": {
-    "name": "RNStepCounterSpec",
+    "name": "StepCounterSpec",
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
