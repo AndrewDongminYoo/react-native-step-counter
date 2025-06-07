@@ -41,7 +41,7 @@ Please provide a concise description of what this PR does and why.
 
 1. `git checkout <this-branch>`
 2. `yarn install && cd example && yarn install`
-3. `yarn build` (or `npx pod-install` / etc.)
+3. `yarn build`
 4. `yarn test`
 5. **Example Usage:**
    ```js
