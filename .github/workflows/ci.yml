@@ -168,7 +168,7 @@ jobs:
         with:
           path: |
             **/ios/Pods
-          key: ${{ steps.cocoapods-cache.outputs.cache-key }}
+          key: ${{ steps.cocoapods-cache.outputs.cache-matched-key }}
 
       - name: Build example for iOS
         run: |
