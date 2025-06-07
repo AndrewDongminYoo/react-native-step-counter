@@ -1,6 +1,6 @@
 package com.stepcounter
 
-import com.facebook.react.TurboReactPackage
+import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfo
@@ -15,7 +15,7 @@ import java.util.HashMap
  * @see ReactModuleInfo
  * @see ReactModuleInfoProvider
  */
-class StepCounterPackage : TurboReactPackage() {
+class StepCounterPackage : BaseReactPackage() {
     /**
      * This method is responsible for the creation of the ReactNative module.
      * @param name The name of the module

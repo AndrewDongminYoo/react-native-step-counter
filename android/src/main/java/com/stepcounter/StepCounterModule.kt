@@ -26,16 +26,17 @@ import com.stepcounter.utils.AndroidVersionHelper
  * @see ReactApplicationContext
  * @see StepCounterSpec
  */
-class StepCounterModule internal constructor(
-    context: ReactApplicationContext
-) : StepCounterSpec(context) {
+@ReactModule(name = StepCounterModule.NAME)
+class StepCounterModule(
+    reactContext: ReactApplicationContext
+) : NativeStepCounterSpec(reactContext) {
     companion object {
         const val NAME: String = "StepCounter"
         private val TAG_NAME: String = StepCounterModule::class.java.name
         private const val STEP_COUNTER = "android.permission.ACTIVITY_RECOGNITION"
     }
 
-    private val appContext: ReactApplicationContext = context
+    private val appContext: ReactApplicationContext = reactContext
     private lateinit var sensorManager: SensorManager
     private val stepsOK: Boolean
         get() = checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
@@ -63,7 +64,7 @@ class StepCounterModule internal constructor(
      */
     init {
         sensorManager =
-            context.getSystemService(
+            reactContext.getSystemService(
                 Context.SENSOR_SERVICE
             ) as SensorManager
         stepCounterListener =
