@@ -8,6 +8,9 @@ on:
   pull_request:
     branches:
       - main
+  merge_group:
+    types:
+      - checks_requested
 
 jobs:
   lint:
@@ -107,8 +110,9 @@ jobs:
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
   build-ios:
-    runs-on: macos-14
+    runs-on: macos-latest
     env:
+      XCODE_VERSION: 16.2
       TURBO_CACHE_DIR: .turbo/ios
       TURBO_CACHE_HIT: 0
     steps:
@@ -134,10 +138,16 @@ jobs:
             echo "TURBO_CACHE_HIT=1" >> $GITHUB_ENV
           fi
 
-      - name: Cache cocoapods
+      - name: Use appropriate Xcode version
+        if: env.TURBO_CACHE_HIT != 1
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Restore cocoapods
         if: env.TURBO_CACHE_HIT != 1
         id: cocoapods-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             **/ios/Pods
@@ -148,9 +158,17 @@ jobs:
       - name: Install cocoapods
         if: env.TURBO_CACHE_HIT != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
-          (cd example/ios && pod install)
-        env:
-          NO_FLIPPER: 1
+          cd example
+          bundle install
+          bundle exec pod install --project-directory=ios
+
+      - name: Cache cocoapods
+        if: env.TURBO_CACHE_HIT != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            **/ios/Pods
+          key: ${{ steps.cocoapods-cache.outputs.cache-key }}
 
       - name: Build example for iOS
         run: |
