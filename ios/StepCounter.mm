@@ -1,6 +1,5 @@
 #import <CoreMotion/CoreMotion.h>
 #import <React/RCTBridge.h>
-#import <React/RCTEventDispatcher.h>
 #import "StepCounter.h"
 #import "SOMotionDetecter.h"
 
@@ -12,8 +11,6 @@
 + (BOOL)requiresMainQueueSetup {
     return YES;
 }
-
-@synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE();
 
