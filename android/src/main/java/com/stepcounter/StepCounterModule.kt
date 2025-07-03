@@ -12,6 +12,7 @@ import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
 import com.stepcounter.utils.AndroidVersionHelper
+import com.facebook.react.module.annotations.ReactModule
 
 /**
  * This class is the native module for the react-native-step-counter package.
