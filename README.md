@@ -10,17 +10,17 @@ This library provides an interface for tracking the number of steps taken by the
 
 ```shell
 # if you use pure npm (what a classic!),
-npm install react-native-step-counter
+npm install @dongminyu/react-native-step-counter
 ```
 
 ```shell
 # or if you prefer to use Yarn (I love it's parallel install feature),
-yarn add react-native-step-counter
+yarn add @dongminyu/react-native-step-counter
 ```
 
 ```shell
 # or if you use pnpm (it's fast and efficient),
-pnpm add react-native-step-counter
+pnpm add @dongminyu/react-native-step-counter
 ```
 
 Native modules will automatically connect after React Native 0.60 version. So you don't need to link the native modules manually.
