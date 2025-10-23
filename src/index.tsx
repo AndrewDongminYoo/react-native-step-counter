@@ -52,7 +52,8 @@ const isTurboModuleEnabled = global.__turboModuleProxy != null;
  * https://github.com/AndrewDongminYoo/react-native-step-counter/issues/29#issue-1857677086
  */
 const StepCounterModule = isTurboModuleEnabled
-  ? require('./NativeStepCounter').default
+  ? // @ts-expect-error - Dynamic require for backward compatibility
+    require('./NativeStepCounter').default
   : NativeModules.StepCounter;
 
 /**

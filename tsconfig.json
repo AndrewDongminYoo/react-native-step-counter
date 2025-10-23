@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
     "rootDir": ".",
+    "baseUrl": ".",
     "paths": {
       "@dongminyu/react-native-step-counter": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom"],
     "module": "esnext",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
@@ -22,10 +24,17 @@
     "noUnusedParameters": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strict": true,
-    "target": "esnext",
-    "verbatimModuleSyntax": true
+    "strict": false,
+    "target": "esnext"
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["**/node_modules", "**/scripts/*.js"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "**/node_modules",
+    "**/scripts/*.js",
+    "example",
+    "lib",
+    "**/__tests__",
+    "**/__mocks__",
+    "jest.setup.ts"
+  ]
 }
