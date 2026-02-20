@@ -25,7 +25,11 @@ pnpm add @dongminyu/react-native-step-counter
 
 Native modules will automatically connect after React Native 0.60 version. So you don't need to link the native modules manually.
 
-> ⚠️ **New Architecture required from v0.3.0**: This version requires React Native's New Architecture (TurboModule/Fabric) to be enabled. Expo Go, Expo managed workflow, and React Native versions below 0.68 are not supported.
+> ⚠️ **New Architecture required from v0.3.0**: This version requires React Native's New Architecture (TurboModule/Fabric) to be enabled.
+>
+> ✅ **Minimum supported React Native version**: `>=0.71.0`
+>
+> Expo Go, Expo managed workflow, and React Native versions below `0.71.0` are not supported.
 
 👣 If you have not yet enabled the New Architecture, follow the guide below. If it is already enabled, you can [skip](#android) to the next step.
 

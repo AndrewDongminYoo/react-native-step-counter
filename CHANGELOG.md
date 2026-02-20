@@ -21,6 +21,14 @@
 
 - 📝 Installation/development guides were refreshed for current RN versions and architecture expectations. ([3ce3309](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3ce33090c322976ebf2c613c04331bd7aba9e9ea))
 
+### Issue Status
+
+- ✅ [#39](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/39) — **Completed**: `react-native` peer range is now fixed to `>=0.71.0`.
+- ✅ [#47](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/47) — **Completed**: Android `compileDebugKotlin` regression path was resolved in current build configuration.
+- ✅ [#52](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/52) — **Completed**: Android now respects `startStepCounterUpdate(from)` as session start and resets in-memory session state on new sessions.
+- ✅ [#54](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/54) — **Completed**: Minimum supported React Native version is explicitly documented and enforced as `>=0.71.0`.
+- ⏳ [#56](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/56) — **Open**: Additional reproduction/validation is still required for RN 0.77-specific iOS build reports.
+
 ## [0.2.5](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.4...v0.2.5) (2024-03-16)
 
 ### Bug Fixes
