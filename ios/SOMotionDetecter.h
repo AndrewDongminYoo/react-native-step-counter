@@ -1,4 +1,3 @@
-//
 //  SOMotionDetecter.h
 //  MotionDetection
 //

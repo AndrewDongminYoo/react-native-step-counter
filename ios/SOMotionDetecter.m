@@ -1,5 +1,3 @@
-
-//
 //  SOMotionDetecter.m
 //  MotionDetection
 //
