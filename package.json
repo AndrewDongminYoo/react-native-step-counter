@@ -59,6 +59,7 @@
     "@babel/core": "^7.29.0",
     "@react-native/babel-preset": "0.83.0",
     "@types/babel__core": "^7",
+    "@types/jest": "^29.5.14",
     "@types/react": "^19.1.12",
     "del-cli": "^6.0.0",
     "react": "19.2.0",
