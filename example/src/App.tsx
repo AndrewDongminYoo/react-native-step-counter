@@ -2,16 +2,15 @@ import * as React from "react";
 import { Button, Platform, StyleSheet, Text, View, type EventSubscription } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
-  isSensorWorking,
   isStepCountingSupported,
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
   type StepCountData,
 } from "@dongminyu/react-native-step-counter";
-import { getBodySensorPermission, getStepCounterPermission } from "./permission";
+import { getStepCounterPermission } from "./permission";
 import CircularProgress, { type ProgressRef } from "react-native-circular-progress-indicator";
-import LogCat from "./LogCat";
+import LogCat, { type LogLine } from "./LogCat";
 
 const initialState: StepCountData = {
   counterType: "",
@@ -21,73 +20,151 @@ const initialState: StepCountData = {
   distance: 0,
 };
 
+function newSessionId() {
+  // small + deterministic enough for demo
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export default function App(): React.JSX.Element {
   const [loaded, setLoaded] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);
+
+  const [sessionId, setSessionId] = React.useState<string>(() => newSessionId());
   const [stepData, setStepData] = React.useState<StepCountData>(initialState);
   const [calories, setCalories] = React.useState<string>("");
-  const [clearLogsTrigger, setClearLogsTrigger] = React.useState(0);
+
+  const [logs, setLogs] = React.useState<LogLine[]>([]);
   const stepSubscriptionRef = React.useRef<EventSubscription | null>(null);
   const progressRef = React.useRef<ProgressRef | null>(null);
-  const isPedometerSupported = () => {
-    isStepCountingSupported().then((result) => {
-      setGranted(result.granted === true);
-      setSupported(result.supported === true);
-    });
-  };
 
-  const startStepCounter = () => {
-    if (loaded) return;
-    progressRef.current?.play();
-    stepSubscriptionRef.current?.remove();
-    setStepData(initialState);
-    const _now = new Date();
-    stepSubscriptionRef.current = startStepCounterUpdate(_now, (data) => {
-      setStepData(data);
-      setCalories(parseStepData(data).calories);
-    });
-    setLoaded(true);
-  };
+  const sessionIdRef = React.useRef(sessionId);
+  React.useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
-  const stopStepCounter = () => {
+  // Avoid state race in RESTART/START
+  const startedRef = React.useRef(false);
+
+  const appendLog = React.useCallback((tag: string, payload: unknown, sid?: string) => {
+    const line: LogLine = {
+      sessionId: sid ?? sessionIdRef.current,
+      ts: Date.now(),
+      tag,
+      payload: JSON.stringify(payload),
+    };
+    setLogs((prev) => [...prev, line]);
+  }, []);
+
+  const clearLogs = React.useCallback(() => {
+    setLogs([]);
+  }, []);
+
+  const stopStepCounter = React.useCallback(() => {
     progressRef.current?.pause();
     stopStepCounterUpdate();
+    stepSubscriptionRef.current?.remove();
     stepSubscriptionRef.current = null;
+
     setStepData(initialState);
     setCalories("");
-    setClearLogsTrigger((n) => n + 1);
     setLoaded(false);
-  };
+    startedRef.current = false;
 
-  const forceUseAnotherSensor = () => {
-    if (isSensorWorking) {
-      stopStepCounter();
-    } else {
-      if (stepData.counterType === "Step Counter") {
-        getBodySensorPermission().then(setGranted);
-      } else {
-        getStepCounterPermission().then(setGranted);
-      }
+    appendLog("STOP", { ok: true });
+  }, [appendLog]);
+
+  const startStepCounter = React.useCallback(() => {
+    // Make start idempotent, independent of async state updates.
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    progressRef.current?.play();
+
+    // Ensure old subscription is gone
+    stepSubscriptionRef.current?.remove();
+    stepSubscriptionRef.current = null;
+
+    // New session boundary
+    const nextSessionId = newSessionId();
+    setSessionId(nextSessionId);
+
+    // Reset UI state
+    setStepData(initialState);
+    setCalories("");
+    clearLogs();
+    setLoaded(true);
+
+    const now = new Date();
+    appendLog("START", { at: now.toISOString(), sessionId: nextSessionId });
+
+    // Subscribe once here; DO NOT subscribe elsewhere in UI.
+    stepSubscriptionRef.current = startStepCounterUpdate(now, (data) => {
+      // NOTE: because sessionId is state, closure might reference old value.
+      // For demo we log without relying on closure correctness; use ref if needed.
+      setStepData(data);
+      setCalories(parseStepData(data).calories);
+
+      // Log the raw event we get from wrapper callback (single source of truth)
+      setLogs((prev) => [
+        ...prev,
+        {
+          sessionId: nextSessionId,
+          ts: Date.now(),
+          tag: "stepCounterUpdate",
+          payload: JSON.stringify(data),
+        },
+      ]);
+    });
+  }, [appendLog, clearLogs]);
+
+  const restartStepCounter = React.useCallback(async () => {
+    const isSensorWorking = !!stepSubscriptionRef.current;
+    appendLog("RESTART", { isSensorWorking });
+
+    // Stop first (synchronous native stop + local cleanup)
+    stopStepCounter();
+
+    // Optional: switch permissions / sensor preference behavior (your existing logic)
+    if (!isSensorWorking) {
+      // This block looks suspicious: it uses `stepData.counterType` which was reset in stopStepCounter().
+      // Use previous counterType if you need to branch; for demo we keep simple.
+      // If you truly need this, capture `prevCounterType` BEFORE stopStepCounter().
+      const ok = await getStepCounterPermission().catch(() => false);
+      setGranted(ok);
+      appendLog("permission", { ok });
     }
+
     progressRef.current?.reAnimate();
+
+    // Start new session
     startStepCounter();
-  };
+  }, [appendLog, startStepCounter, stopStepCounter]);
 
   React.useEffect(() => {
-    isPedometerSupported();
+    let cancelled = false;
+
+    isStepCountingSupported().then((result) => {
+      if (cancelled) return;
+      setGranted(result.granted === true);
+      setSupported(result.supported === true);
+      appendLog("isStepCountingSupported", result);
+    });
+
     return () => {
+      cancelled = true;
       stopStepCounter();
     };
+    // run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
-    console.debug(`🚀 stepCounter ${supported ? "" : "not"} supported`);
-    console.debug(`🚀 user ${granted ? "granted" : "denied"} stepCounter`);
+    appendLog("capabilities", { supported, granted });
     if (supported && granted) {
       startStepCounter();
     }
-  }, [granted, supported]);
+  }, [supported, granted, startStepCounter, appendLog]);
 
   const startedAtLabel = stepData.startDate
     ? new Date(stepData.startDate).toLocaleTimeString([], {
@@ -101,7 +178,6 @@ export default function App(): React.JSX.Element {
     <SafeAreaProvider>
       <SafeAreaView>
         <View style={styles.container}>
-          {/* Status indicator */}
           <View style={styles.statusRow}>
             <View style={[styles.statusDot, loaded ? styles.dotActive : styles.dotInactive]} />
             <Text style={styles.statusText}>
@@ -132,11 +208,12 @@ export default function App(): React.JSX.Element {
 
           <View style={styles.bGroup}>
             <Button title="START" onPress={startStepCounter} disabled={loaded} />
-            <Button title="RESTART" onPress={forceUseAnotherSensor} />
+            <Button title="RESTART" onPress={restartStepCounter} />
             <Button title="STOP" onPress={stopStepCounter} disabled={!loaded} />
           </View>
 
-          <LogCat triggered={loaded} clearTrigger={clearLogsTrigger} />
+          {/* LogCat becomes a pure renderer. No emitter subscription here. */}
+          <LogCat sessionId={sessionId} logs={logs} onClear={clearLogs} />
         </View>
       </SafeAreaView>
     </SafeAreaProvider>

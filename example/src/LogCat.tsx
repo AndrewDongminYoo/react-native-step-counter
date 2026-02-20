@@ -1,5 +1,4 @@
-import StepCounter, { StepEventEmitter } from "@dongminyu/react-native-step-counter";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   Clipboard,
   Platform,
@@ -11,96 +10,120 @@ import {
   View,
 } from "react-native";
 import Svg, { Rect } from "react-native-svg";
-console.debug("🚀 - NativeModules.StepCounter:", StepCounter);
 
-/**
- * @description A component that displays the logs from the native module.
- * @returns {React.ReactComponentElement} Logger Component.
- * @see https://reactnative.dev/docs/native-modules-ios#sending-events-to-javascript
- * @see https://reactnative.dev/docs/native-modules-android#sending-events-to-javascript
- * @see https://reactnative.dev/docs/scrollview
- * @example
- *    <LogCat triggered={loaded} />
- */
-const LogCat = ({ triggered, clearTrigger }: { triggered: boolean; clearTrigger: number }) => {
-  const [logs, setLogs] = useState<string[]>([]);
+export type LogLine = {
+  sessionId: string;
+  ts: number;
+  tag: string;
+  payload: string;
+};
+
+const LogCat = ({
+  sessionId,
+  logs,
+  onClear,
+}: {
+  sessionId: string;
+  logs: LogLine[];
+  onClear: () => void;
+}) => {
   const [copyText, setCopyText] = useState("Copy");
-  const scrollRef = React.useRef<React.ComponentRef<typeof ScrollView>>(null);
-  const copyTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Auto-scroll on new logs
   useEffect(() => {
-    if (clearTrigger > 0) {
-      setLogs([]);
-    }
-  }, [clearTrigger]);
+    scrollRef.current?.scrollToEnd({ animated: false });
+  }, [logs.length]);
+
+  // Reset copy state when session changes
+  useEffect(() => {
+    setCopyText("Copy");
+  }, [sessionId]);
+
+  const visibleLines = useMemo(() => {
+    // In this design, App already clears logs per session.
+    // Keeping filter anyway as a safety net.
+    return logs.filter((l) => l.sessionId === sessionId);
+  }, [logs, sessionId]);
 
   const copyLogs = () => {
-    if (logs.length === 0) {
-      return;
-    }
+    if (visibleLines.length === 0) return;
 
-    Clipboard.setString(logs.join("\n"));
+    const text = visibleLines
+      .map((l) => {
+        const time = new Date(l.ts).toLocaleTimeString([], { hour12: false });
+        return `${time} [${l.tag}] ${safeJson(l.payload)}`;
+      })
+      .join("\n");
+
+    Clipboard.setString(text);
     setCopyText("Copied");
     if (Platform.OS === "android") {
       ToastAndroid.show("Logs copied to clipboard", ToastAndroid.SHORT);
     }
-    if (copyTimerRef.current) {
-      clearTimeout(copyTimerRef.current);
-    }
-    copyTimerRef.current = setTimeout(() => {
-      setCopyText("Copy");
-    }, 1200);
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopyText("Copy"), 1200);
   };
 
   useEffect(() => {
-    const supportedEvents = [
-      "StepCounter.stepCounterUpdate",
-      "StepCounter.stepDetected",
-      "StepCounter.errorOccurred",
-      "StepCounter.stepsSensorInfo",
-    ];
-
-    const subscriptions = supportedEvents.map((eventName) =>
-      StepEventEmitter.addListener(eventName, (event: unknown) => {
-        setLogs((prevLogs) => [...prevLogs, `[${eventName}]`, JSON.stringify(event)]);
-        scrollRef.current?.scrollToEnd({ animated: false });
-      })
-    );
-
     return () => {
-      subscriptions.forEach((sub) => sub.remove());
-      if (copyTimerRef.current) {
-        clearTimeout(copyTimerRef.current);
-      }
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     };
-  }, [triggered]);
+  }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>LogCat</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Copy logs"
-          disabled={logs.length === 0}
-          onPress={copyLogs}
-          style={({ pressed }) => [
-            styles.copyButton,
-            logs.length === 0 && styles.copyButtonDisabled,
-            pressed && styles.copyButtonPressed,
-          ]}
-        >
-          <Svg height={16} viewBox="0 0 24 24" width={16}>
-            <Rect height={10} rx={2} stroke="#f3f4f6" strokeWidth={1.8} width={10} x={10} y={10} />
-            <Rect height={10} rx={2} stroke="#f3f4f6" strokeWidth={1.8} width={10} x={4} y={4} />
-          </Svg>
-          <Text style={styles.copyText}>{copyText}</Text>
-        </Pressable>
+
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Clear logs"
+            disabled={visibleLines.length === 0}
+            onPress={onClear}
+            style={({ pressed }) => [
+              styles.clearButton,
+              visibleLines.length === 0 && styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+          >
+            <Text style={styles.copyText}>Clear</Text>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Copy logs"
+            disabled={visibleLines.length === 0}
+            onPress={copyLogs}
+            style={({ pressed }) => [
+              styles.copyButton,
+              visibleLines.length === 0 && styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+          >
+            <Svg height={16} viewBox="0 0 24 24" width={16}>
+              <Rect
+                height={10}
+                rx={2}
+                stroke="#f3f4f6"
+                strokeWidth={1.8}
+                width={10}
+                x={10}
+                y={10}
+              />
+              <Rect height={10} rx={2} stroke="#f3f4f6" strokeWidth={1.8} width={10} x={4} y={4} />
+            </Svg>
+            <Text style={styles.copyText}>{copyText}</Text>
+          </Pressable>
+        </View>
       </View>
+
       <ScrollView ref={scrollRef} style={styles.logArea}>
-        {logs.map((log, index) => (
-          <Text key={index} style={styles.log}>
-            {formatLog(log)}
+        {visibleLines.map((line, index) => (
+          <Text key={`${line.ts}-${index}`} style={styles.log}>
+            {formatLogLine(line)}
           </Text>
         ))}
       </ScrollView>
@@ -108,66 +131,57 @@ const LogCat = ({ triggered, clearTrigger }: { triggered: boolean; clearTrigger:
   );
 };
 
-const formatLog = (logs: string) => {
-  const parts = logs.split(/\n/);
-  return parts.map((part, index) => {
-    if (part.startsWith("{")) {
-      return (
-        <Text key={index} style={styles.nString}>
-          {formatJson(part)}
-        </Text>
-      );
-    } else if (part.startsWith("[")) {
-      return (
-        <Text key={index} style={styles.nTag}>
-          {part.substring(13, part.length - 1)}
-        </Text>
-      );
-    } else {
-      return <Text key={index}>{part}</Text>;
-    }
+function formatLogLine(line: LogLine) {
+  const time = new Date(line.ts).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
-};
 
-/**
- * @description This function takes a JSON string and returns an array of React elements that
- * display the key and value of each property in the JSON string. The key is
- * displayed in a dark gray color, and the value is displayed in a light gray
- * color. The value is also formatted as a string, boolean, or number.
- * @param {string} json - JSON formatted String.
- * @returns {React.ReactElement[]} - Formatted Console Text Element.
- * @example
- * eventEmitter.addListener(EVENT_NAME, (data) => {
- *    return (
- *       <Text>{formatJson(data)}</Text>
- *    );
- * });
- */
-function formatJson(json: string): React.JSX.Element[] {
-  const parsed = JSON.parse(json);
-  return Object.entries(parsed).map(([key, value]) => {
-    const KEY = <Text style={styles.nString}>{`"${key}": `}</Text>;
-    let VAL = <></>;
-    switch (typeof value) {
-      case "boolean":
-        VAL = <Text style={styles.nBoolean}>{value.toString()}</Text>;
-        break;
-      case "number":
-        VAL = <Text style={styles.nNumber}>{value.toFixed(1)}</Text>;
-        break;
-      case "string":
-        VAL = <Text style={styles.sensorName}>{`"${value}"`}</Text>;
-        break;
-    }
+  // Render tag + JSON pretty-ish
+  return (
+    <>
+      <Text style={styles.nTag}>{`${time} [${line.tag}] `}</Text>
+      <Text style={styles.nString}>{safeJson(line.payload)}</Text>
+    </>
+  );
+}
+
+function safeJson(json: string) {
+  try {
+    const parsed = JSON.parse(json);
+    return Object.entries(parsed).map(([key, value]) => {
+      const KEY = <Text style={styles.nString}>{`"${key}": `}</Text>;
+      let VAL = <></>;
+      switch (typeof value) {
+        case "boolean":
+          VAL = <Text style={styles.nBoolean}>{value.toString()}</Text>;
+          break;
+        case "number":
+          VAL = <Text style={styles.nNumber}>{value.toFixed(1)}</Text>;
+          break;
+        case "string":
+          VAL = <Text style={styles.sensorName}>{`"${value}"`}</Text>;
+          break;
+      }
+      return (
+        <Fragment key={key}>
+          {" \n"}
+          {KEY}
+          {VAL}
+          {", "}
+        </Fragment>
+      );
+    });
+  } catch {
     return (
-      <Fragment key={key}>
-        {" "}
-        {KEY}
-        {VAL}
-        {",\n"}
-      </Fragment>
+      <Text>
+        {"\n"}
+        {JSON.stringify(json)}
+        {"\n"}
+      </Text>
     );
-  });
+  }
 }
 
 const styles = StyleSheet.create({
@@ -196,6 +210,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
+  actions: {
+    flexDirection: "row",
+    gap: 8,
+  },
   copyButton: {
     alignItems: "center",
     backgroundColor: "#334155",
@@ -207,10 +225,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  copyButtonPressed: {
+  clearButton: {
+    alignItems: "center",
+    backgroundColor: "#1f2937",
+    borderColor: "#64748b",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  buttonPressed: {
     opacity: 0.85,
   },
-  copyButtonDisabled: {
+  buttonDisabled: {
     opacity: 0.45,
   },
   copyText: {

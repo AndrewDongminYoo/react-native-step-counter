@@ -58,9 +58,8 @@ const StepCounter = (
       )
 ) as Spec;
 
-export const StepEventEmitter = new NativeEventEmitter(StepCounter);
+const StepEventEmitter = new NativeEventEmitter(StepCounter);
 type StepCountUpdateCallback = (...args: readonly StepCountData[]) => void;
-export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
 // Tracks the subscription created by the most recent startStepCounterUpdate call.
 // Only this subscription is removed in stopStepCounterUpdate, so that external
@@ -179,4 +178,3 @@ export function stopStepCounterUpdate(): void {
 }
 
 export { NAME, VERSION, type StepCountData };
-export default StepCounter;
