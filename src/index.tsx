@@ -1,25 +1,29 @@
-import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
-import type { EmitterSubscription as Subscription } from 'react-native';
-import type { StepCountData, Spec } from './NativeStepCounter';
-import { eventName, VERSION, NAME } from './NativeStepCounter';
-console.debug('🚀 - StepCounterModule:', NativeModules.StepCounter);
+import type { EventSubscription } from "react-native";
+import StepCounterModule, {
+  eventName,
+  NAME,
+  VERSION,
+  type Spec,
+  type StepCountData,
+} from "./NativeStepCounter";
+import { NativeEventEmitter, Platform } from "react-native";
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
   "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
   Platform.select({
-    ios: '- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n',
+    ios: "- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n",
     android:
-      '- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`',
-    default: '',
+      "- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`",
+    default: "",
   }) +
   '- Use the "npx react-native clean" command to clean up the module\'s cache and select the ' +
   '"watchman", "yarn", "metro", "android", "npm" options with comma-separated. ' +
-  'Re-Install packages and re-build the app again .' +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n' +
-  'If none of these fix the issue, please open an issue on the Github repository: ' +
-  'https://github.com/AndrewDongminYoo/react-native-step-counter`';
+  "Re-Install packages and re-build the app again ." +
+  "- You rebuilt the app after installing the package\n" +
+  "- You are not using Expo Go\n" +
+  "If none of these fix the issue, please open an issue on the Github repository: " +
+  "https://github.com/AndrewDongminYoo/react-native-step-counter`";
 
 export interface ParsedStepCountData {
   dailyGoal: string;
@@ -30,30 +34,6 @@ export interface ParsedStepCountData {
   endDate: string;
   distance: string;
 }
-
-/**
- * We keep TurboModuleManager alive until the JS VM is deleted.
- * It is perfectly valid to only use/create TurboModules from JS.
- * In such a case, we shouldn't de-alloc TurboModuleManager if there
- * aren't any strong references to it in ObjC. Hence, we give
- * __turboModuleProxy a strong reference to TurboModuleManager.
- * @see https://github.com/facebook/react-native/blob/main/packages/react-native/Libraries/TurboModule/TurboModuleRegistry.js
- * @see https://github.com/facebook/react-native/blob/main/packages/react-native/ReactCommon/react/nativemodule/core/platform/ios/RCTTurboModuleManager.mm
- * @see https://github.com/facebook/react-native/blob/main/packages/react-native/ReactCommon/react/nativemodule/core/ReactCommon/TurboModuleBinding.cpp
- */
-// @ts-ignore
-const isTurboModuleEnabled = global.__turboModuleProxy != null;
-
-/**
- * The `StepCounterModule` constant is used to import the native module `NativeStepCounter` if
- * TurboModules are enabled. If TurboModules are not enabled, it falls back to using the
- * `NativeModules.StepCounter` module. This allows the code to work with both TurboModules and
- * non-TurboModules environments.
- * https://github.com/AndrewDongminYoo/react-native-step-counter/issues/29#issue-1857677086
- */
-const StepCounterModule = isTurboModuleEnabled
-  ? require('./NativeStepCounter').default
-  : NativeModules.StepCounter;
 
 /**
  * A module that allows you to get the step count data.
@@ -79,7 +59,7 @@ const StepCounter = (
 ) as Spec;
 
 const StepEventEmitter = new NativeEventEmitter(StepCounter);
-type StepCountUpdateCallback = (result: StepCountData) => void;
+type StepCountUpdateCallback = (...args: readonly any[]) => void;
 export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
 /**
@@ -91,13 +71,12 @@ export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 export function parseStepData(data: StepCountData): ParsedStepCountData {
   const { steps, startDate, endDate, distance } = data;
   const dailyGoal = 10000;
-  const stepsString = steps + ' steps';
-  const kCal = (steps * 0.045).toFixed(2) + 'kCal';
-  const endDateTime = new Date(endDate).toLocaleTimeString('en-gb');
-  const startDateTime = new Date(startDate).toLocaleTimeString('en-gb');
-  const roundedDistance = distance.toFixed(1) + 'm';
-  const stepGoalStatus =
-    steps >= dailyGoal ? 'Goal Reached' : `${steps}/${dailyGoal} steps`;
+  const stepsString = steps + " steps";
+  const kCal = (steps * 0.045).toFixed(2) + "kCal";
+  const endDateTime = new Date(endDate).toLocaleTimeString("en-gb");
+  const startDateTime = new Date(startDate).toLocaleTimeString("en-gb");
+  const roundedDistance = distance.toFixed(1) + "m";
+  const stepGoalStatus = steps >= dailyGoal ? "Goal Reached" : `${steps}/${dailyGoal} steps`;
   return {
     dailyGoal: stepGoalStatus,
     steps,
@@ -126,7 +105,7 @@ class UnavailabilityError extends Error {
       `The method or property ${moduleName}.${propertyName} is not available on ${Platform.OS}, ` +
         "are you sure you've linked all the native dependencies properly?"
     );
-    this.code = 'ERR_UNAVAILABLE';
+    this.code = "ERR_UNAVAILABLE";
   }
 }
 
@@ -153,7 +132,7 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
  * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates
  * @param {Date} start A date indicating the start of the range over which to measure steps.
  * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
- * @returns {Subscription} - Returns a Subscription that enables you to call.
+ * @returns {EventSubscription} - Returns a Subscription that enables you to call.
  * When you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
  * @example
  * const startDate = new Date();
@@ -164,11 +143,11 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
 export function startStepCounterUpdate(
   start: Date,
   callBack: StepCountUpdateCallback
-): Subscription {
+): EventSubscription {
   if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
-  const from = start.getTime();
+  const from = start.getTime() / 1000;
   StepCounter.startStepCounterUpdate(from);
   return StepEventEmitter.addListener(eventName, callBack);
 }

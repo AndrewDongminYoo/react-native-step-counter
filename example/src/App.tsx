@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Button, Platform, SafeAreaView, StyleSheet, View } from "react-native";
+import { Button, Platform, StyleSheet, View, type EventSubscription } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   isSensorWorking,
   isStepCountingSupported,
@@ -48,6 +49,7 @@ export default function App(): React.JSX.Element {
   const [sensorType, setSensorType] = React.useState<SensorName>("NONE");
   const [stepCount, setStepCount] = React.useState(0);
   const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(initState);
+  const stepSubscriptionRef = React.useRef<EventSubscription | null>(null);
 
   /**
    * Get user's motion permission and check pedometer is available.
@@ -68,7 +70,8 @@ export default function App(): React.JSX.Element {
    * It starts the step counter.
    */
   const startStepCounter = () => {
-    startStepCounterUpdate(new Date(), (data) => {
+    stepSubscriptionRef.current?.remove();
+    stepSubscriptionRef.current = startStepCounterUpdate(new Date(), (data) => {
       setSensorType(data.counterType as SensorName);
       const parsedData = parseStepData(data);
       setStepCount(parsedData.steps);
@@ -87,6 +90,7 @@ export default function App(): React.JSX.Element {
   const stopStepCounter = () => {
     setAdditionalInfo(initState);
     stopStepCounterUpdate();
+    stepSubscriptionRef.current = null;
     setLoaded(false);
   };
 
@@ -129,39 +133,43 @@ export default function App(): React.JSX.Element {
   React.useEffect(() => {
     console.debug(`🚀 stepCounter ${supported ? "" : "not"} supported`);
     console.debug(`🚀 user ${granted ? "granted" : "denied"} stepCounter`);
-    startStepCounter();
+    if (supported && granted) {
+      startStepCounter();
+    }
   }, [granted, supported]);
 
   return (
-    <SafeAreaView>
-      <View style={styles.container}>
-        <View style={styles.indicator}>
-          <CircularProgress
-            value={stepCount}
-            maxValue={10000}
-            valueSuffix="steps"
-            progressValueFontSize={42}
-            radius={165}
-            activeStrokeColor="#cdd27e"
-            inActiveStrokeColor="#4c6394"
-            inActiveStrokeOpacity={0.5}
-            inActiveStrokeWidth={40}
-            subtitle={additionalInfo.calories === "0 kCal" ? "" : additionalInfo.calories}
-            activeStrokeWidth={40}
-            title="Step Count"
-            titleColor="#555"
-            titleFontSize={30}
-            titleStyle={{ fontWeight: "bold" }}
-          />
+    <SafeAreaProvider>
+      <SafeAreaView>
+        <View style={styles.container}>
+          <View style={styles.indicator}>
+            <CircularProgress
+              value={stepCount}
+              maxValue={10000}
+              valueSuffix="steps"
+              progressValueFontSize={42}
+              radius={165}
+              activeStrokeColor="#cdd27e"
+              inActiveStrokeColor="#4c6394"
+              inActiveStrokeOpacity={0.5}
+              inActiveStrokeWidth={40}
+              subtitle={additionalInfo.calories === "0 kCal" ? "" : additionalInfo.calories}
+              activeStrokeWidth={40}
+              title="Step Count"
+              titleColor="#555"
+              titleFontSize={30}
+              titleStyle={{ fontWeight: "bold" }}
+            />
+          </View>
+          <View style={styles.bGroup}>
+            <Button title="START" onPress={startStepCounter} />
+            <Button title="RESTART" onPress={forceUseAnotherSensor} />
+            <Button title="STOP" onPress={stopStepCounter} />
+          </View>
+          <LogCat triggered={loaded} />
         </View>
-        <View style={styles.bGroup}>
-          <Button title="START" onPress={startStepCounter} />
-          <Button title="RESTART" onPress={forceUseAnotherSensor} />
-          <Button title="STOP" onPress={stopStepCounter} />
-        </View>
-        <LogCat triggered={loaded} />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

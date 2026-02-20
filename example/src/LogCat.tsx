@@ -1,10 +1,10 @@
+import StepCounter from "@dongminyu/react-native-step-counter";
 import React, { Fragment, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import type { EmitterSubscription } from "react-native";
-import { NativeEventEmitter, NativeModules } from "react-native";
-console.debug("🚀 - NativeModules.StepCounter:", NativeModules.StepCounter);
+import { NativeEventEmitter } from "react-native";
+console.debug("🚀 - NativeModules.StepCounter:", StepCounter);
 
-const eventEmitter = new NativeEventEmitter(NativeModules.StepCounter);
+const eventEmitter = new NativeEventEmitter(StepCounter);
 
 /**
  * @description A component that displays the logs from the native module.
@@ -17,11 +17,9 @@ const eventEmitter = new NativeEventEmitter(NativeModules.StepCounter);
  * @example
  *    <LogCat triggered={loaded} />
  */
-const LogCat = ({ triggered }: { triggered: boolean }) => {
-  const [rendered, setRendered] = useState(true);
+const LogCat = ({ triggered: _triggered }: { triggered: boolean }) => {
   const [logs, setLogs] = useState<string[]>([]);
-  const [_, setSubscriptions] = useState<EmitterSubscription[]>([]);
-  const scrollRef = React.useRef<ScrollView>(null);
+  const scrollRef = React.useRef<React.ComponentRef<typeof ScrollView>>(null);
 
   useEffect(() => {
     const supportedEvents = [
@@ -31,22 +29,17 @@ const LogCat = ({ triggered }: { triggered: boolean }) => {
       "StepCounter.stepsSensorInfo",
     ];
 
-    for (const eventName of supportedEvents) {
-      const newSub = eventEmitter.addListener(eventName, (event: unknown) => {
-        // handle the event data and update the log list
-        setLogs((prevLogs) => {
-          return [...prevLogs, `[${eventName}]`, JSON.stringify(event)];
-        });
+    const subscriptions = supportedEvents.map((eventName) =>
+      eventEmitter.addListener(eventName, (event: unknown) => {
+        setLogs((prevLogs) => [...prevLogs, `[${eventName}]`, JSON.stringify(event)]);
         scrollRef.current?.scrollToEnd({ animated: false });
-      });
-      setSubscriptions((prevSubs) => [...prevSubs, newSub]);
-    }
-    setRendered(triggered);
-    // unsubscribe the event listener when the component unmounts
+      })
+    );
+
     return () => {
-      setSubscriptions([]);
+      subscriptions.forEach((sub) => sub.remove());
     };
-  }, [rendered, triggered]);
+  }, []);
 
   return (
     <View style={styles.container}>

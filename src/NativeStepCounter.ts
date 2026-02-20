@@ -1,5 +1,4 @@
-import type { TurboModule } from 'react-native';
-import { TurboModuleRegistry } from 'react-native';
+import { TurboModuleRegistry, type TurboModule } from "react-native";
 
 /**
  * `StepCountData` is an object with four properties: `distance`, `steps`, `startDate`, and `endDate`.
@@ -22,9 +21,9 @@ export type StepCountData = {
   floorsDescended?: number; // number of floors descended (iOS only)
 };
 
-export const NAME = 'StepCounter';
-export const VERSION = '0.2.3';
-export const eventName = 'StepCounter.stepCounterUpdate';
+export const NAME = "StepCounter";
+export const VERSION = "0.3.0";
+export const eventName = "StepCounter.stepCounterUpdate";
 
 export interface Spec extends TurboModule {
   /**
@@ -54,9 +53,8 @@ export interface Spec extends TurboModule {
   stopStepCounterUpdate(): void;
 
   /* Required Methods for NativeEventEmitter */
-  addListener(eventName: string): void;
+  addListener(event: string): void;
   removeListeners(count: number): void;
 }
 
-/* Getting enforcing the module from the registry. */
-export default TurboModuleRegistry.getEnforcing<Spec>('StepCounter') as Spec;
+export default TurboModuleRegistry.getEnforcing<Spec>("StepCounter");
