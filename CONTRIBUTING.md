@@ -66,19 +66,19 @@ yarn typecheck
 To check for linting errors, run the following:
 
 ```sh
-yarn lint
+trunk check
 ```
 
 To fix formatting errors, run the following:
 
 ```sh
-yarn lint --fix
+trunk fmt
 ```
 
 Remember to add tests for your change if possible. Run the unit tests by:
 
 ```sh
-yarn test
+yarn jest
 ```
 
 ### Publishing to npm
@@ -88,7 +88,7 @@ We use [release-it](https://github.com/release-it/release-it) to make it easier 
 To publish new versions, run the following:
 
 ```sh
-yarn release
+yarn release-it
 ```
 
 ### Scripts
@@ -97,8 +97,9 @@ The `package.json` file contains various scripts for common tasks:
 
 - `yarn`: setup project by installing dependencies.
 - `yarn typecheck`: type-check files with TypeScript.
-- `yarn lint`: lint files with [ESLint](https://eslint.org/).
-- `yarn test`: run unit tests with [Jest](https://jestjs.io/).
+- `trunk check`: lint files with [Trunk](https://trunk.io/) (prettier, ktlint, swiftformat, etc.).
+- `trunk fmt`: auto-fix formatting issues.
+- `yarn jest`: run unit tests with [Jest](https://jestjs.io/).
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.

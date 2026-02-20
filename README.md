@@ -25,7 +25,9 @@ pnpm add @dongminyu/react-native-step-counter
 
 Native modules will automatically connect after React Native 0.60 version. So you don't need to link the native modules manually.
 
-👣 if you are using the legacy architecture, you need to follow the guide below. otherwise, you can [skip](#android) next step.
+> ⚠️ **New Architecture required from v0.3.0**: This version requires React Native's New Architecture (TurboModule/Fabric) to be enabled. Expo Go, Expo managed workflow, and React Native versions below 0.68 are not supported.
+
+👣 If you have not yet enabled the New Architecture, follow the guide below. If it is already enabled, you can [skip](#android) to the next step.
 
 ## IF YOU WANT SEE A DEMO IN STANDALONE REACT-NATIVE APPLICATION, SEE [WALKING_TRACKER EXAMPLE](https://github.com/AndrewDongminYoo/walking_tracker) REPO
 
@@ -77,7 +79,7 @@ Thank you for your interest in my first NPM open source package! I've received a
 
   _4_. Rename all Objective-C(.m) files to Objective-C++ (.mm)
   _5_. Make your AppDelegate conform to RCTAppDelegate
-  - [ios/StepCounterExample/AppDelegate.h](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h)
+  - `AppDelegate.h` example:
 
     ```diff
     - #import <React/RCTBridgeDelegate.h>
@@ -91,7 +93,7 @@ Thank you for your interest in my first NPM open source package! I've received a
     @end
     ```
 
-  - [ios/StepCounterExample/AppDelegate.mm](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.mm)
+  - `AppDelegate.mm` example:
 
     ```objective-c++
     #import "AppDelegate.h"
@@ -122,7 +124,7 @@ Thank you for your interest in my first NPM open source package! I've received a
 
     ```shell
     export RCT_NEW_ARCH_ENABLED=1
-    cd ios && pod install
+    cd example/ios && pod install
     ```
 
 - Applying a new architecture to React Native Android applications

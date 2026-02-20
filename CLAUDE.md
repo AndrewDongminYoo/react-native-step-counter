@@ -107,6 +107,12 @@ Jest is configured in `jest.config.js` (preset: `react-native`). `jest.setup.ts`
 
 The `jest-config` package is used in `jest.config.js` for default `moduleFileExtensions`. `modulePathIgnorePatterns` excludes `example/node_modules` and `lib/`.
 
+## Compatibility
+
+- **v0.3.0+**: New Architecture (TurboModule/Fabric) is **required**. The library no longer supports the legacy bridge architecture.
+- **Not supported**: Expo Go, Expo managed workflow, React Native < 0.68.
+- For legacy architecture support, use a version prior to v0.3.0.
+
 ## Key Conventions
 
 - **Node version**: v22.20.0 (see `.nvmrc`)

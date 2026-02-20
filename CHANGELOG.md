@@ -187,7 +187,7 @@
 
 - **example:** ✨ write example codes and make some test-visible property ([6297b95](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/6297b95aeed8e46b4c4744030f7370fef7613894))
 
-## [0.1.4](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.0...v0.1.4) (2023-03-04)
+## [0.1.4](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.1.3...v0.1.4) (2023-03-04)
 
 ### Features v0.1.4
 

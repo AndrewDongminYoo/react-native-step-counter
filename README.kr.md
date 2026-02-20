@@ -23,7 +23,9 @@ pnpm add @dongminyu/react-native-step-counter
 
 리액트네이티브 0.60 버전 이후 설치된 네이티브 모듈은 오토 링크됩니다. 네이티브 모듈을 수동으로 연결할 필요가 없습니다.
 
-👣 리액트 네이티브의 새로운 아키텍쳐를 사용하기 때문에 원하지 않는 경우 아래 가이드를 따라야 합니다. 이미 New Architecture를 활성화하고 사전설정을 마친 상태라면, [다음 단계](#android)로 넘어갑니다.
+> ⚠️ **v0.3.0부터 New Architecture 필수**: 이 버전부터는 React Native의 New Architecture(TurboModule/Fabric)가 반드시 활성화되어 있어야 합니다. Expo Go, Expo 관리형 워크플로, 또는 구버전 React Native(0.68 미만)와는 호환되지 않습니다.
+
+👣 아직 New Architecture를 활성화하지 않았다면 아래 가이드를 따라 설정하세요. 이미 New Architecture를 활성화하고 사전설정을 마친 상태라면, [다음 단계](#android)로 넘어갑니다.
 
 ## 독립 앱에서 사용할 수 있는 리얼월드 예제 앱을 원하시는 분들은 [walking_tracker](https://github.com/AndrewDongminYoo/walking_tracker) 참고
 
@@ -75,7 +77,7 @@ pnpm add @dongminyu/react-native-step-counter
 
   _4_. ios 애플리케이션 폴더 내의 모든 Objective-C(.m) 파일의 이름을 Objective-C++(.mm)으로 변경합니다. (Objective-C++의 문법은 Objective-C의 확장입니다.)
   _5_. ios 애플리케이션 폴더 내의 AppDelegate 파일(헤더파일/소스파일)들이 RCTAppDelegate 인터페이스를 구현하도록 변경합니다.
-  - [ios/StepCounterExample/AppDelegate.h](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h)
+  - `AppDelegate.h` 수정 예시:
 
     ```diff
     - #import <React/RCTBridgeDelegate.h>
@@ -89,7 +91,7 @@ pnpm add @dongminyu/react-native-step-counter
     @end
     ```
 
-  - [ios/StepCounterExample/AppDelegate.mm](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.mm)
+  - `AppDelegate.mm` 수정 예시:
 
     ```objective-c++
     #import "AppDelegate.h"
@@ -120,14 +122,14 @@ pnpm add @dongminyu/react-native-step-counter
 
     ```shell
     export RCT_NEW_ARCH_ENABLED=1
-    cd ios && pod install
+    cd example/ios && pod install
     ```
 
 - 리액트 네이티브 애플리케이션 안드로이드 변경사항 셋업
   1. 프로젝트에 사용되는 리액트 네이티브 버전이 `v0.71.0` 이상인 경우 안드로이드 네이티브의 대부분의 사전 설정 되어 있는 상태이므로, 새로운 아키텍쳐를 사용하기 위해 따로 설정해야 할 것이 많지 않습니다.
   2. `android/gradle.properties` 파일에서 `newArchEnabled`를 `true`로 설정하기만 하면 됩니다.
 
-> 공식 문서를 읽는 것을 더 선호한다면 [여기](https://reactative.dev/docs/new-architecture-intro)에서 찾을 수 있습니다.
+> 공식 문서를 읽는 것을 더 선호한다면 [여기](https://reactnative.dev/docs/new-architecture-intro)에서 찾을 수 있습니다.
 
 ### ANDROID
 
