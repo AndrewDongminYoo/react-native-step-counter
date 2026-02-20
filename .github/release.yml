@@ -21,4 +21,4 @@ changelog:
         - breaking-change
     - title: 🔨 Other Changes
       labels:
-        - '*'
+        - "*"

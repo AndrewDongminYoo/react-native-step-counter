@@ -93,7 +93,7 @@ jobs:
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: zulu
-          java-version: '17'
+          java-version: "17"
 
       - name: Finalize Android SDK
         if: env.turbo_cache_hit != 1

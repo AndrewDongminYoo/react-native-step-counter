@@ -1,8 +1,8 @@
-import React, { Fragment, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import type { EmitterSubscription } from 'react-native';
-import { NativeEventEmitter, NativeModules } from 'react-native';
-console.debug('🚀 - NativeModules.StepCounter:', NativeModules.StepCounter);
+import React, { Fragment, useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import type { EmitterSubscription } from "react-native";
+import { NativeEventEmitter, NativeModules } from "react-native";
+console.debug("🚀 - NativeModules.StepCounter:", NativeModules.StepCounter);
 
 const eventEmitter = new NativeEventEmitter(NativeModules.StepCounter);
 
@@ -25,10 +25,10 @@ const LogCat = ({ triggered }: { triggered: boolean }) => {
 
   useEffect(() => {
     const supportedEvents = [
-      // 'StepCounter.stepCounterUpdate',
-      'StepCounter.stepDetected',
-      'StepCounter.errorOccurred',
-      'StepCounter.stepsSensorInfo',
+      "StepCounter.stepCounterUpdate",
+      "StepCounter.stepDetected",
+      "StepCounter.errorOccurred",
+      "StepCounter.stepsSensorInfo",
     ];
 
     for (const eventName of supportedEvents) {
@@ -64,13 +64,13 @@ const LogCat = ({ triggered }: { triggered: boolean }) => {
 const formatLog = (logs: string) => {
   const parts = logs.split(/\n/);
   return parts.map((part, index) => {
-    if (part.startsWith('{')) {
+    if (part.startsWith("{")) {
       return (
         <Text key={index} style={styles.nString}>
           {formatJson(part)}
         </Text>
       );
-    } else if (part.startsWith('[')) {
+    } else if (part.startsWith("[")) {
       return (
         <Text key={index} style={styles.nTag}>
           {part.substring(13, part.length - 1)}
@@ -102,22 +102,22 @@ function formatJson(json: string): React.JSX.Element[] {
     const KEY = <Text style={styles.nString}>{`"${key}": `}</Text>;
     let VAL = <></>;
     switch (typeof value) {
-      case 'boolean':
+      case "boolean":
         VAL = <Text style={styles.nBoolean}>{value.toString()}</Text>;
         break;
-      case 'number':
+      case "number":
         VAL = <Text style={styles.nNumber}>{value.toFixed(1)}</Text>;
         break;
-      case 'string':
+      case "string":
         VAL = <Text style={styles.sensorName}>{`"${value}"`}</Text>;
         break;
     }
     return (
       <Fragment key={key}>
-        {' '}
+        {" "}
         {KEY}
         {VAL}
-        {',\n'}
+        {",\n"}
       </Fragment>
     );
   });
@@ -125,41 +125,41 @@ function formatJson(json: string): React.JSX.Element[] {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     height: 200,
-    width: '100%',
-    alignItems: 'stretch',
-    justifyContent: 'center',
+    width: "100%",
+    alignItems: "stretch",
+    justifyContent: "center",
     margin: 10,
     padding: 20,
     borderRadius: 10,
-    borderColor: 'white',
+    borderColor: "white",
     borderWidth: 2,
-    backgroundColor: '#111827',
+    backgroundColor: "#111827",
   },
   log: {
-    fontFamily: 'Helvetica',
+    fontFamily: "Helvetica",
     fontSize: 15,
     lineHeight: 18,
     marginVertical: 2,
-    color: 'white',
+    color: "white",
   },
   nTag: {
-    color: 'crimson',
-    fontWeight: 'bold',
+    color: "crimson",
+    fontWeight: "bold",
   },
   nString: {
-    color: 'yellow',
+    color: "yellow",
   },
   nBoolean: {
-    color: 'pink',
+    color: "pink",
   },
   nNumber: {
-    color: 'skyblue',
+    color: "skyblue",
   },
   sensorName: {
-    color: 'white',
+    color: "white",
   },
 });
 

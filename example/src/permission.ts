@@ -5,9 +5,10 @@ import {
   PERMISSIONS,
   request,
   RESULTS,
-} from 'react-native-permissions';
-import { Platform, type Rationale } from 'react-native';
-import appInformation from '../package.json';
+  type RationaleObject,
+} from "react-native-permissions";
+import { Platform } from "react-native";
+import appInformation from "../package.json";
 
 /**
  * Checks if the user has granted the body sensors permission
@@ -17,10 +18,7 @@ import appInformation from '../package.json';
 const bodySensor = PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND;
 const activityRecognition = PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION;
 const motion = PERMISSIONS.IOS.MOTION;
-type Permission =
-  | typeof bodySensor
-  | typeof activityRecognition
-  | typeof motion;
+type Permission = typeof bodySensor | typeof activityRecognition | typeof motion;
 
 /**
  * @description This function checks the result and returns true if the permission is granted
@@ -35,23 +33,23 @@ const CHECK = <S = PermissionStatus>(result: S) => result === RESULTS.GRANTED;
  * and must be a human readable string.
  */
 const permissionNames: Record<Permission, string> = {
-  [activityRecognition]: 'Activity Recognition',
-  [bodySensor]: 'Body Sensor',
-  [motion]: 'Motion',
+  [activityRecognition]: "Activity Recognition",
+  [bodySensor]: "Body Sensor",
+  [motion]: "Motion",
 };
 
 /**
  * @param {Permission} permission - The permission to get the rationale for.
- * @returns {Rationale} - Returns the rationale for the given permission.
+ * @returns {RationaleObject} - Returns the rationale for the given permission.
  */
-const getRational = (permission: Permission): Rationale => {
+const getRational = (permission: Permission): RationaleObject => {
   const data = permissionNames[permission];
   const appName = appInformation.name;
   return {
     title: `"${data}" Permission`,
     message: `"${appName}" needs access to your ${data.toLowerCase()} data.`,
-    buttonPositive: 'ACCEPT',
-    buttonNegative: 'DENY',
+    buttonPositive: "ACCEPT",
+    buttonNegative: "DENY",
   };
 };
 
@@ -86,7 +84,7 @@ const checkPermission = async (permission: Permission) => {
  * @returns {Promise<boolean>} - A boolean indicating whether the user has granted permission to access the device's step counter.
  */
 export const getStepCounterPermission = async () => {
-  const permission = Platform.OS === 'ios' ? motion : activityRecognition;
+  const permission = Platform.OS === "ios" ? motion : activityRecognition;
   if (await requestPermission(permission)) {
     return true;
   }

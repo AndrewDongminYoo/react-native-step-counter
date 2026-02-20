@@ -200,13 +200,13 @@ To use the Step Counter Library in your React Native app, follow these steps:
 Import the library into your React Native app.
 
 ```typescript
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   isStepCountingSupported,
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from '@dongminyu/react-native-step-counter';
+} from "@dongminyu/react-native-step-counter";
 ```
 
 Use the `isStepCountingSupported` method to check if the device has a step counter or accelerometer sensor.
@@ -217,7 +217,7 @@ const [granted, setGranted] = useState(false);
 
 async function askPermission() {
   isStepCountingSupported().then((result) => {
-    console.debug('🚀 - isStepCountingSupported', result);
+    console.debug("🚀 - isStepCountingSupported", result);
     setGranted(result.granted === true);
     setSupported(result.supported === true);
   });

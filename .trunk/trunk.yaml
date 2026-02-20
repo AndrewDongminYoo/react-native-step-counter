@@ -20,9 +20,9 @@ runtimes:
 lint:
   ignore:
     - linters: [shellcheck]
-      paths: ['**/gradlew']
+      paths: ["**/gradlew"]
     - linters: [osv-scanner]
-      paths: ['**/Podfile.lock']
+      paths: ["**/Podfile.lock"]
   enabled:
     - swiftformat@0.59.1
     - osv-scanner@2.2.4

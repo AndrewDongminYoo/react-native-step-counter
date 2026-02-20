@@ -200,13 +200,13 @@ pnpm add @dongminyu/react-native-step-counter
 라이브러리를 리액트 네이티브 앱으로 임포트합니다.
 
 ```typescript
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   isStepCountingSupported,
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from '@dongminyu/react-native-step-counter';
+} from "@dongminyu/react-native-step-counter";
 ```
 
 `isStepCountingSupported` 메소드를 사용하여 장치에 스텝 카운터 또는 가속도계 센서가 있는지 확인합니다.
@@ -217,7 +217,7 @@ const [granted, setGranted] = useState(false);
 
 async function askPermission() {
   isStepCountingSupported().then((result) => {
-    console.debug('🚀 - isStepCountingSupported', result);
+    console.debug("🚀 - isStepCountingSupported", result);
     setGranted(result.granted === true);
     setSupported(result.supported === true);
   });
