@@ -23,6 +23,8 @@ lint:
       paths: ["**/gradlew"]
     - linters: [osv-scanner]
       paths: ["**/Podfile.lock"]
+    - linters: [markdownlint]
+      paths: [.github/**/*.md]
   enabled:
     - swiftformat@0.59.1
     - osv-scanner@2.2.4
