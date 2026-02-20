@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
  * @see Sensor.TYPE_STEP_COUNTER
  * @see SensorManager.getDefaultSensor {@link SensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)}
  * @see SensorListenService.updateCurrentSteps
- * @see TimeUnit.NANOSECONDS.toMillis
+ * @see TimeUnit.toMillis
  */
 class StepCounterService(
     counterModule: StepCounterModule,
@@ -37,7 +37,7 @@ class StepCounterService(
 ) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "Step Counter"
     override val sensorType = Sensor.TYPE_STEP_COUNTER
-    override val detectedSensor: Sensor? = sensorManager?.getDefaultSensor(sensorType)
+    override val detectedSensor: Sensor? = sensorManager.getDefaultSensor(sensorType)
     private var previousSteps: Double = 0.0
         set(value) {
             if (field < value) {

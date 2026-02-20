@@ -1,5 +1,8 @@
 package com.stepcounter.utils
 
+import com.stepcounter.utils.SensorFusionMath.dot
+import com.stepcounter.utils.SensorFusionMath.norm
+import com.stepcounter.utils.SensorFusionMath.normalize
 import kotlin.math.sqrt
 
 /**

@@ -24,7 +24,7 @@ import com.stepcounter.StepCounterModule
  */
 abstract class SensorListenService(
     private val counterModule: StepCounterModule,
-    private val sensorManager: android.hardware.SensorManager
+    private val sensorManager: SensorManager
 ) : SensorEventListener,
     LifecycleEventListener {
     /**
@@ -203,7 +203,7 @@ abstract class SensorListenService(
      *
      * **NOTE2:** Since the timestamp delivered from JavaScript is based on milliseconds,
      * mistakes can occur if the timestamp of sensor events recorded every moment in nanoseconds is delivered as it is.
-     * Thus, we convert timestamp (nanoseconds recorded in sensor events) using [toMillis][java.util.concurrent.TimeUnit.NANOSECONDS.toMillis] method,
+     * Thus, we convert timestamp (nanoseconds recorded in sensor events) using [toMillis][java.util.concurrent.TimeUnit.toMillis] method,
      * or call [currentTimeInMillis][System.currentTimeMillis] method according to the function execution time.
      *
      * @param event the [SensorEvent][android.hardware.SensorEvent].

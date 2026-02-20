@@ -43,7 +43,7 @@ class AccelerometerService(
 ) : SensorListenService(counterModule, sensorManager) {
     override val sensorTypeString = "Accelerometer"
     override val sensorType = Sensor.TYPE_ACCELEROMETER
-    override val detectedSensor: Sensor? = sensorManager?.getDefaultSensor(sensorType)
+    override val detectedSensor: Sensor? = sensorManager.getDefaultSensor(sensorType)
     override var currentSteps: Double = 0.0
     private var velocityRingCounter: Int = 0
     private var accelRingCounter: Int = 0
@@ -98,8 +98,7 @@ class AccelerometerService(
         val velocityEstimate: Float = sum(velocityRing)
         // If the velocity estimate is greater than the threshold and the previous
         val isWalkingOrRunning: Boolean =
-            velocityEstimate > STEP_THRESHOLD &&
-                oldVelocityEstimate <= STEP_THRESHOLD &&
+            STEP_THRESHOLD in oldVelocityEstimate..<velocityEstimate &&
                 timeNs - lastStepTimeNs > STEP_DELAY_NS
         if (isWalkingOrRunning) {
             currentSteps = currentSteps.plus(1)
