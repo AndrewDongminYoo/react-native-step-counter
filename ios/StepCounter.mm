@@ -6,6 +6,8 @@
 
 @interface StepCounter ()
 @property (nonatomic, readonly) CMPedometer *pedometer;
+@property (nonatomic) NSDate *sessionStartDate;
+@property (nonatomic) NSInteger lastCumulativeSteps;
 @end
 
 @implementation StepCounter
@@ -25,6 +27,17 @@ RCT_EXPORT_MODULE();
         @"StepCounter.stepsSensorInfo"
     ];
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+// In New Architecture, RCTEventEmitter.receiveEvent is not registered as a callable JS module.
+// Override to route through RCTDeviceEventEmitter.emit, which is registered.
+- (void)sendEventWithName:(NSString *)eventName body:(id)body {
+    [_bridge enqueueJSCall:@"RCTDeviceEventEmitter"
+                    method:@"emit"
+                      args:body ? @[eventName, body] : @[eventName]
+                completion:nil];
+}
+#endif
 
 RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
                                    reject:(RCTPromiseRejectBlock)reject) {
@@ -49,14 +62,35 @@ RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
 }
 
 RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
-    [self.pedometer startPedometerUpdatesFromDate:date?:[NSDate date]
+    _sessionStartDate = date ?: [NSDate date];
+    _lastCumulativeSteps = 0;
+
+    [self.pedometer startPedometerUpdatesFromDate:_sessionStartDate
                                       withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-        if(error) {
+        if (error) {
             [self sendEventWithName:@"StepCounter.errorOccurred"
                                body:error];
         } else if (pedometerData) {
+            NSInteger incomingSteps = [pedometerData.numberOfSteps integerValue];
+            // CMPedometer delivers two update types:
+            //   1. Cumulative update: startDate ≈ sessionStartDate, numberOfSteps = total since session start
+            //   2. Activity-window update: startDate = new walk segment start, numberOfSteps = that segment only
+            // Without correction, type-2 updates cause the step count to jump backwards.
+            NSTimeInterval startDiff = fabs([pedometerData.startDate timeIntervalSinceDate:self->_sessionStartDate]);
+            NSInteger reportedSteps;
+            if (startDiff < 2.0) {
+                // Cumulative update — authoritative total; update baseline
+                self->_lastCumulativeSteps = incomingSteps;
+                reportedSteps = incomingSteps;
+            } else {
+                // Activity-window update — add new segment steps to the last known cumulative total
+                reportedSteps = self->_lastCumulativeSteps + incomingSteps;
+            }
+
+            NSMutableDictionary *body = [[self dictionaryFromPedometerData:pedometerData] mutableCopy];
+            body[@"steps"] = @(reportedSteps);
             [self sendEventWithName:@"StepCounter.stepCounterUpdate"
-                               body:[self dictionaryFromPedometerData:pedometerData]];
+                               body:[body copy]];
         }
     }];
 }
@@ -90,6 +124,8 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
 RCT_EXPORT_METHOD(stopStepCounterUpdate) {
     [self.pedometer stopPedometerUpdates];
     [[SOMotionDetecter sharedInstance] stopDetection];
+    _sessionStartDate = nil;
+    _lastCumulativeSteps = 0;
 }
 
 RCT_EXPORT_METHOD(startStepsDetection) {

@@ -274,6 +274,7 @@ reusify
 rgba
 rimraf
 RNCORE
+RNSVG
 rootproject
 RUNPATH
 runtimeexecutor
