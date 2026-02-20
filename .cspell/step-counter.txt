@@ -113,6 +113,7 @@ esvalidate
 execa
 exsolve
 extglob
+fabs
 fastforward
 fastq
 fdir
@@ -126,6 +127,7 @@ gensync
 GETTIME
 gifs
 giget
+gitmoji
 globby
 glog
 Googleâ
@@ -148,6 +150,7 @@ imagemanager
 infile
 INFOPLIST
 inputaccessory
+instancetype
 intersectionobserver
 intersectionobservernativemodule
 ioniconâ
@@ -342,6 +345,7 @@ webperformancenativemodule
 whatwg
 wordwrap
 worklets
+Wpartial
 wrappy
 xcassets
 xccheckout
