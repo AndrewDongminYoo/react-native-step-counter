@@ -4,70 +4,22 @@
 
 ### Features
 
-- add env vars to turbo pipeline for new architecture ([5f94f55](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/5f94f5554e18f875684150c49ac70839d243b22e))
-- add launch screen and app icons to iOS example ([020d639](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/020d639d3a8161dde80fd251421e5cf65c43c514))
-- add pull request template ([739a808](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/739a808a0c72f5c006867d8d595ba526993f86f8))
-- **android:** configure source sets for new architecture ([494cc0b](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/494cc0b22f961dbcd3ee307511c9974e17e7eeac))
-- **android:** expose IS_NEW_ARCHITECTURE_ENABLED as a build config field ([26781d9](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/26781d9119b79d7404604bc20574567652c28d0f))
-- bump trunk versions and linters ([824d027](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/824d0278fa22a4adfd5fea8e1e342342e245bf3d))
-- bump versions for react-native 0.79 ([c4d47ee](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c4d47ee0ad0686c56ded7945cda500c96cce472c))
-- configure babel for react-native-builder-bob ([2f7b108](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/2f7b1088a3c0fcb2da6eade93de297c4875ae537))
-- configure bob build system and update package metadata ([ee70c87](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/ee70c8741cf8e210df2a6a4a36f21d2e986b214a))
-- **example/ios:** add basic iOS project files ([a4d383e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a4d383e9d05e9eddbc22210d651f44e2140cba96))
-- **example/ios:** enable new architecture in Podfile ([cc15c5d](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/cc15c5d1289ac50233bab702eed909b545c31543))
-- **example/ios:** migrate to main.m and update AppDelegate ([6e1eb3f](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/6e1eb3f8ce73427d9aef9608e54b93b828c7b61e))
-- **example:** add ic_launcher_round drawables to example Android app ([a25f67e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a25f67ee749b536a00fb79d5ff49cd8fd83de921))
-- **example:** specify platforms for react-native config ([7097956](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/70979566abe8bbe9bc9e4c20de3707216db9590e))
-- **example:** upgrade example Android app Gradle and target SDK ([f3cd146](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f3cd14663a815df47017e983089934e954bc3d15))
-- implement step counter module for iOS ([8d2160b](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/8d2160b997f1327fef206a902b8e9eb8fc422f95))
-- improve issue reporting with templates and contact links ([e09e32d](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/e09e32d629b6dcfca263ba0ce2c5a70834d789ae))
-- migrate example iOS app to Swift ([84ff756](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/84ff756c3c926573beb387bc5c3636efdc59e13d))
-- migrate StepCounter and SOMotionDetecter to Swift ([f48ea09](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f48ea09744004ca4ecc58be888719a29c3f861f8))
-- migrate to eslint flat config ([1d43a53](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/1d43a530d83ee7f554798615d828c524e552c144))
-- migrate to new architecture ([595aa1e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/595aa1ea9d1567d261ab98a5ab725ddb615511a0))
-- migrate to new podspec and update dependencies ([4ff4e66](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/4ff4e6655148897706de74e5f48ba7917a61ceb8))
-- modernize example app config with builder-bob and monorepo-config ([f7cbae5](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f7cbae5e2b3e0e6475b586318eb2adb639d9715d))
-- remove iOS example app ([c6cd202](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c6cd202bebe99775b90b4043bd65dd490dc4bd57))
-- remove lefthook ([82bb523](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/82bb523058547be1f338591dab64e89900eece4b))
-- remove native iOS code for step counter ([0c86655](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/0c86655996c09aac152a3d047e9ce43524d3d5ee))
-- remove Objective-C files from example iOS app ([c0f2b4f](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c0f2b4f35c9ffcb084efd8ae0e41ab4cdad70530))
-- update Node.js version and use Iron LTS ([0106d5a](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/0106d5a8c6a2f1e347570d2bf41254a2ffe847b8))
-- upgrade Android build tools and React Native dependencies ([d7089c5](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/d7089c5a22db9264843bd7b16c35fcd55e8d8933))
-- upgrade Android SDK and related dependencies ([9052776](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/9052776d5795c1fbc5e44711dd074f137e2f091b))
-- upgrade Gradle version in example Android app ([5cc652c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/5cc652c5c98184e6764824d1d14864a370a501d7))
-- upgrade React Native to v0.73.5 ([c219866](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c219866d2d5294b7f73597496357c7f83c1dd4da))
-- upgrade yarn to v3.6.1 ([d57afcf](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/d57afcf2f48509e5bcb430c00744261d34d72ef1))
-- **xcode:** add DEVELOPMENT_TEAM to project configuration ([7e65fac](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/7e65facdf3a70d5fd0f90dbd6af568b84fc5dd0f))
+- 🏗️ **NEW_ARCH enabled by default and TurboModule migration**: The module/build setup is now aligned with the New Architecture baseline. ([595aa1e](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/595aa1ea9d1567d261ab98a5ab725ddb615511a0), [347ff18](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/347ff18c3876c6edf6d371641aec355623ced915), [494cc0b](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/494cc0b22f961dbcd3ee307511c9974e17e7eeac))
+- ⬆️ **RN/build-chain upgrades**: React Native was raised in stages (0.73.5 -> 0.79 -> 0.83.0), with Android/iOS build dependencies modernized. ([c219866](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c219866d2d5294b7f73597496357c7f83c1dd4da), [c4d47ee](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c4d47ee0ad0686c56ded7945cda500c96cce472c), [045d211](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/045d21106fbf9e8ddd02b4be1983c4122fd9faf6))
+- ♻️ **iOS implementation/structure refresh**: The iOS path was reworked and stabilized around a Swift-based implementation. ([8d2160b](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/8d2160b997f1327fef206a902b8e9eb8fc422f95), [f48ea09](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f48ea09744004ca4ecc58be888719a29c3f861f8), [84ff756](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/84ff756c3c926573beb387bc5c3636efdc59e13d))
 
 ### Bug Fixes
 
-- ♻️ refactor example app setup and stability ([241d438](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/241d4381fc0c609d476033b0b3a8a3b340833784))
-- add example yarn cache to gitignore ([45ede47](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/45ede476f95ed20a85c5e946b1539cbd356e411f))
-- **ci:** improve iOS build workflow and add merge group trigger ([998cc12](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/998cc1255d7556f49bc5448a54d7c437a7163db8))
-- correct copyright and remove new architecture instructions ([0a55966](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/0a55966984d431bd397e9b7aa527d44873d2bb44))
-- disable Flipper in example iOS app ([cd7c2f5](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/cd7c2f55f60c2fb9f00f9e3a009c30bd5f805d86))
-- downgrade react-native-svg to v14 ([3da2211](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3da2211e07ebd913e5dfeef2281fcbbd06dd6980))
-- **example/ios:** update Podfile.lock checksum ([3f67d83](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3f67d83130a946e44cf6bc2e7ee55ff392e522c1))
-- **example:** fix type and add debug logs for step counter module ([80fb2a6](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/80fb2a63d17afe0c8fa9cb65628df775a61e99b4))
-- **example:** remove ReactNativeFlipper and use OpenSourceMergedSoMapping ([9fc9c05](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/9fc9c05d76a350f92f615bcdac2971511053a38f))
-- **gitignore:** add .kotlin/sessions/ to gitignore ([631079b](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/631079bd8f760547032f466452c7e431580680ca))
-- improve error message output and script robustness in gradlew scripts ([81b3437](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/81b3437b2bb05ad4e2345a77ff818cc4fa727b2f))
-- initialize sensorManager with lateinit var ([0623c33](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/0623c33d3396359b9fb404a209c6f24f80553307))
-- relax commitlint rules ([155511f](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/155511f098bf67dc21a961c2d9d6c49dfdf8ca15))
-- remove unnecessary pod-install scripts and commands ([49bc3f0](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/49bc3f0fa5c611c53306f1b80da8993faa12a066))
-- revert cocoapods version and update project settings ([5ca3944](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/5ca3944967ab2a37ce46ccd8e4837a0322e46e68))
-- update iOS example app configuration ([add23d0](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/add23d099cef932def446b6cc9f94094f48e6ea7))
-- update project settings after pod update ([bcb1c8b](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/bcb1c8bfe695579142aec615e3c2de1120072ce6))
-- use cache-matched-key for cocoapods cache ([db16195](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/db16195985d60efd131fd2de163c195b818d33ec))
+- 🐛 **Major compatibility/stability fixes applied**: Focused fixes landed for sensor initialization, Pod/CI caching, and example app build stability. ([0623c33](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/0623c33d3396359b9fb404a209c6f24f80553307), [db16195](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/db16195985d60efd131fd2de163c195b818d33ec), [241d438](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/241d4381fc0c609d476033b0b3a8a3b340833784))
+- 🧩 **Community feedback workflow tightened**: Issue/PR templates and development docs were improved to make reported issues and PR handling clearer. ([e09e32d](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/e09e32d629b6dcfca263ba0ce2c5a70834d789ae), [739a808](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/739a808a0c72f5c006867d8d595ba526993f86f8), [3ce3309](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3ce33090c322976ebf2c613c04331bd7aba9e9ea))
 
 ### Performance Improvements
 
-- ♻️ migrate android module to turbo modules ([347ff18](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/347ff18c3876c6edf6d371641aec355623ced915))
+- ⚡️ Improved Android module performance/structure around the TurboModule path. ([347ff18](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/347ff18c3876c6edf6d371641aec355623ced915))
 
 ### Documentation
 
-- 📝 generate project documentation ([f04b6ce](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/f04b6ce8a3ea816782c652b2c8851a788bb64182))
-- 📝 update installation and development guides ([3ce3309](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3ce33090c322976ebf2c613c04331bd7aba9e9ea))
+- 📝 Installation/development guides were refreshed for current RN versions and architecture expectations. ([3ce3309](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3ce33090c322976ebf2c613c04331bd7aba9e9ea))
 
 ## [0.2.5](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.4...v0.2.5) (2024-03-16)
 
