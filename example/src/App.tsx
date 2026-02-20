@@ -70,7 +70,12 @@ export default function App(): React.JSX.Element {
    * It starts the step counter.
    */
   const startStepCounter = () => {
+    // Remove the JS-side listener and stop the native session before restarting.
+    // Only removing the JS listener leaves the native CMPedometer running, which
+    // causes multiple concurrent handlers to fire events from different start dates.
     stepSubscriptionRef.current?.remove();
+    stopStepCounterUpdate();
+    setStepCount(0);
     stepSubscriptionRef.current = startStepCounterUpdate(new Date(), (data) => {
       setSensorType(data.counterType as SensorName);
       const parsedData = parseStepData(data);

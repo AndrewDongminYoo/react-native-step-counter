@@ -71,6 +71,12 @@ RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
 }
 
 RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
+    // Stop any in-progress pedometer session before starting a new one.
+    // Without this, repeated calls accumulate CMPedometer handlers that each
+    // fire events from their respective session start dates, causing the step
+    // count to oscillate between old-session cumulative totals and new-session counts.
+    [self.pedometer stopPedometerUpdates];
+
     // JS passes Date.getTime() / 1000 (seconds since epoch); convert to NSDate.
     _sessionStartDate = from > 0 ? [NSDate dateWithTimeIntervalSince1970:from] : [NSDate date];
     _lastCumulativeSteps = 0;
