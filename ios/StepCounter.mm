@@ -88,23 +88,19 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
                                body:error];
         } else if (pedometerData) {
             NSInteger incomingSteps = [pedometerData.numberOfSteps integerValue];
-            // CMPedometer delivers two update types:
-            //   1. Cumulative update: startDate ≈ sessionStartDate, numberOfSteps = total since session start
-            //   2. Activity-window update: startDate = new walk segment start, numberOfSteps = that segment only
-            // Without correction, type-2 updates cause the step count to jump backwards.
-            NSTimeInterval startDiff = fabs([pedometerData.startDate timeIntervalSinceDate:self->_sessionStartDate]);
-            NSInteger reportedSteps;
-            if (startDiff < 2.0) {
-                // Cumulative update — authoritative total; update baseline
-                self->_lastCumulativeSteps = incomingSteps;
-                reportedSteps = incomingSteps;
-            } else {
-                // Activity-window update — add new segment steps to the last known cumulative total
-                reportedSteps = self->_lastCumulativeSteps + incomingSteps;
+            // CMPedometer delivers two types of updates interleaved:
+            //   1. Cumulative (startDate = session start): numberOfSteps = total since session start
+            //   2. Activity-window (startDate = recent walk segment): numberOfSteps = that segment only
+            // Type-2 updates have a smaller step count and cause the reported value to jump backwards.
+            // A monotonic filter is the most robust fix: only emit when the step count increases,
+            // so activity-window updates that carry fewer steps are silently dropped.
+            if (incomingSteps <= self->_lastCumulativeSteps) {
+                return; // Not a new high — drop this update to prevent backward jumps.
             }
+            self->_lastCumulativeSteps = incomingSteps;
 
             NSMutableDictionary *body = [[self dictionaryFromPedometerData:pedometerData] mutableCopy];
-            body[@"steps"] = @(reportedSteps);
+            body[@"steps"] = @(self->_lastCumulativeSteps);
             [self sendEventWithName:@"StepCounter.stepCounterUpdate"
                                body:[body copy]];
         }
