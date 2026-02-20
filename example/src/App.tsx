@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, StyleSheet, View, type EventSubscription } from "react-native";
+import { Button, Platform, StyleSheet, Text, View, type EventSubscription } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   isSensorWorking,
@@ -10,10 +10,10 @@ import {
   type StepCountData,
 } from "@dongminyu/react-native-step-counter";
 import { getBodySensorPermission, getStepCounterPermission } from "./permission";
-import CircularProgress from "react-native-circular-progress-indicator";
+import CircularProgress, { type ProgressRef } from "react-native-circular-progress-indicator";
 import LogCat from "./LogCat";
 
-const initialState = {
+const initialState: StepCountData = {
   counterType: "",
   steps: 0,
   startDate: 0,
@@ -21,31 +21,15 @@ const initialState = {
   distance: 0,
 };
 
-/**
- * @returns {React.ReactComponentElement} - Returns Application Component.
- * @description This module represents the root component of the app.
- * 1. It imports the necessary components and libraries.
- * 2. It defines the initial state of the calories state.
- * 3. It defines the functions that will be used in the app.
- * 4. It uses the useState hook to define the states that will be used in the app.
- * 5. It uses the useEffect hook to run the isPedometerSupported function when the component mounts.
- * 6. It uses the useEffect hook to call the startStepCounter function when the component mounts.
- * 7. It returns the JSX code for the app.
- */
 export default function App(): React.JSX.Element {
   const [loaded, setLoaded] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);
   const [stepData, setStepData] = React.useState<StepCountData>(initialState);
   const [calories, setCalories] = React.useState<string>("");
+  const [clearLogsTrigger, setClearLogsTrigger] = React.useState(0);
   const stepSubscriptionRef = React.useRef<EventSubscription | null>(null);
-
-  /**
-   * Get user's motion permission and check pedometer is available.
-   * This function checks if the step counting is supported by the device
-   * and if the user has granted the app the permission to use it.
-   * It sets the state variables 'granted' and 'supported' accordingly.
-   */
+  const progressRef = React.useRef<ProgressRef | null>(null);
   const isPedometerSupported = () => {
     isStepCountingSupported().then((result) => {
       setGranted(result.granted === true);
@@ -53,42 +37,29 @@ export default function App(): React.JSX.Element {
     });
   };
 
-  /**
-   * It starts the step counter and sets the sensor type, step count, and additional info.
-   * The function startStepCounter is called when the user clicks the "Start" button.
-   * It starts the step counter.
-   */
   const startStepCounter = () => {
     if (loaded) return;
+    progressRef.current?.play();
     stepSubscriptionRef.current?.remove();
     setStepData(initialState);
     const _now = new Date();
     stepSubscriptionRef.current = startStepCounterUpdate(_now, (data) => {
       setStepData(data);
-      const parsed = parseStepData(data);
-      setCalories(parsed.calories);
-      console.log({ ...parsed });
+      setCalories(parseStepData(data).calories);
     });
     setLoaded(true);
   };
 
-  /**
-   * It sets the state of the calories object to its initial state, stops the step counter update,
-   * and sets the loaded state to false.
-   * This function is used to stop the step counter.
-   */
   const stopStepCounter = () => {
-    setCalories("");
+    progressRef.current?.pause();
     stopStepCounterUpdate();
     stepSubscriptionRef.current = null;
+    setStepData(initialState);
+    setCalories("");
+    setClearLogsTrigger((n) => n + 1);
     setLoaded(false);
   };
 
-  /**
-   * If the sensor is working, stop it. If it's not working,
-   * Get permission for the other sensor and start it.
-   * This function is used to force the use of another sensor.
-   */
   const forceUseAnotherSensor = () => {
     if (isSensorWorking) {
       stopStepCounter();
@@ -99,15 +70,10 @@ export default function App(): React.JSX.Element {
         getStepCounterPermission().then(setGranted);
       }
     }
+    progressRef.current?.reAnimate();
     startStepCounter();
   };
 
-  /**
-   * A hook that runs when the component mounts. It calls the isPedometerSupported function
-   * and returns a function that stops the step counter.
-   * This effect runs when the component is first mounted
-   * and then runs again when the `count` variable changes.
-   */
   React.useEffect(() => {
     isPedometerSupported();
     return () => {
@@ -115,11 +81,6 @@ export default function App(): React.JSX.Element {
     };
   }, []);
 
-  /**
-   * A hook that runs when the component mounts.
-   * It calls the isPedometerSupported function and returns a
-   * function that stops the step counter.
-   */
   React.useEffect(() => {
     console.debug(`🚀 stepCounter ${supported ? "" : "not"} supported`);
     console.debug(`🚀 user ${granted ? "granted" : "denied"} stepCounter`);
@@ -128,12 +89,29 @@ export default function App(): React.JSX.Element {
     }
   }, [granted, supported]);
 
+  const startedAtLabel = stepData.startDate
+    ? new Date(stepData.startDate).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : null;
+
   return (
     <SafeAreaProvider>
       <SafeAreaView>
         <View style={styles.container}>
+          {/* Status indicator */}
+          <View style={styles.statusRow}>
+            <View style={[styles.statusDot, loaded ? styles.dotActive : styles.dotInactive]} />
+            <Text style={styles.statusText}>
+              {loaded && startedAtLabel ? `Active · ${startedAtLabel}` : "Stopped"}
+            </Text>
+          </View>
+
           <View style={styles.indicator}>
             <CircularProgress
+              ref={progressRef}
               value={stepData.steps}
               maxValue={10000}
               valueSuffix=" steps"
@@ -151,12 +129,14 @@ export default function App(): React.JSX.Element {
               titleStyle={{ fontWeight: "bold" }}
             />
           </View>
+
           <View style={styles.bGroup}>
-            <Button title="START" onPress={startStepCounter} />
+            <Button title="START" onPress={startStepCounter} disabled={loaded} />
             <Button title="RESTART" onPress={forceUseAnotherSensor} />
-            <Button title="STOP" onPress={stopStepCounter} />
+            <Button title="STOP" onPress={stopStepCounter} disabled={!loaded} />
           </View>
-          <LogCat triggered={loaded} />
+
+          <LogCat triggered={loaded} clearTrigger={clearLogsTrigger} />
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -164,23 +144,52 @@ export default function App(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  /** Styling the container. */
   container: {
     height: "100%",
     alignItems: "center",
     padding: 20,
     backgroundColor: "#2f3774",
   },
-  /** Styling the circular indicator. */
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "absolute",
+    top: 100,
+    zIndex: 30,
+    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  dotActive: {
+    backgroundColor: "#cdd27e",
+  },
+  dotInactive: {
+    backgroundColor: "#6b7280",
+  },
+  statusText: {
+    color: "#e5e7eb",
+    fontSize: 13,
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+  },
   indicator: {
     marginTop: 10,
     marginBottom: 20,
+    marginInline: 30,
+    position: "relative",
   },
-  /** Styling the button group. */
   bGroup: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-evenly",
     display: "flex",
+    marginVertical: 8,
   },
 });

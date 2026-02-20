@@ -22,11 +22,17 @@ console.debug("🚀 - NativeModules.StepCounter:", StepCounter);
  * @example
  *    <LogCat triggered={loaded} />
  */
-const LogCat = ({ triggered }: { triggered: boolean }) => {
+const LogCat = ({ triggered, clearTrigger }: { triggered: boolean; clearTrigger: number }) => {
   const [logs, setLogs] = useState<string[]>([]);
   const [copyText, setCopyText] = useState("Copy");
   const scrollRef = React.useRef<React.ComponentRef<typeof ScrollView>>(null);
   const copyTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (clearTrigger > 0) {
+      setLogs([]);
+    }
+  }, [clearTrigger]);
 
   const copyLogs = () => {
     if (logs.length === 0) {
