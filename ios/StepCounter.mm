@@ -16,6 +16,7 @@
 }
 
 @synthesize bridge = _bridge;
+@synthesize callableJSModules = _callableJSModules;
 
 RCT_EXPORT_MODULE();
 
@@ -29,15 +30,23 @@ RCT_EXPORT_MODULE();
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
-// In New Architecture, RCTEventEmitter.receiveEvent is not registered as a callable JS module.
-// Override to route through RCTDeviceEventEmitter.emit, which is registered.
+// In New Architecture, RCTEventEmitter.receiveEvent is not a registered callable JS module.
+// In bridgeless mode (RCTHost), _bridge is nil; events must go through callableJSModules.
+// In bridge-based New Architecture, fall back to _bridge.enqueueJSCall via RCTDeviceEventEmitter.
 - (void)sendEventWithName:(NSString *)eventName body:(id)body {
-    [_bridge enqueueJSCall:@"RCTDeviceEventEmitter"
-                    method:@"emit"
-                      args:body ? @[eventName, body] : @[eventName]
-                completion:nil];
+    NSArray *args = body ? @[eventName, body] : @[eventName];
+    if (_callableJSModules) {
+        [_callableJSModules invokeModule:@"RCTDeviceEventEmitter"
+                                  method:@"emit"
+                                withArgs:args];
+    } else if (_bridge) {
+        [_bridge enqueueJSCall:@"RCTDeviceEventEmitter"
+                        method:@"emit"
+                          args:args
+                    completion:nil];
+    }
 }
-#endif
+#endif // RCT_NEW_ARCH_ENABLED
 
 RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
                                    reject:(RCTPromiseRejectBlock)reject) {
@@ -61,8 +70,9 @@ RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
     }];
 }
 
-RCT_EXPORT_METHOD(startStepCounterUpdate:(NSDate *)date) {
-    _sessionStartDate = date ?: [NSDate date];
+RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
+    // JS passes Date.getTime() / 1000 (seconds since epoch); convert to NSDate.
+    _sessionStartDate = from > 0 ? [NSDate dateWithTimeIntervalSince1970:from] : [NSDate date];
     _lastCumulativeSteps = 0;
 
     [self.pedometer startPedometerUpdatesFromDate:_sessionStartDate
@@ -148,7 +158,7 @@ RCT_EXPORT_METHOD(startStepsDetection) {
     CMAuthorizationStatus status = [CMPedometer authorizationStatus];
     return status == CMAuthorizationStatusAuthorized;
 #pragma clang diagnostic pop
-#endif
+#endif // __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
 }
 
 #pragma mark - Private
@@ -169,6 +179,6 @@ RCT_EXPORT_METHOD(startStepsDetection) {
 {
     return std::make_shared<facebook::react::NativeStepCounterSpecJSI>(params);
 }
-#endif
+#endif // RCT_NEW_ARCH_ENABLED
 
 @end
