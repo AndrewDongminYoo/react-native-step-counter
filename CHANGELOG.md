@@ -25,13 +25,17 @@
 
 - 📝 Installation/development guides were refreshed for current RN versions and architecture expectations. ([3ce3309](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/3ce33090c322976ebf2c613c04331bd7aba9e9ea))
 
-### Issue/PR Status at Release Cut (2026-02-20)
+### Issue/PR Status (Updated at Release Finalization)
 
-- ✅ [PR #39](https://github.com/AndrewDongminYoo/react-native-step-counter/pull/39) — **Merged**: `react-native` peer range is fixed to `>=0.71.0`.
-- ⏳ [#47](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/47) — **Open (reopened)**: Build configuration was updated, but the issue thread remains open for environment-specific reports.
-- ⏳ [#52](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/52) — **Open**: Session reset behavior was improved, but the issue thread remains open.
-- ⏳ [#54](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/54) — **Open**: Minimum supported React Native version is documented/enforced as `>=0.71.0`, but the issue thread remains open.
-- ⏳ [#56](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/56) — **Open**: Additional reproduction/validation is still required for RN 0.77-specific iOS build reports.
+- ✅ [PR #39](https://github.com/AndrewDongminYoo/react-native-step-counter/pull/39) — **Closed/Merged**: `react-native` peer range is fixed to `>=0.71.0`.
+- ✅ [#47](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/47) — **Closed**: Resolved in `v0.3.0` through Kotlin `2.0.21` + TurboModule migration, with Expo workflow limitations documented.
+- ✅ [#52](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/52) — **Closed**: Reset is supported via `stopStepCounterUpdate()` -> `startStepCounterUpdate(new Date())`, including iOS baseline reset behavior.
+- ✅ [#54](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/54) — **Closed**: React Native `0.63` is unsupported; minimum peer dependency is explicitly enforced as `react-native >=0.71.0`.
+- ✅ [#56](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/56) — **Closed**: Fixed in `v0.3.0` via `callableJSModules` integration and `sendEventWithName:body:` override.
+- ✅ [#49](https://github.com/AndrewDongminYoo/react-native-step-counter/issues/49) — **Closed**: App-killed background tracking is not supported; historical date usage guidance was clarified.
+- ✅ [PR #58](https://github.com/AndrewDongminYoo/react-native-step-counter/pull/58) — **Closed**: README already reflected the correct package name.
+- ✅ [PR #57](https://github.com/AndrewDongminYoo/react-native-step-counter/pull/57) — **Closed**: `callableJSModules`-based approach was already implemented in `v0.3.0`.
+- ✅ [PR #51](https://github.com/AndrewDongminYoo/react-native-step-counter/pull/51) — **Closed**: Covered by the current immediate-initialization strategy.
 
 ## [0.2.5](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.4...v0.2.5) (2024-03-16)
 
