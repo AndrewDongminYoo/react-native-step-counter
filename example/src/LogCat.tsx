@@ -1,4 +1,4 @@
-import StepCounter from "@dongminyu/react-native-step-counter";
+import StepCounter, { StepEventEmitter } from "@dongminyu/react-native-step-counter";
 import React, { Fragment, useEffect, useState } from "react";
 import {
   Clipboard,
@@ -10,16 +10,11 @@ import {
   ToastAndroid,
   View,
 } from "react-native";
-import { NativeEventEmitter } from "react-native";
 import Svg, { Rect } from "react-native-svg";
 console.debug("🚀 - NativeModules.StepCounter:", StepCounter);
 
-const eventEmitter = new NativeEventEmitter(StepCounter);
-
 /**
  * @description A component that displays the logs from the native module.
- * @param {object} props - View Component Props but only has one property.
- * @param {boolean} props.triggered - A boolean that indicates whether the native module is loaded.
  * @returns {React.ReactComponentElement} Logger Component.
  * @see https://reactnative.dev/docs/native-modules-ios#sending-events-to-javascript
  * @see https://reactnative.dev/docs/native-modules-android#sending-events-to-javascript
@@ -27,7 +22,7 @@ const eventEmitter = new NativeEventEmitter(StepCounter);
  * @example
  *    <LogCat triggered={loaded} />
  */
-const LogCat = ({ triggered: _triggered }: { triggered: boolean }) => {
+const LogCat = ({ triggered }: { triggered: boolean }) => {
   const [logs, setLogs] = useState<string[]>([]);
   const [copyText, setCopyText] = useState("Copy");
   const scrollRef = React.useRef<React.ComponentRef<typeof ScrollView>>(null);
@@ -60,7 +55,7 @@ const LogCat = ({ triggered: _triggered }: { triggered: boolean }) => {
     ];
 
     const subscriptions = supportedEvents.map((eventName) =>
-      eventEmitter.addListener(eventName, (event: unknown) => {
+      StepEventEmitter.addListener(eventName, (event: unknown) => {
         setLogs((prevLogs) => [...prevLogs, `[${eventName}]`, JSON.stringify(event)]);
         scrollRef.current?.scrollToEnd({ animated: false });
       })
@@ -72,7 +67,7 @@ const LogCat = ({ triggered: _triggered }: { triggered: boolean }) => {
         clearTimeout(copyTimerRef.current);
       }
     };
-  }, []);
+  }, [triggered]);
 
   return (
     <View style={styles.container}>

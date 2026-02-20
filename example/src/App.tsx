@@ -7,27 +7,25 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-  type ParsedStepCountData,
+  type StepCountData,
 } from "@dongminyu/react-native-step-counter";
 import { getBodySensorPermission, getStepCounterPermission } from "./permission";
 import CircularProgress from "react-native-circular-progress-indicator";
 import LogCat from "./LogCat";
 
-/** Setting the initial state of the additionalInfo object. */
-const initState: Partial<ParsedStepCountData> = {
-  dailyGoal: "0/10000 steps",
-  stepsString: "0 steps",
-  calories: "0 kCal",
-  distance: "0.0 m",
+const initialState = {
+  counterType: "",
+  steps: 0,
+  startDate: 0,
+  endDate: 0,
+  distance: 0,
 };
-
-type AdditionalInfo = Partial<ParsedStepCountData>;
 
 /**
  * @returns {React.ReactComponentElement} - Returns Application Component.
  * @description This module represents the root component of the app.
  * 1. It imports the necessary components and libraries.
- * 2. It defines the initial state of the additionalInfo state.
+ * 2. It defines the initial state of the calories state.
  * 3. It defines the functions that will be used in the app.
  * 4. It uses the useState hook to define the states that will be used in the app.
  * 5. It uses the useEffect hook to run the isPedometerSupported function when the component mounts.
@@ -38,9 +36,8 @@ export default function App(): React.JSX.Element {
   const [loaded, setLoaded] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);
-  const [sensorType, setSensorType] = React.useState<string>("NONE");
-  const [stepCount, setStepCount] = React.useState(0);
-  const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(initState);
+  const [stepData, setStepData] = React.useState<StepCountData>(initialState);
+  const [calories, setCalories] = React.useState<string>("");
   const stepSubscriptionRef = React.useRef<EventSubscription | null>(null);
 
   /**
@@ -62,28 +59,26 @@ export default function App(): React.JSX.Element {
    * It starts the step counter.
    */
   const startStepCounter = () => {
+    if (loaded) return;
     stepSubscriptionRef.current?.remove();
-    setStepCount(0);
-    stepSubscriptionRef.current = startStepCounterUpdate(new Date(), (data) => {
-      if (data.counterType != sensorType) {
-        setSensorType(data.counterType);
-      }
-      const { steps, ...additional } = parseStepData(data);
-      if (stepCount <= steps) {
-        setStepCount(steps);
-        setAdditionalInfo(additional);
-      }
+    setStepData(initialState);
+    const _now = new Date();
+    stepSubscriptionRef.current = startStepCounterUpdate(_now, (data) => {
+      setStepData(data);
+      const parsed = parseStepData(data);
+      setCalories(parsed.calories);
+      console.log({ ...parsed });
     });
     setLoaded(true);
   };
 
   /**
-   * It sets the state of the additionalInfo object to its initial state, stops the step counter update,
+   * It sets the state of the calories object to its initial state, stops the step counter update,
    * and sets the loaded state to false.
    * This function is used to stop the step counter.
    */
   const stopStepCounter = () => {
-    setAdditionalInfo(initState);
+    setCalories("");
     stopStepCounterUpdate();
     stepSubscriptionRef.current = null;
     setLoaded(false);
@@ -98,7 +93,7 @@ export default function App(): React.JSX.Element {
     if (isSensorWorking) {
       stopStepCounter();
     } else {
-      if (sensorType === "Step Counter") {
+      if (stepData.counterType === "Step Counter") {
         getBodySensorPermission().then(setGranted);
       } else {
         getStepCounterPermission().then(setGranted);
@@ -139,16 +134,16 @@ export default function App(): React.JSX.Element {
         <View style={styles.container}>
           <View style={styles.indicator}>
             <CircularProgress
-              value={stepCount}
+              value={stepData.steps}
               maxValue={10000}
-              valueSuffix="steps"
+              valueSuffix=" steps"
               progressValueFontSize={42}
               radius={165}
               activeStrokeColor="#cdd27e"
               inActiveStrokeColor="#4c6394"
               inActiveStrokeOpacity={0.5}
               inActiveStrokeWidth={40}
-              subtitle={additionalInfo.calories === "0 kCal" ? "" : additionalInfo.calories}
+              subtitle={calories}
               activeStrokeWidth={40}
               title="Step Count"
               titleColor="#555"

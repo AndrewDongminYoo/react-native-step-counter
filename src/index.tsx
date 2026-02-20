@@ -58,7 +58,7 @@ const StepCounter = (
       )
 ) as Spec;
 
-const StepEventEmitter = new NativeEventEmitter(StepCounter);
+export const StepEventEmitter = new NativeEventEmitter(StepCounter);
 type StepCountUpdateCallback = (...args: readonly StepCountData[]) => void;
 export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
@@ -178,5 +178,5 @@ export function stopStepCounterUpdate(): void {
   StepCounter.stopStepCounterUpdate();
 }
 
-export { NAME, VERSION };
+export { NAME, VERSION, type StepCountData };
 export default StepCounter;
