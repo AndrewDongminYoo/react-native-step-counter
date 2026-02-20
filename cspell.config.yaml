@@ -1,0 +1,11 @@
+version: "0.2"
+ignorePaths: []
+dictionaryDefinitions:
+  - name: step-counter
+    path: ./.cspell/step-counter.txt
+    addWords: true
+dictionaries:
+  - step-counter
+words: []
+ignoreWords: []
+import: []
