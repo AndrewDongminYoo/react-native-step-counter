@@ -4,7 +4,7 @@
 
 한국어 사용자는 [Korean version.](README.kr.md)를 참조하십시오.
 
-This library provides an interface for tracking the number of steps taken by the user in a React Native app. This package uses the `StepCounter` (or Custom accelerometer-based step-counter) Sensor API on Android and the `Core Motion` framework on iOS to count the steps. It's built using Turbo Module, a new module development architecture for React Native. I made this library compatible with both new and legacy architectures. (Because the turbo module is still in the experimental stage. so it is not widely used.)
+This library provides an interface for tracking the number of steps taken by the user in a React Native app. This package uses the `StepCounter` (or custom accelerometer-based step-counter) sensor API on Android and the `Core Motion` framework on iOS to count steps. It is built as a TurboModule and, from `v0.3.0`, requires React Native New Architecture (TurboModule/Fabric).
 
 ## Installation
 
@@ -129,7 +129,7 @@ Thank you for your interest in my first NPM open source package! I've received a
 
     ```shell
     export RCT_NEW_ARCH_ENABLED=1
-    cd example/ios && pod install
+    cd ios && pod install
     ```
 
 - Applying a new architecture to React Native Android applications
@@ -178,12 +178,12 @@ Thank you for your interest in my first NPM open source package! I've received a
   - One key for the response object is `granted`, whether the app user has granted this feature permission, and `supported` is whether the device supports this feature.
   - This NativeModule can apply algorithms to a raw accelerometer to extract walking event data without activity sensor privileges, regardless of this response, but it is not recommended. You must write a code that stops tracking sensor events if user denies read-permission - even if you can do that.
 
-- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: EmitterSubscription:
+- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: `EventSubscription`:
   - If the pedometer sensor is available and supported on the device, register it with the listener in the sensor manager, and return the step count event listener.
-  - If the pedometer sensor is not supported by the device or is not available, register the accelerometer sensor with the listener, generate a accel event through an vector algorithm filter and receive it to the app.
+  - If the pedometer sensor is not supported by the device or is not available, register the accelerometer sensor with the listener, generate an accel event through a vector algorithm filter and receive it to the app.
 
 - `stopStepCounterUpdate(): void`:
-  - unregister registered listener from `sensorManager` and release it.
+  - Removes the subscription registered by `startStepCounterUpdate` and stops the native sensor session.
 
 - `StepCountData`:
   - **Common Interface**
@@ -194,11 +194,8 @@ Thank you for your interest in my first NPM open source package! I've received a
     - `counterType`: The name of the sensor used to count the number of steps. In iOS, only the `CMPedometer` is returned, and in Android, the `StepCounter` or `Accelerometer` is returned depending on the device state.
 
   - **iOS Only**
-    - `floorsAscended`: This is a number property that indicates the number of floors the user has ascended during the specified time period. it can be nil if the device does not support this feature.
-    - `floorsDescended`: This is a number property that indicates the number of floors the user has descended during the specified time period. it can be nil if the device does not support this feature.
-    - `currentPace`: (iOS 9.0+) This is a number property that indicates the current pace of the user in meters per second.
-    - `currentCadence`: (iOS 9.0+) This is a number property that indicates the current cadence of the user in steps per second.
-    - `averageActivePace`: (iOS 10.0+) This is a number property that indicates the average pace of the user in meters per second.
+    - `floorsAscended`: This is a number property that indicates the number of floors the user has ascended during the specified time period. It can be nil if the device does not support this feature.
+    - `floorsDescended`: This is a number property that indicates the number of floors the user has descended during the specified time period. It can be nil if the device does not support this feature.
 
 ## Usage
 
