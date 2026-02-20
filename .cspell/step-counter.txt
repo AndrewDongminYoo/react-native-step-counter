@@ -21,6 +21,7 @@ AUTORELEASING
 Autoresizing
 bigdecimal
 BITCODE
+boolbase
 browserslist
 bser
 buckd
@@ -53,7 +54,10 @@ depd
 DFOLLY
 dimen
 dists
+domelementtype
+domhandler
 domnativemodule
+domutils
 Dongmin
 dongminyu
 Dorg
@@ -153,9 +157,11 @@ mtrl
 nativemodule
 nocache
 nodelib
+nonatomic
 NONLOCALIZED
 nopt
 npmcli
+NSURL
 nullthrows
 nvmrc
 OBJC
@@ -181,6 +187,7 @@ Proguard
 RCTFB
 reactperflogger
 realpath
+redash
 regexpu
 regjsgen
 regjsparser
@@ -242,6 +249,7 @@ weakmap
 webperformance
 webperformancenativemodule
 whatwg
+worklets
 wrappy
 xcassets
 xccheckout
