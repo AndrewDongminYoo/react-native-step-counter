@@ -110,6 +110,8 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
                                       toDate:now
                                  withHandler:^(CMPedometerData *data, NSError *error) {
     if (error) {
+      self->_baselineSteps = 0;
+      self->_baselineReady = YES;
       [self sendEventWithName:@"StepCounter.errorOccurred" body:error];
       return;
     }

@@ -175,8 +175,7 @@ class StepCounterModule(
   }
 
   /**
-   * JS currently passes a Unix timestamp in seconds.
-   * Keep compatibility with millisecond input as well.
+   * JS passes ms; accept seconds too for backward-compat.
    */
   private fun normalizeStartTimestampToMillis(from: Double): Long {
     if (!from.isFinite() || from <= 0) {

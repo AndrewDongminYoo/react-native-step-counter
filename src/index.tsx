@@ -59,7 +59,7 @@ const StepCounter = (
 ) as Spec;
 
 const StepEventEmitter = new NativeEventEmitter(StepCounter);
-type StepCountUpdateCallback = (...args: readonly StepCountData[]) => void;
+type StepCountUpdateCallback = (data: StepCountData) => void;
 
 // Tracks the subscription created by the most recent startStepCounterUpdate call.
 // Only this subscription is removed in stopStepCounterUpdate, so that external
@@ -140,7 +140,7 @@ export function isStepCountingSupported(): Promise<Record<string, boolean>> {
  * When you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
  * @example
  * const startDate = new Date();
- * startStepCounterUpdate(startDate).then((response) => {
+ * subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
  *    const data = parseStepCountData(response);
  * })
  */
@@ -154,11 +154,11 @@ export function startStepCounterUpdate(
   // Clean up any previous subscription registered by this library before creating a new one.
   _activeSubscription?.remove();
   _activeSubscription = null;
-  const from = start.getTime() / 1000;
-  StepCounter.startStepCounterUpdate(from);
+  const from = start.getTime();
   _activeSubscription = StepEventEmitter.addListener(eventName, (data) =>
     callBack(data as StepCountData)
   );
+  StepCounter.startStepCounterUpdate(from);
   return _activeSubscription;
 }
 

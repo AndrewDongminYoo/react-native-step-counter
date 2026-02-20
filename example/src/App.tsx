@@ -119,27 +119,32 @@ export default function App(): React.JSX.Element {
   }, [appendLog, clearLogs]);
 
   const restartStepCounter = React.useCallback(async () => {
-    const isSensorWorking = !!stepSubscriptionRef.current;
-    appendLog("RESTART", { isSensorWorking });
+    const hadSubscription = stepSubscriptionRef.current != null;
+    appendLog("RESTART", { hadSubscription });
 
-    // Stop first (synchronous native stop + local cleanup)
+    // Stop first
     stopStepCounter();
 
-    // Optional: switch permissions / sensor preference behavior (your existing logic)
-    if (!isSensorWorking) {
-      // This block looks suspicious: it uses `stepData.counterType` which was reset in stopStepCounter().
-      // Use previous counterType if you need to branch; for demo we keep simple.
-      // If you truly need this, capture `prevCounterType` BEFORE stopStepCounter().
+    // Re-check capability/permission rather than inferring from subscription existence
+    const cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
+    appendLog("capabilities", cap);
+
+    // If not granted, request permission (platform-specific branching stays yours)
+    if (cap.supported && !cap.granted) {
       const ok = await getStepCounterPermission().catch(() => false);
       setGranted(ok);
       appendLog("permission", { ok });
+      if (!ok) {
+        // Don't start if user denied
+        return;
+      }
     }
 
     progressRef.current?.reAnimate();
 
     // Start new session
     startStepCounter();
-  }, [appendLog, startStepCounter, stopStepCounter]);
+  }, [appendLog, startStepCounter, stopStepCounter, setGranted]);
 
   React.useEffect(() => {
     let cancelled = false;
