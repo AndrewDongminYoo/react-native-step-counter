@@ -1,4 +1,4 @@
-package stepcounter.example
+package com.stepcounter.example
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
