@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Platform, StyleSheet, View, type EventSubscription } from "react-native";
+import { Button, StyleSheet, View, type EventSubscription } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   isSensorWorking,
@@ -13,16 +13,8 @@ import { getBodySensorPermission, getStepCounterPermission } from "./permission"
 import CircularProgress from "react-native-circular-progress-indicator";
 import LogCat from "./LogCat";
 
-type SensorType<T = typeof Platform.OS> = T extends "ios"
-  ? "CMPedometer"
-  : T extends "android"
-    ? "Step Counter" | "Accelerometer"
-    : "NONE";
-
-type SensorName = SensorType<Platform["OS"]>;
-
 /** Setting the initial state of the additionalInfo object. */
-const initState = {
+const initState: Partial<ParsedStepCountData> = {
   dailyGoal: "0/10000 steps",
   stepsString: "0 steps",
   calories: "0 kCal",
@@ -46,7 +38,7 @@ export default function App(): React.JSX.Element {
   const [loaded, setLoaded] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);
-  const [sensorType, setSensorType] = React.useState<SensorName>("NONE");
+  const [sensorType, setSensorType] = React.useState<string>("NONE");
   const [stepCount, setStepCount] = React.useState(0);
   const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(initState);
   const stepSubscriptionRef = React.useRef<EventSubscription | null>(null);
@@ -77,12 +69,12 @@ export default function App(): React.JSX.Element {
     stopStepCounterUpdate();
     setStepCount(0);
     stepSubscriptionRef.current = startStepCounterUpdate(new Date(), (data) => {
-      setSensorType(data.counterType as SensorName);
-      const parsedData = parseStepData(data);
-      setStepCount(parsedData.steps);
-      setAdditionalInfo({
-        ...parsedData,
-      });
+      if (data.counterType != sensorType) {
+        setSensorType(data.counterType);
+      }
+      const { steps, ...additional } = parseStepData(data);
+      setStepCount(steps);
+      setAdditionalInfo(additional);
     });
     setLoaded(true);
   };

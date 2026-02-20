@@ -59,7 +59,7 @@ const StepCounter = (
 ) as Spec;
 
 const StepEventEmitter = new NativeEventEmitter(StepCounter);
-type StepCountUpdateCallback = (...args: readonly any[]) => void;
+type StepCountUpdateCallback = (...args: readonly StepCountData[]) => void;
 export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
 /**
@@ -149,7 +149,7 @@ export function startStepCounterUpdate(
   }
   const from = start.getTime() / 1000;
   StepCounter.startStepCounterUpdate(from);
-  return StepEventEmitter.addListener(eventName, callBack);
+  return StepEventEmitter.addListener(eventName, (data) => callBack(data as StepCountData));
 }
 
 /**
