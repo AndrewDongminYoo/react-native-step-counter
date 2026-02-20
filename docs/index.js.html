@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>index.js - Postman Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/ionicons.min.css" />
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css" />
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
+  </head>
+  <body>
+    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+    <label for="nav-trigger" class="navicon-button x">
+      <div class="navicon"></div>
+    </label>
+
+    <label for="nav-trigger" class="overlay"></label>
+
+    <nav>
+      <h2><a href="index.html">Home</a></h2>
+      <h3>Classes</h3>
+      <ul>
+        <li><a href="UnavailabilityError.html">UnavailabilityError</a></li>
+      </ul>
+      <h3>Global</h3>
+      <ul>
+        <li><a href="global.html#NAME">NAME</a></li>
+        <li><a href="global.html#StepCounter">StepCounter</a></li>
+        <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
+        <li><a href="global.html#parseStepData">parseStepData</a></li>
+        <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
+        <li><a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a></li>
+      </ul>
+    </nav>
+
+    <div id="main">
+      <h1 class="page-title">index.js</h1>
+
+      <section>
+        <article>
+          <pre class="prettyprint source linenums"><code>"use strict";
+
+import StepCounterModule, { eventName, NAME, VERSION } from "./NativeStepCounter.js";
+import { NativeEventEmitter, Platform } from "react-native";
+
+/* A way to check if the module is linked. */
+const LINKING_ERROR = "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" + Platform.select({
+  ios: "- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n",
+  android: "- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`",
+  default: ""
+}) + '- Use the "npx react-native clean" command to clean up the module\'s cache and select the ' + '"watchman", "yarn", "metro", "android", "npm" options with comma-separated. ' + "Re-Install packages and re-build the app again ." + "- You rebuilt the app after installing the package\n" + "- You are not using Expo Go\n" + "If none of these fix the issue, please open an issue on the Github repository: " + "https://github.com/AndrewDongminYoo/react-native-step-counter`";
+/**
+ * A module that allows you to get the step count data.
+ * `CMStepCounter` is deprecated in iOS 8.0. Used `CMPedometer` instead.
+ * floorsAscended - The number of floors ascended during the time period. iOS Only.
+ * floorsDescended - The number of floors descended during the time period. iOS Only.
+ * counterType - The type of counter used to count the steps.
+ * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
+ * @example
+ * import { StepCounter } from '@dongminyu/react-native-step-counter';
+ */
+const StepCounter = StepCounterModule ? StepCounterModule : new Proxy({}, {
+  get() {
+    throw new Error(LINKING_ERROR);
+  }
+});
+const StepEventEmitter = new NativeEventEmitter(StepCounter);
+export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
+
+/**
+ * Transform the step count data into a more readable format.
+ * You can use it or directly use the `StepCountData` type.
+ * @param {StepCountData} data - Step Counter Sensor Event Data.
+ * @returns {ParsedStepCountData} - String Parsed Count Data.
+ */
+export function parseStepData(data) {
+  const {
+    steps,
+    startDate,
+    endDate,
+    distance
+  } = data;
+  const dailyGoal = 10000;
+  const stepsString = steps + " steps";
+  const kCal = (steps * 0.045).toFixed(2) + "kCal";
+  const endDateTime = new Date(endDate).toLocaleTimeString("en-gb");
+  const startDateTime = new Date(startDate).toLocaleTimeString("en-gb");
+  const roundedDistance = distance.toFixed(1) + "m";
+  const stepGoalStatus = steps >= dailyGoal ? "Goal Reached" : `${steps}/${dailyGoal} steps`;
+  return {
+    dailyGoal: stepGoalStatus,
+    steps,
+    stepsString,
+    calories: kCal,
+    startDate: startDateTime,
+    endDate: endDateTime,
+    distance: roundedDistance
+  };
+}
+
+/**
+ * If you're using a method or property that's not available on the current platform, throw this error.
+ * @param {string} moduleName The name of the module.
+ * @param {string} propertyName The name of the property.
+ * @returns {Error} The error.
+ * @example
+ *  if (!StepCounter.startStepCounterUpdate) {
+ *     throw new UnavailabilityError(NativeModuleName, eventName);
+ *  }
+ */
+class UnavailabilityError extends Error {
+  constructor(moduleName, propertyName) {
+    super(`The method or property ${moduleName}.${propertyName} is not available on ${Platform.OS}, ` + "are you sure you've linked all the native dependencies properly?");
+    this.code = "ERR_UNAVAILABLE";
+  }
+}
+
+/**
+ * Returns whether the stepCounter is enabled on the device.
+ * iOS 8.0+ only. Android is available since KitKat (4.4 / API 19).
+ * @see https://developer.android.com/about/versions/android-4.4.html
+ * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
+ * @returns {Promise&lt;Record&lt;string, boolean>>} A promise that resolves with an object containing the stepCounter availability.
+ * supported - Whether the stepCounter is supported on device.
+ * granted - Whether user granted the permission.
+ */
+export function isStepCountingSupported() {
+  return StepCounter.isStepCountingSupported();
+}
+
+/**
+ * Start to subscribe stepCounter updates.
+ * Only the past seven days worth of data is stored and available for you to retrieve.
+ * Specifying a start date that is more than seven days in the past returns only the available data.
+ * ### iOS
+ * `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.
+ * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613950-startupdates
+ * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates
+ * @param {Date} start A date indicating the start of the range over which to measure steps.
+ * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
+ * @returns {EventSubscription} - Returns a Subscription that enables you to call.
+ * When you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
+ * @example
+ * const startDate = new Date();
+ * startStepCounterUpdate(startDate).then((response) => {
+ *    const data = parseStepCountData(response);
+ * })
+ */
+export function startStepCounterUpdate(start, callBack) {
+  if (!StepCounter.startStepCounterUpdate) {
+    throw new UnavailabilityError(NAME, eventName);
+  }
+  const from = start.getTime() / 1000;
+  StepCounter.startStepCounterUpdate(from);
+  return StepEventEmitter.addListener(eventName, callBack);
+}
+
+/**
+ * Stop the step counter updates.
+ * ### iOS
+ * `CMStepCounter.stopStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.stopUpdates` instead.
+ * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613973-stopupdates
+ * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616157-stopstepcountingupdates
+ */
+export function stopStepCounterUpdate() {
+  StepEventEmitter.removeAllListeners(eventName);
+  StepCounter.stopStepCounterUpdate();
+}
+export { NAME, VERSION };
+export default StepCounter;
+//# sourceMappingURL=index.js.map</code></pre>
+        </article>
+      </section>
+    </div>
+
+    <br class="clear" />
+
+    <footer>
+      Documentation generated at Fri Feb 20 2026 12:02:54 GMT+0900 (Korean Standard Time)
+    </footer>
+
+    <script>
+      prettyPrint();
+    </script>
+    <script src="scripts/linenumber.js"></script>
+  </body>
+</html>
