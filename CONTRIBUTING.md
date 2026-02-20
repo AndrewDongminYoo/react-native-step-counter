@@ -37,6 +37,8 @@ To start the packager:
 yarn example start
 ```
 
+> This command runs `react-native start --reset-cache` in the `example` workspace.
+
 To run the example app on Android:
 
 ```sh
@@ -47,6 +49,25 @@ To run the example app on iOS:
 
 ```sh
 yarn example ios
+```
+
+To clean example app build/cache artifacts:
+
+```sh
+yarn example clean
+```
+
+To reinstall iOS pods after cleaning:
+
+```sh
+yarn example postclean
+```
+
+To run CI-aligned build commands for the example app:
+
+```sh
+yarn example build:android
+yarn example build:ios
 ```
 
 To confirm that the app is running with the new architecture, you can check the Metro logs for a message like this:
@@ -103,6 +124,10 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
+- `yarn example clean`: clean Android/Metro/Watchman/Yarn caches for the example app.
+- `yarn example postclean`: reinstall iOS pods after cleaning.
+- `yarn example build:android`: build the Android example with CI-friendly Gradle params.
+- `yarn example build:ios`: build the iOS example in Debug mode.
 
 ### Sending a pull request
 

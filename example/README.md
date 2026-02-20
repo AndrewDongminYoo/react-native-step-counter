@@ -18,6 +18,8 @@ npm start
 yarn start
 ```
 
+> In this repository, `yarn start` runs `react-native start --reset-cache`.
+
 ## Step 2: Build and run your app
 
 With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
@@ -56,6 +58,22 @@ npm run ios
 
 # OR using Yarn
 yarn ios
+```
+
+### Additional scripts
+
+The example workspace also includes helper scripts used in local development and CI:
+
+```sh
+# Clean Android/Metro/Watchman/Yarn caches
+yarn clean
+
+# Reinstall iOS pods after cleaning
+yarn postclean
+
+# Build commands used by CI
+yarn build:android
+yarn build:ios
 ```
 
 If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.

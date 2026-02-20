@@ -254,6 +254,7 @@ playstore
 PODFILE
 podspec
 podspecs
+postclean
 Preact
 pricetag
 pricetags

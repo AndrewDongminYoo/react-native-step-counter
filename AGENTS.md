@@ -16,8 +16,12 @@
 - `yarn typecheck`: Run TypeScript checks for the library package.
 - `yarn prepare`: Build distributable artifacts into `lib/`.
 - `yarn clean`: Remove generated build outputs from root and example apps.
-- `yarn example start`: Start Metro for the example app.
+- `yarn example start`: Start Metro for the example app (with `--reset-cache`).
 - `yarn example android` / `yarn example ios`: Run example app on device/simulator.
+- `yarn example clean`: Clean Android/Metro/Watchman/Yarn caches in the example app.
+- `yarn example postclean`: Reinstall iOS Pods in `example/ios` after cleaning.
+- `yarn example build:android`: Run CI-aligned Android build for the example app.
+- `yarn example build:ios`: Run Debug iOS build for the example app.
 - `trunk check`: Run configured lint/security checks from `.trunk/trunk.yaml`.
 - `trunk fmt`: Apply formatter fixes supported by Trunk.
 
