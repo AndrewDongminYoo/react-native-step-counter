@@ -10,17 +10,17 @@ This library provides an interface for tracking the number of steps taken by the
 
 ```shell
 # if you use pure npm (what a classic!),
-npm install react-native-step-counter
+npm install @dongminyu/react-native-step-counter
 ```
 
 ```shell
 # or if you prefer to use Yarn (I love it's parallel install feature),
-yarn add react-native-step-counter
+yarn add @dongminyu/react-native-step-counter
 ```
 
 ```shell
 # or if you use pnpm (it's fast and efficient),
-pnpm add react-native-step-counter
+pnpm add @dongminyu/react-native-step-counter
 ```
 
 Native modules will automatically connect after React Native 0.60 version. So you don't need to link the native modules manually.
@@ -36,7 +36,6 @@ Thank you for your interest in my first NPM open source package! I've received a
 ## Setup the New Architecture
 
 - Applying a new architecture to React Native applications (Common)
-
   1. React Native released the support for the New Architecture with the release [`0.68.0`](https://reactnative.dev/blog/2022/03/30/version-068#opting-in-to-the-new-architecture).
   2. This is written with the expectation that you’re using the [latest React Native release](https://github.com/facebook/react-native/releases/latest).
   3. You can find instructions on how to upgrade in the [page upgrading to new versions](https://reactnative.dev/docs/upgrading).
@@ -78,7 +77,6 @@ Thank you for your interest in my first NPM open source package! I've received a
 
   _4_. Rename all Objective-C(.m) files to Objective-C++ (.mm)
   _5_. Make your AppDelegate conform to RCTAppDelegate
-
   - [ios/StepCounterExample/AppDelegate.h](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h)
 
     ```diff
@@ -170,23 +168,18 @@ Thank you for your interest in my first NPM open source package! I've received a
 ## Interface
 
 - `isStepCountingSupported()`: Promise<Record<string, boolean>>: method to check if the device has a feature related step counter or accelerometer.
-
   - One key for the response object is `granted`, whether the app user has granted this feature permission, and `supported` is whether the device supports this feature.
   - This NativeModule can apply algorithms to a raw accelerometer to extract walking event data without activity sensor privileges, regardless of this response, but it is not recommended. You must write a code that stops tracking sensor events if user denies read-permission - even if you can do that.
 
 - `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: EmitterSubscription:
-
   - If the pedometer sensor is available and supported on the device, register it with the listener in the sensor manager, and return the step count event listener.
   - If the pedometer sensor is not supported by the device or is not available, register the accelerometer sensor with the listener, generate a accel event through an vector algorithm filter and receive it to the app.
 
 - `stopStepCounterUpdate(): void`:
-
   - unregister registered listener from `sensorManager` and release it.
 
 - `StepCountData`:
-
   - **Common Interface**
-
     - `steps`: This is a number property that indicates the number of steps taken by the user during the specified time period.
     - `startDate`: This is a number property that indicates the start date of the data in Unix timestamp format, measured in milliseconds.
     - `endDate`: This is a number property that indicates the end date of the data in Unix timestamp format, measured in milliseconds.
@@ -213,7 +206,7 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from 'react-native-step-counter';
+} from '@dongminyu/react-native-step-counter';
 ```
 
 Use the `isStepCountingSupported` method to check if the device has a step counter or accelerometer sensor.

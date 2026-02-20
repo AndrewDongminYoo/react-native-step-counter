@@ -8,17 +8,17 @@ English-speaking developers, please return to the repository main page or click 
 
 ```shell
 # npm을 사용한다면, (기본 패키지 매니저입니다.)
-npm install react-native-step-counter
+npm install @dongminyu/react-native-step-counter
 ```
 
 ```shell
 # Yarn을 선호한다면, (병렬 설치를 지원해 빠른 속도를 제공하는 패키지 매니저입니다.)
-yarn add react-native-step-counter
+yarn add @dongminyu/react-native-step-counter
 ```
 
 ```shell
 # pnpm을 선호한다면, (글로벌 패키지와 하드링크로 빠른 속도를 제공하는 패키지 매니저입니다.)
-pnpm add react-native-step-counter
+pnpm add @dongminyu/react-native-step-counter
 ```
 
 리액트네이티브 0.60 버전 이후 설치된 네이티브 모듈은 오토 링크됩니다. 네이티브 모듈을 수동으로 연결할 필요가 없습니다.
@@ -34,7 +34,6 @@ pnpm add react-native-step-counter
 ## 라이브러리를 의존성에 추가하기 전 사전세팅
 
 - 리액트 네이티브 애플리케이션 공통 변경사항 셋업
-
   1. React Native는 [`0.68.0`](https://reactnative.dev/blog/2022/03/30/version-068#opting-in-to-the-new-architecture) 버전 릴리스와 함께 새 아키텍처를 디폴트로 선언했습니다. 따라서 이 버전 이하의 리액트네이티브 라이브러리를 의존하고 있는 애플리케이션은 업데이트해야 합니다. 안드로이드는 0.71.0 이상으로 업데이트하는 것이 좋습니다.
   2. 대부분의 리액트 네이티브 문서와 마찬가지로 이 문서는 최신 리액트 네이티브 [릴리즈](https://github.com/facebook/react-native/releases/latest) 버전을 사용한다는 것을 전제로 작성되었습니다.
   3. 버전 업그레이드에 어려움을 겪고 있다면 다음 페이지를 참고하시길 바랍니다. [새로운 버전으로 업그레이드](https://reactnative.dev/docs/upgrading).
@@ -76,7 +75,6 @@ pnpm add react-native-step-counter
 
   _4_. ios 애플리케이션 폴더 내의 모든 Objective-C(.m) 파일의 이름을 Objective-C++(.mm)으로 변경합니다. (Objective-C++의 문법은 Objective-C의 확장입니다.)
   _5_. ios 애플리케이션 폴더 내의 AppDelegate 파일(헤더파일/소스파일)들이 RCTAppDelegate 인터페이스를 구현하도록 변경합니다.
-
   - [ios/StepCounterExample/AppDelegate.h](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h)
 
     ```diff
@@ -168,25 +166,20 @@ pnpm add react-native-step-counter
 ## Interface
 
 - `isStepCountingSupported()`: Promise<Record<string, boolean>>: 장치에 기능 관련 스텝 카운터 또는 가속도계가 있는지 확인하는 메서드입니다.
-
   - 응답 객체의 키 `granted`의 Boolean 값은 앱 사용자가 이 기능 사용 권한을 부여했는지 권한 허용 여부이며, `supported`는 장치가 이 기능을 지원하는지 여부입니다. 장치에 스텝 카운터 센서가 존재하는지만을 체크하기 때문에 실제로 사용가능한 상태인지는 알 수 없습니다.
   - 이 응답의 참/거짓 값과 실제 센서의 작동 여부는 일치하지 않을 수 있습니다. 만보계 센서를 찾지 못하거나 사용자가 접근을 거부한 경우에도, 모듈은 동작센서 권한 허용과 관계없이 원시 가속도계에 알고리즘을 적용하여 보행 이벤트 데이터를 추출하는 것이 가능하지만 권장되지 않습니다. 사용자가 읽기 권한을 거부할 경우 센서 이벤트 추적을 중지하는 코드를 반드시 작성해야 합니다.
 
 - `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: EmitterSubscription:
-
   - 만보계 센서가 장치에서 지원되고 사용 가능한 상태인 경우 센서 매니저의 수신기 이벤트 리스너를 등록하고 스텝 카운트 이벤트 수신기를 자바스크립트에 전달합니다.
   - 만보계 센서가 장치에서 지원되지 않거나 사용할 수 없는 경우, 가속도계 센서를 리스너에 등록하고, 걸음을 감지하는 벡터 알고리즘 필터를 통해 걸음 이벤트를 생성한 후 앱으로 전달합니다.
   - `start`는 `Date` 객체로, 이벤트를 수신하기 시작할 날짜를 나타냅니다. (new Date())
   -
 
 - `stopStepCounterUpdate()`: void:
-
   - `sensorManager`에 등록되어 있는 센서 이벤트 리스너를 해제합니다.
 
 - `StepCountData`:
-
   - **공통 데이터**
-
     - `steps`: 지정된 기간 동안 사용자가 걸은 걸음 수를 나타내는 숫자 속성입니다.
     - `startDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 시작 날짜를 나타내는 숫자 속성입니다.
     - `endDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 종료 날짜를 나타내는 숫자 속성입니다.
@@ -213,7 +206,7 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from 'react-native-step-counter';
+} from '@dongminyu/react-native-step-counter';
 ```
 
 `isStepCountingSupported` 메소드를 사용하여 장치에 스텝 카운터 또는 가속도계 센서가 있는지 확인합니다.
