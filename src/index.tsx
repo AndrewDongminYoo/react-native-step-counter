@@ -62,6 +62,11 @@ const StepEventEmitter = new NativeEventEmitter(StepCounter);
 type StepCountUpdateCallback = (...args: readonly StepCountData[]) => void;
 export const isSensorWorking = StepEventEmitter.listenerCount(eventName) > 0;
 
+// Tracks the subscription created by the most recent startStepCounterUpdate call.
+// Only this subscription is removed in stopStepCounterUpdate, so that external
+// subscribers (e.g. debug log components) are not unintentionally removed.
+let _activeSubscription: EventSubscription | null = null;
+
 /**
  * Transform the step count data into a more readable format.
  * You can use it or directly use the `StepCountData` type.
@@ -147,9 +152,15 @@ export function startStepCounterUpdate(
   if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
+  // Clean up any previous subscription registered by this library before creating a new one.
+  _activeSubscription?.remove();
+  _activeSubscription = null;
   const from = start.getTime() / 1000;
   StepCounter.startStepCounterUpdate(from);
-  return StepEventEmitter.addListener(eventName, (data) => callBack(data as StepCountData));
+  _activeSubscription = StepEventEmitter.addListener(eventName, (data) =>
+    callBack(data as StepCountData)
+  );
+  return _activeSubscription;
 }
 
 /**
@@ -160,7 +171,10 @@ export function startStepCounterUpdate(
  * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616157-stopstepcountingupdates
  */
 export function stopStepCounterUpdate(): void {
-  StepEventEmitter.removeAllListeners(eventName);
+  // Remove only the subscription registered by this library, not all listeners.
+  // Calling removeAllListeners would break external subscribers such as debug log components.
+  _activeSubscription?.remove();
+  _activeSubscription = null;
   StepCounter.stopStepCounterUpdate();
 }
 

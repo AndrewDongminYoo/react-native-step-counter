@@ -78,7 +78,11 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
     [self.pedometer stopPedometerUpdates];
 
     // JS passes Date.getTime() / 1000 (seconds since epoch); convert to NSDate.
-    _sessionStartDate = from > 0 ? [NSDate dateWithTimeIntervalSince1970:from] : [NSDate date];
+    // Guard: if the caller accidentally passes milliseconds (value > 1e12), divide once more.
+    // A valid Unix timestamp in seconds is ~1.7–1.9 billion (2024–2030);
+    // a millisecond timestamp is ~1.7–1.9 trillion.
+    double fromSeconds = from > 1e12 ? from / 1000.0 : from;
+    _sessionStartDate = fromSeconds > 0 ? [NSDate dateWithTimeIntervalSince1970:fromSeconds] : [NSDate date];
     _lastCumulativeSteps = 0;
 
     [self.pedometer startPedometerUpdatesFromDate:_sessionStartDate
@@ -88,14 +92,31 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
                                body:error];
         } else if (pedometerData) {
             NSInteger incomingSteps = [pedometerData.numberOfSteps integerValue];
-            // CMPedometer delivers two types of updates interleaved:
-            //   1. Cumulative (startDate = session start): numberOfSteps = total since session start
-            //   2. Activity-window (startDate = recent walk segment): numberOfSteps = that segment only
-            // Type-2 updates have a smaller step count and cause the reported value to jump backwards.
-            // A monotonic filter is the most robust fix: only emit when the step count increases,
-            // so activity-window updates that carry fewer steps are silently dropped.
+
+            // ── Filter 1: catch-up guard ──────────────────────────────────────────
+            // CMPedometer may deliver a retrospective "catch-up" update when the
+            // device was already mid-walk when startPedometerUpdatesFromDate: was
+            // called.  That update's startDate reflects the walking session's ACTUAL
+            // start (possibly hours ago), not the date we requested.  Its step count
+            // represents the entire session up to now (~150), producing a sudden jump
+            // after a few real-time increments (1, 2, 3 → 150).
+            // Discard any update whose startDate is more than 5 seconds BEFORE our
+            // requested session start; regular live updates always have
+            // startDate ≈ _sessionStartDate.
+            NSTimeInterval startDiff =
+                [pedometerData.startDate timeIntervalSinceDate:self->_sessionStartDate];
+            if (startDiff < -5.0) {
+                return; // Historical catch-up — discard to keep count from session start.
+            }
+
+            // ── Filter 2: monotonic guard ─────────────────────────────────────────
+            // CMPedometer also interleaves activity-window updates (startDate = recent
+            // walk segment, numberOfSteps = just that segment) with cumulative updates
+            // (startDate ≈ session start, numberOfSteps = total since session start).
+            // Activity-window counts are smaller and would cause backward jumps.
+            // Only emit when the step count strictly increases.
             if (incomingSteps <= self->_lastCumulativeSteps) {
-                return; // Not a new high — drop this update to prevent backward jumps.
+                return; // Not a new high — drop to prevent backward jumps.
             }
             self->_lastCumulativeSteps = incomingSteps;
 
