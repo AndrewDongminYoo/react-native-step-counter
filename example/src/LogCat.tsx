@@ -1,7 +1,17 @@
 import StepCounter from "@dongminyu/react-native-step-counter";
 import React, { Fragment, useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  Clipboard,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
+} from "react-native";
 import { NativeEventEmitter } from "react-native";
+import Svg, { Rect } from "react-native-svg";
 console.debug("🚀 - NativeModules.StepCounter:", StepCounter);
 
 const eventEmitter = new NativeEventEmitter(StepCounter);
@@ -19,7 +29,27 @@ const eventEmitter = new NativeEventEmitter(StepCounter);
  */
 const LogCat = ({ triggered: _triggered }: { triggered: boolean }) => {
   const [logs, setLogs] = useState<string[]>([]);
+  const [copyText, setCopyText] = useState("Copy");
   const scrollRef = React.useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const copyTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const copyLogs = () => {
+    if (logs.length === 0) {
+      return;
+    }
+
+    Clipboard.setString(logs.join("\n"));
+    setCopyText("Copied");
+    if (Platform.OS === "android") {
+      ToastAndroid.show("Logs copied to clipboard", ToastAndroid.SHORT);
+    }
+    if (copyTimerRef.current) {
+      clearTimeout(copyTimerRef.current);
+    }
+    copyTimerRef.current = setTimeout(() => {
+      setCopyText("Copy");
+    }, 1200);
+  };
 
   useEffect(() => {
     const supportedEvents = [
@@ -38,12 +68,35 @@ const LogCat = ({ triggered: _triggered }: { triggered: boolean }) => {
 
     return () => {
       subscriptions.forEach((sub) => sub.remove());
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+      }
     };
   }, []);
 
   return (
     <View style={styles.container}>
-      <ScrollView ref={scrollRef}>
+      <View style={styles.header}>
+        <Text style={styles.title}>LogCat</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Copy logs"
+          disabled={logs.length === 0}
+          onPress={copyLogs}
+          style={({ pressed }) => [
+            styles.copyButton,
+            logs.length === 0 && styles.copyButtonDisabled,
+            pressed && styles.copyButtonPressed,
+          ]}
+        >
+          <Svg height={16} viewBox="0 0 24 24" width={16}>
+            <Rect height={10} rx={2} stroke="#f3f4f6" strokeWidth={1.8} width={10} x={10} y={10} />
+            <Rect height={10} rx={2} stroke="#f3f4f6" strokeWidth={1.8} width={10} x={4} y={4} />
+          </Svg>
+          <Text style={styles.copyText}>{copyText}</Text>
+        </Pressable>
+      </View>
+      <ScrollView ref={scrollRef} style={styles.logArea}>
         {logs.map((log, index) => (
           <Text key={index} style={styles.log}>
             {formatLog(log)}
@@ -120,7 +173,7 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     bottom: 0,
-    height: 200,
+    height: "45%",
     width: "100%",
     alignItems: "stretch",
     justifyContent: "center",
@@ -130,6 +183,42 @@ const styles = StyleSheet.create({
     borderColor: "white",
     borderWidth: 2,
     backgroundColor: "#111827",
+  },
+  header: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  title: {
+    color: "#f3f4f6",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  copyButton: {
+    alignItems: "center",
+    backgroundColor: "#334155",
+    borderColor: "#64748b",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  copyButtonPressed: {
+    opacity: 0.85,
+  },
+  copyButtonDisabled: {
+    opacity: 0.45,
+  },
+  copyText: {
+    color: "#f3f4f6",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  logArea: {
+    flex: 1,
   },
   log: {
     fontFamily: "Helvetica",

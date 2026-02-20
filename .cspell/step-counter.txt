@@ -256,6 +256,7 @@ podspec
 podspecs
 postclean
 Preact
+Pressable
 pricetag
 pricetags
 Proguard

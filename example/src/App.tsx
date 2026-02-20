@@ -69,8 +69,10 @@ export default function App(): React.JSX.Element {
         setSensorType(data.counterType);
       }
       const { steps, ...additional } = parseStepData(data);
-      setStepCount(steps);
-      setAdditionalInfo(additional);
+      if (stepCount <= steps) {
+        setStepCount(steps);
+        setAdditionalInfo(additional);
+      }
     });
     setLoaded(true);
   };
@@ -185,6 +187,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     display: "flex",
-    marginVertical: 8,
   },
 });
