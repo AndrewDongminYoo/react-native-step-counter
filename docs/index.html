@@ -75,9 +75,22 @@ pnpm add @dongminyu/react-native-step-counter
             Native modules will automatically connect after React Native 0.60 version. So you don't
             need to link the native modules manually.
           </p>
+          <blockquote>
+            <p>
+              ⚠️ <strong>New Architecture required from v0.3.0</strong>: This version requires React
+              Native's New Architecture (TurboModule/Fabric) to be enabled.
+            </p>
+            <p>
+              ✅ <strong>Minimum supported React Native version</strong>: <code>&gt;=0.71.0</code>
+            </p>
+            <p>
+              Expo Go, Expo managed workflow, and React Native versions below
+              <code>0.71.0</code> are not supported.
+            </p>
+          </blockquote>
           <p>
-            👣 if you are using the legacy architecture, you need to follow the guide below.
-            otherwise, you can <a href="#android">skip</a> next step.
+            👣 If you have not yet enabled the New Architecture, follow the guide below. If it is
+            already enabled, you can <a href="#android">skip</a> to the next step.
           </p>
           <h2>
             IF YOU WANT SEE A DEMO IN STANDALONE REACT-NATIVE APPLICATION, SEE
@@ -158,10 +171,7 @@ pnpm add @dongminyu/react-native-step-counter
                   href="https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25"
                   >12.4</a
                 >
-                or higher. (<a
-                  href="https://github.com/facebook/react-native/blob/main/scripts/react_native_pods.rb#LL29-L31C4"
-                  >min_ios_version_supported</a
-                >)
+                or higher.
               </p>
               <pre class="prettyprint source lang-diff"><code>- platform :ios, '11.0'
 + platform :ios, '12.4'
@@ -192,12 +202,7 @@ pnpm add @dongminyu/react-native-step-counter
               </p>
               <ul>
                 <li>
-                  <p>
-                    <a
-                      href="https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.h"
-                      >ios/StepCounterExample/AppDelegate.h</a
-                    >
-                  </p>
+                  <p><code>AppDelegate.h</code> example:</p>
                   <pre
                     class="prettyprint source lang-diff"
                   ><code>- #import &lt;React/RCTBridgeDelegate.h>
@@ -212,12 +217,7 @@ pnpm add @dongminyu/react-native-step-counter
 </code></pre>
                 </li>
                 <li>
-                  <p>
-                    <a
-                      href="https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/ios/StepCounterExample/AppDelegate.mm"
-                      >ios/StepCounterExample/AppDelegate.mm</a
-                    >
-                  </p>
+                  <p><code>AppDelegate.mm</code> example:</p>
                   <pre
                     class="prettyprint source lang-objective-c++"
                   ><code>#import &quot;AppDelegate.h&quot;
@@ -244,10 +244,20 @@ pnpm add @dongminyu/react-native-step-counter
 @end
 </code></pre>
                 </li>
+              </ul>
+              <blockquote>
+                <p>
+                  <strong>Note for Swift projects (React Native 0.76+):</strong> If your app uses a
+                  Swift-based <code>AppDelegate.swift</code>, New Architecture is already enabled by
+                  default. No AppDelegate changes are required — simply run
+                  <code>pod install</code> with <code>RCT_NEW_ARCH_ENABLED=1</code>.
+                </p>
+              </blockquote>
+              <ul>
                 <li>
                   <p>Run <code>pod install</code></p>
                   <pre class="prettyprint source lang-shell"><code>export RCT_NEW_ARCH_ENABLED=1
-cd ios && pod install
+cd example/ios && pod install
 </code></pre>
                 </li>
               </ul>
@@ -493,7 +503,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Fri Feb 20 2026 12:02:54 GMT+0900 (Korean Standard Time)
+      Documentation generated at Fri Feb 20 2026 18:15:34 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>
