@@ -46,7 +46,7 @@ Thank you for your interest in my first NPM open source package! I've received a
 
 - Applying a new architecture to React Native iOS applications
 
-  _1_. set platform version to [12.4](https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25) or higher. ([min_ios_version_supported](https://github.com/facebook/react-native/blob/main/scripts/react_native_pods.rb#LL29-L31C4))
+  _1_. set platform version to [12.4](https://github.com/facebook/react-native/blob/main/CHANGELOG.md#ios-specific-25) or higher.
 
   ```diff
   - platform :ios, '11.0'
