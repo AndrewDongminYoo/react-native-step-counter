@@ -120,6 +120,7 @@ Thank you for your interest in my first NPM open source package! I've received a
     @end
     ```
 
+  > **Note for Swift projects (React Native 0.76+):** If your app uses a Swift-based `AppDelegate.swift`, New Architecture is already enabled by default. No AppDelegate changes are required — simply run `pod install` with `RCT_NEW_ARCH_ENABLED=1`.
   - Run `pod install`
 
     ```shell

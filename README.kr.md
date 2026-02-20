@@ -118,6 +118,7 @@ pnpm add @dongminyu/react-native-step-counter
     @end
     ```
 
+  > **Swift 프로젝트 안내 (React Native 0.76 이상):** `AppDelegate.swift` 기반의 앱이라면 New Architecture가 이미 기본 활성화되어 있습니다. AppDelegate 파일 수정 없이 `RCT_NEW_ARCH_ENABLED=1`을 설정한 뒤 `pod install`만 실행하면 됩니다.
   - Run `pod install`
 
     ```shell
