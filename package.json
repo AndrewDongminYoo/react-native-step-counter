@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "example": "yarn workspace @dongminyu/react-native-step-counter-example",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build example/ios/Pods lib",
     "prepare": "bob build",
     "typecheck": "tsc"
   },
