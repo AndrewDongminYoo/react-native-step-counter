@@ -58,6 +58,18 @@ class AccelerometerService(
   // We want to keep a history of values to do a rolling average of the current
   private val velocityRing = FloatArray(VELOCITY_RING_SIZE)
 
+  override fun resetSessionState() {
+    currentSteps = 0.0
+    velocityRingCounter = 0
+    accelRingCounter = 0
+    oldVelocityEstimate = 0f
+    lastStepTimeNs = 0
+    accelRingX.fill(0f)
+    accelRingY.fill(0f)
+    accelRingZ.fill(0f)
+    velocityRing.fill(0f)
+  }
+
   /**
    * This function is responsible for updating the current steps.
    * All [values][android.hardware.SensorEvent.values] are in SI units (m/s^2)

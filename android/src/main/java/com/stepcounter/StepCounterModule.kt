@@ -108,13 +108,14 @@ class StepCounterModule(
    */
   @ReactMethod
   override fun startStepCounterUpdate(from: Double) {
+    val sessionStartMillis = normalizeStartTimestampToMillis(from)
     stepCounterListener = stepCounterListener ?: if (stepsOK) {
       StepCounterService(this, sensorManager)
     } else {
       AccelerometerService(this, sensorManager)
     }
     Log.d(TAG_NAME, "startStepCounterUpdate")
-    stepCounterListener!!.startService()
+    stepCounterListener!!.startService(sessionStartMillis)
   }
 
   /**
@@ -170,6 +171,21 @@ class StepCounterModule(
     } catch (e: RuntimeException) {
       e.message?.let { Log.e(TAG_NAME, it) }
       Log.e(TAG_NAME, eventType, e)
+    }
+  }
+
+  /**
+   * JS currently passes a Unix timestamp in seconds.
+   * Keep compatibility with millisecond input as well.
+   */
+  private fun normalizeStartTimestampToMillis(from: Double): Long {
+    if (!from.isFinite() || from <= 0) {
+      return System.currentTimeMillis()
+    }
+    return if (from >= 1_000_000_000_000.0) {
+      from.toLong()
+    } else {
+      (from * 1000).toLong()
     }
   }
 }

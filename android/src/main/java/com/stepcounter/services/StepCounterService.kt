@@ -51,6 +51,11 @@ class StepCounterService(
       }
     }
 
+  override fun resetSessionState() {
+    previousSteps = 0.0
+    currentSteps = 0.0
+  }
+
   /**
    * This function is responsible for updating the current steps.
    * @param [eventData][FloatArray(1) values][android.hardware.SensorEvent.values] The step counter event data

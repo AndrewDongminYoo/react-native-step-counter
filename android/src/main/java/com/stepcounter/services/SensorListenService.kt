@@ -144,9 +144,15 @@ abstract class SensorListenService(
   abstract var currentSteps: Double
 
   /**
+   * Reset in-memory session state before a new counting session starts.
+   */
+  protected open fun resetSessionState() {
+  }
+
+  /**
    * Start date of the step counting. UTC milliseconds
    */
-  private val startDate: Long = System.currentTimeMillis()
+  private var startDate: Long = System.currentTimeMillis()
 
   /**
    * End date of the step counting. UTC milliseconds
@@ -170,7 +176,10 @@ abstract class SensorListenService(
    * @see android.content.Context.stopService
    * @see SensorManager.registerListener
    */
-  fun startService() {
+  fun startService(startDateMillis: Long? = null) {
+    startDate =
+      startDateMillis?.takeIf { it > 0 } ?: System.currentTimeMillis()
+    resetSessionState()
     counterModule.sendDeviceEvent("stepsSensorInfo", stepsSensorInfo)
     Log.d(TAG_NAME, "SensorManager.stepsSensorInfo: $stepsSensorInfo")
     sensorManager.registerListener(this, detectedSensor, samplingPeriodUs)
