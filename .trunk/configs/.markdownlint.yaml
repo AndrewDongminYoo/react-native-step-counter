@@ -1,11 +1,7 @@
-# Autoformatter friendly markdownlint config (all formatting rules disabled)
-default: true
-blank_lines: false
-bullet: false
-html: false
-indentation: false
-line_length: false
-spaces: false
-url: false
-whitespace: false
-MD024: false
+# Prettier friendly markdownlint config (all formatting rules disabled)
+extends: markdownlint/style/prettier
+
+# Multiple top-level headings in the same document
+MD025: false
+# Inline HTML
+MD033: false
