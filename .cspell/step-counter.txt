@@ -150,6 +150,7 @@ ifdef
 imagemanager
 infile
 INFOPLIST
+initialises
 inputaccessory
 instancetype
 intersectionobserver
