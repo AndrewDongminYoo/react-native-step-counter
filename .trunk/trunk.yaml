@@ -20,16 +20,16 @@ runtimes:
 lint:
   ignore:
     - linters: [shellcheck]
-      paths: ["**/gradlew"]
+      paths: [example/android/gradlew]
     - linters: [osv-scanner]
-      paths: ["**/Podfile.lock"]
+      paths: [example/ios/Podfile.lock]
     - linters: [markdownlint]
       paths: [.github/**/*.md]
   enabled:
     - swiftformat@0.59.1
     - osv-scanner@2.2.4
     - actionlint@1.7.11
-    - checkov@3.2.504
+    - checkov@3.2.505
     - dotenv-linter@4.0.0
     - git-diff-check
     - ktlint@1.8.0

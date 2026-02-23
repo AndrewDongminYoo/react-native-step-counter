@@ -77,9 +77,6 @@
     "react": "*",
     "react-native": ">=0.71.0"
   },
-  "resolutions": {
-    "fast-xml-parser": "^5.3.6"
-  },
   "workspaces": [
     "example"
   ],

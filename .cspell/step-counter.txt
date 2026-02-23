@@ -51,6 +51,7 @@ chownr
 citty
 cliui
 cmdline
+cmfj
 cocoapods
 Codegen
 codepen
@@ -126,6 +127,7 @@ fullwidth
 fxparser
 gensync
 GETTIME
+GHSA
 gifs
 giget
 gitmoji
@@ -342,6 +344,7 @@ videocam
 videocamera
 virtualview
 virtualviewexperimental
+Vulns
 waterdrop
 wcwidth
 weakmap
