@@ -1,4 +1,3 @@
-import React from "react";
 import type { ReactNode } from "react";
 
 export const SafeAreaProvider = ({ children }: { children: ReactNode }) => <>{children}</>;

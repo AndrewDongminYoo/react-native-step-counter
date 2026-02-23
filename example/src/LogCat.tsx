@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   Clipboard,
   Platform,
@@ -8,6 +8,8 @@ import {
   Text,
   ToastAndroid,
   View,
+  type HostInstance,
+  type ScrollViewImperativeMethods,
 } from "react-native";
 import Svg, { Rect } from "react-native-svg";
 
@@ -28,7 +30,7 @@ const LogCat = ({
   onClear: () => void;
 }) => {
   const [copyText, setCopyText] = useState("Copy");
-  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const scrollRef = useRef<HostInstance & ScrollViewImperativeMethods>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-scroll on new logs
