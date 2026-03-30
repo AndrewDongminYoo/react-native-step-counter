@@ -18,6 +18,7 @@ permissions: read-all
 
 jobs:
   lint:
+    if: ${{ !contains(fromJSON('["dependabot[bot]", "renovate[bot]", "snyk-bot", "allcontributors[bot]"]'), github.actor) }}
     runs-on: ubuntu-latest
 
     steps:
@@ -31,6 +32,7 @@ jobs:
         run: yarn typecheck
 
   build-library:
+    if: ${{ !contains(fromJSON('["dependabot[bot]", "renovate[bot]", "snyk-bot", "allcontributors[bot]"]'), github.actor) }}
     runs-on: ubuntu-latest
 
     steps:
@@ -44,6 +46,7 @@ jobs:
         run: yarn prepare
 
   build-android:
+    if: ${{ !contains(fromJSON('["dependabot[bot]", "renovate[bot]", "snyk-bot", "allcontributors[bot]"]'), github.actor) }}
     runs-on: ubuntu-latest
 
     steps:
@@ -79,6 +82,7 @@ jobs:
         run: yarn example build:android
 
   build-ios:
+    if: ${{ !contains(fromJSON('["dependabot[bot]", "renovate[bot]", "snyk-bot", "allcontributors[bot]"]'), github.actor) }}
     runs-on: macos-latest
 
     env:
