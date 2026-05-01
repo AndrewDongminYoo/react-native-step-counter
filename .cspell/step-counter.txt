@@ -62,8 +62,10 @@ componentregistrynative
 confbox
 consola
 Consolas
+CONSTEVAL
 corejs
 cosmiconfig
+CPLUSPLUS
 CPLUSPLUSFLAGS
 csstype
 cxxreact
