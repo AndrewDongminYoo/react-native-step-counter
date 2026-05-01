@@ -37,6 +37,7 @@ buildscript
 cacache
 callinvoker
 callsites
+ccls
 CDPATH
 cdpmetrics
 CFLAGS
@@ -78,6 +79,7 @@ DFOLLY
 dimen
 discarder
 dists
+docstrings
 domelementtype
 domhandler
 domnativemodule
@@ -141,7 +143,9 @@ grayscale
 hackernews
 hapi
 hasown
+haxe
 hermesc
+hlsl
 hmap
 hoek
 icecream
@@ -232,6 +236,7 @@ nypm
 OBJC
 octocat
 ohash
+omnisharp
 Onone
 opentype
 optimise
@@ -249,6 +254,7 @@ performancecdpmetrics
 performancetimeline
 personadd
 perspectivev
+phpactor
 phun
 picocolors
 picomatch
@@ -273,6 +279,7 @@ redash
 regexpu
 regjsgen
 regjsparser
+rego
 rendererconsistency
 renderercss
 rendererdebug
@@ -300,6 +307,8 @@ sinonjs
 sisteransi
 skipbackward
 skipforward
+solargraph
+solidlsp
 sprintf
 SRCROOT
 Srcs
@@ -311,6 +320,7 @@ Subviews
 swiftformat
 symbolicate
 systemjs
+systemverilog
 templateprocessor
 tennisball
 Testables
