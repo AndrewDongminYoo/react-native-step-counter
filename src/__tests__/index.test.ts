@@ -49,8 +49,8 @@ describe("exported constants", () => {
     expect(NAME).toBe("StepCounter");
   });
 
-  it('VERSION is "0.3.0"', () => {
-    expect(VERSION).toBe("0.3.0");
+  it('VERSION is "0.3.1"', () => {
+    expect(VERSION).toBe("0.3.1");
   });
 
   it('eventName is "StepCounter.stepCounterUpdate"', () => {

@@ -24,7 +24,7 @@ export type StepCountData = {
 };
 
 export const NAME = "StepCounter";
-export const VERSION = "0.3.0";
+export const VERSION = "0.3.1";
 export const eventName = "StepCounter.stepCounterUpdate";
 
 export interface Spec extends TurboModule {

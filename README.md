@@ -174,7 +174,7 @@ Thank you for your interest in my first NPM open source package! I've received a
 
 ## Interface
 
-- `isStepCountingSupported()`: Promise<Record<string, boolean>>: method to check if the device has a feature related step counter or accelerometer.
+- `isStepCountingSupported()`: `Promise<{ supported: boolean; granted: boolean }>`: method to check if the device has a feature related step counter or accelerometer.
   - One key for the response object is `granted`, whether the app user has granted this feature permission, and `supported` is whether the device supports this feature.
   - This NativeModule can apply algorithms to a raw accelerometer to extract walking event data without activity sensor privileges, regardless of this response, but it is not recommended. You must write a code that stops tracking sensor events if user denies read-permission - even if you can do that.
 
@@ -191,7 +191,7 @@ Thank you for your interest in my first NPM open source package! I've received a
     - `startDate`: This is a number property that indicates the start date of the data in Unix timestamp format, measured in milliseconds.
     - `endDate`: This is a number property that indicates the end date of the data in Unix timestamp format, measured in milliseconds.
     - `distance`: This is a number property that indicates the distance in meters that the user has walked or run during the specified time period.
-    - `counterType`: The name of the sensor used to count the number of steps. In iOS, only the `CMPedometer` is returned, and in Android, the `StepCounter` or `Accelerometer` is returned depending on the device state.
+    - `counterType`: (`CounterType`) The name of the sensor used to count the number of steps. One of `"CMPedometer"` (iOS), `"STEP_COUNTER"` (Android hardware sensor), or `"ACCELEROMETER"` (Android fallback).
 
   - **iOS Only**
     - `floorsAscended`: This is a number property that indicates the number of floors the user has ascended during the specified time period. It can be nil if the device does not support this feature.

@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.1](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.3.0...v0.3.1) (2026-05-01)
+
+### Bug Fixes
+
+- 🐛 **Android step count initialization regression**: `StepCounterService.updateCurrentSteps()` used `.equals(0.0)` to detect an uninitialized baseline, but `.equals()` on a Kotlin `Double` performs reference equality on the boxed object and always returns `false`. The baseline was never established, so step deltas were computed from `0.0` on every sensor event instead of the first raw reading. Fixed by replacing `.equals(0.0)` with `== 0.0` (value equality). ([android/services/StepCounterService.kt](android/src/main/java/com/stepcounter/services/StepCounterService.kt))
+
+- 💥 **AccelerometerService crash on stationary device**: `SensorFusionMath.normalize()` divided each vector component by `norm(vector)` without guarding against a zero-magnitude input. A stationary device can produce a zero accelerometer vector, causing `ArithmeticException` and crashing the accelerometer fallback path. Fixed by returning a copy of the original vector when the norm is zero. ([android/utils/SensorFusionMath.kt](android/src/main/java/com/stepcounter/utils/SensorFusionMath.kt))
+
+- 🔒 **iOS data race on shared step-counter state**: `_baselineSteps`, `_lastEmittedSteps`, `_baselineReady`, and `_sessionStartDate` were read and written from the main thread (`startStepCounterUpdate`, `stopStepCounterUpdate`) and concurrently from `CMPedometer` background handler blocks with no synchronization. Introduced a dedicated serial dispatch queue (`stateQueue`) and wrapped all shared-state accesses in `dispatch_sync(stateQueue, ^{...})` to eliminate the data race. ([ios/StepCounter.mm](ios/StepCounter.mm))
+
+### Improvements
+
+- 🔷 **`CounterType` union type**: The `counterType` field in `StepCountData` now uses the exported `CounterType` union (`"STEP_COUNTER" | "ACCELEROMETER" | "CMPedometer"`) instead of the opaque `string` type, reflecting the actual values emitted by both native platforms. ([src/NativeStepCounter.ts](src/NativeStepCounter.ts))
+
+- 🔷 **Precise `isStepCountingSupported()` return type**: Return type narrowed from `Promise<Record<string, boolean>>` to `Promise<{ supported: boolean; granted: boolean }>`, making the shape explicit and enabling direct destructuring without type assertions. ([src/NativeStepCounter.ts](src/NativeStepCounter.ts), [src/index.tsx](src/index.tsx))
+
+### Migration Notes
+
+If you declare a local variable with type `StepCountData` and assign `counterType` directly (e.g. in test fixtures), replace the value with one of `"STEP_COUNTER"`, `"ACCELEROMETER"`, or `"CMPedometer"`. Data received from native event callbacks is not affected—the native layer has always emitted only these three values.
+
 ## [0.3.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.5...v0.3.0) (2026-02-20)
 
 ### Features

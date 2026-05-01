@@ -168,7 +168,7 @@ pnpm add @dongminyu/react-native-step-counter
 
 ## Interface
 
-- `isStepCountingSupported()`: Promise<Record<string, boolean>>: 장치에 기능 관련 스텝 카운터 또는 가속도계가 있는지 확인하는 메서드입니다.
+- `isStepCountingSupported()`: `Promise<{ supported: boolean; granted: boolean }>`: 장치에 기능 관련 스텝 카운터 또는 가속도계가 있는지 확인하는 메서드입니다.
   - 응답 객체의 키 `granted`의 Boolean 값은 앱 사용자가 이 기능 사용 권한을 부여했는지 권한 허용 여부이며, `supported`는 장치가 이 기능을 지원하는지 여부입니다. 장치에 스텝 카운터 센서가 존재하는지만을 체크하기 때문에 실제로 사용가능한 상태인지는 알 수 없습니다.
   - 이 응답의 참/거짓 값과 실제 센서의 작동 여부는 일치하지 않을 수 있습니다. 만보계 센서를 찾지 못하거나 사용자가 접근을 거부한 경우에도, 모듈은 동작센서 권한 허용과 관계없이 원시 가속도계에 알고리즘을 적용하여 보행 이벤트 데이터를 추출하는 것이 가능하지만 권장되지 않습니다. 사용자가 읽기 권한을 거부할 경우 센서 이벤트 추적을 중지하는 코드를 반드시 작성해야 합니다.
 
@@ -187,7 +187,7 @@ pnpm add @dongminyu/react-native-step-counter
     - `startDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 시작 날짜를 나타내는 숫자 속성입니다.
     - `endDate`: 이것은 밀리세컨드로 측정 된 UNIX 타임 스탬프 형식의 데이터의 종료 날짜를 나타내는 숫자 속성입니다.
     - `distance`: 이것은 지정된 기간 동안 사용자가 걸거나 뛴 거리를 미터로 나타내는 숫자 속성입니다. (안드로이드는 지원하지 않기 때문에 임의 설정한 상수와 걸음 수를 이용해 계산됩니다.)
-    - `counterType`: 이것은 걸음을 감지하는 데 사용되는 센서 유형을 나타내는 문자열 타입으로, iOS에서는 `CMPedometer`, 안드로이드에서는 `STEP_COUNTER` 또는 `ACCELEROMETER`의 두 가지 값 중 하나를 가질 수 있습니다.
+    - `counterType`: (`CounterType`) 걸음을 감지하는 데 사용되는 센서 유형을 나타내는 유니온 타입입니다. iOS에서는 `"CMPedometer"`, 안드로이드에서는 하드웨어 만보계 센서 사용 시 `"STEP_COUNTER"`, 가속도계 폴백 사용 시 `"ACCELEROMETER"` 중 하나의 값을 가집니다.
 
   - **iOS에만 있음**
     - `floorsAscended`: 지정된 기간 동안 사용자가 상승한 층의 수를 나타내는 숫자 속성입니다. 기기가 이 기능을 지원하지 않으면 `nil`이 될 수 있습니다.
