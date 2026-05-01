@@ -14,3 +14,7 @@ gem 'bigdecimal'
 gem 'logger'
 gem 'benchmark'
 gem 'mutex_m'
+
+# Security patches: force minimum versions with CVE fixes.
+gem 'addressable', '>= 2.8.9'
+gem 'json', '>= 2.19.4'
