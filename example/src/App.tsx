@@ -13,7 +13,7 @@ import CircularProgress, { type ProgressRef } from "react-native-circular-progre
 import LogCat, { type LogLine } from "./LogCat";
 
 const initialState: StepCountData = {
-  counterType: "",
+  counterType: "STEP_COUNTER",
   steps: 0,
   startDate: 0,
   endDate: 0,

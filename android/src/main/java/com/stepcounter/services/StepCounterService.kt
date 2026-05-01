@@ -67,7 +67,7 @@ class StepCounterService(
   override fun updateCurrentSteps(eventData: FloatArray): Boolean {
     // if the time difference is greater than the delay, set the current steps to the step count minus the initial steps
     // if the previous steps aren't initialized yet,
-    return if (previousSteps.equals(0.0)) {
+    return if (previousSteps == 0.0) {
       previousSteps = eventData[0].toDouble()
       false
     } else {

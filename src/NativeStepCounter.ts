@@ -1,5 +1,7 @@
 import { TurboModuleRegistry, type TurboModule } from "react-native";
 
+export type CounterType = "STEP_COUNTER" | "ACCELEROMETER" | "CMPedometer";
+
 /**
  * `StepCountData` is an object with four properties: `distance`, `steps`, `startDate`, and `endDate`.
  * StepCountData object - The Object that contains the step count data.
@@ -12,7 +14,7 @@ import { TurboModuleRegistry, type TurboModule } from "react-native";
  * floorsDescended - number of floors descended (iOS only)
  */
 export type StepCountData = {
-  counterType: string; // 'STEP_COUNTER'|'ACCELEROMETER'|'CMPedometer'
+  counterType: CounterType;
   steps: number; // number of steps
   startDate: number; // Unix timestamp in milliseconds (long)
   endDate: number; // Unix timestamp in milliseconds (long)
@@ -29,7 +31,7 @@ export interface Spec extends TurboModule {
   /**
    * @description Check if the step counter is supported on the device.
    * @async
-   * @returns {Promise<Record<string, boolean>>} Returns the `Promise` object,
+   * @returns {Promise<{ supported: boolean; granted: boolean }>} Returns the `Promise` object,
    * including information such as whether the user's device has a step counter sensor by default (`supported`)
    * and whether the user has allowed the app to measure the pedometer data. (`granted`)
    * granted - The permission is granted or not.
@@ -41,7 +43,7 @@ export interface Spec extends TurboModule {
    *   setStepCountingGranted(granted);
    * });
    */
-  isStepCountingSupported(): Promise<Record<string, boolean>>;
+  isStepCountingSupported(): Promise<{ supported: boolean; granted: boolean }>;
   /**
    * @param {number} from the current time obtained by `new Date()` in milliseconds.
    */

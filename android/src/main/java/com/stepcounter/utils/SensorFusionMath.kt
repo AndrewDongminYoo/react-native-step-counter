@@ -97,11 +97,8 @@ object SensorFusionMath {
    * @see SensorFusionMath.norm
    */
   fun normalize(vector: FloatArray): FloatArray {
-    val normalizedVector = FloatArray(vector.size)
     val normed = norm(vector)
-    for (i in vector.indices) {
-      normalizedVector[i] = vector[i] / normed
-    }
-    return normalizedVector
+    if (normed == 0.0f) return vector.copyOf()
+    return FloatArray(vector.size) { i -> vector[i] / normed }
   }
 }

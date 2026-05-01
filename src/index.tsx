@@ -3,6 +3,7 @@ import StepCounterModule, {
   eventName,
   NAME,
   VERSION,
+  type CounterType,
   type Spec,
   type StepCountData,
 } from "./NativeStepCounter";
@@ -118,11 +119,11 @@ class UnavailabilityError extends Error {
  * iOS 8.0+ only. Android is available since KitKat (4.4 / API 19).
  * @see https://developer.android.com/about/versions/android-4.4.html
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
- * @returns {Promise<Record<string, boolean>>} A promise that resolves with an object containing the stepCounter availability.
+ * @returns {Promise<{ supported: boolean; granted: boolean }>} A promise that resolves with an object containing the stepCounter availability.
  * supported - Whether the stepCounter is supported on device.
  * granted - Whether user granted the permission.
  */
-export function isStepCountingSupported(): Promise<Record<string, boolean>> {
+export function isStepCountingSupported(): Promise<{ supported: boolean; granted: boolean }> {
   return StepCounter.isStepCountingSupported();
 }
 
@@ -177,4 +178,4 @@ export function stopStepCounterUpdate(): void {
   StepCounter.stopStepCounterUpdate();
 }
 
-export { NAME, VERSION, type StepCountData };
+export { NAME, VERSION, type CounterType, type StepCountData };
