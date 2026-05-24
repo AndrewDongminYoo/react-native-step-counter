@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.3.1...v0.4.0) (2026-05-24)
+
+### Features
+
+- ✨ **Live step-count false-positive filter**: Added `createStepCountFilter()` to drop burst updates that imply an unrealistic cadence, such as hand-rotation false positives, and rebase later cumulative step and distance values.
+
+### Bug Fixes
+
+- 🐛 **Example app start flow**: The example now checks capability and requests motion/activity permission before starting updates, and relies on the library-owned subscription cleanup instead of manually removing the returned subscription.
+- 📱 **Example app layout stability**: Reworked the example screen layout so the progress value and LogCat panel stay visible across Android and iOS viewport sizes.
+
+### Documentation
+
+- 📝 **README setup guidance**: Simplified the installation and platform setup docs, removed stale `pnpm`, `walking_tracker`, and New Architecture setup sections, and documented the Android accelerometer fallback plus the new live-update filter helper.
+
+### Chore Changes
+
+- 🔒 Patched vulnerable transitive dependencies and refreshed the test/build stack for the current React Native example app.
+- 🔨 Updated example app build, Podfile, Gradle, Gemfile, and generated-documentation organization after `v0.3.1`.
+
 ## [0.3.1](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.3.0...v0.3.1) (2026-05-01)
 
 ### Bug Fixes
@@ -86,7 +106,7 @@ If you declare a local variable with type `StepCountData` and assign `counterTyp
 
 ### Chore Changes
 
-- Add Example App Link and Notices (walking_tracker)
+- Add Example App Link and Notices
 
 ## [0.2.2](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.2.1...v0.2.2) (2023-10-14)
 
