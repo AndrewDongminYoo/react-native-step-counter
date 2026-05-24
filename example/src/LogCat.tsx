@@ -188,14 +188,10 @@ function safeJson(json: string) {
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    bottom: 0,
-    height: "45%",
+    flex: 1,
     width: "100%",
     alignItems: "stretch",
-    justifyContent: "center",
-    margin: 10,
-    padding: 20,
+    padding: 16,
     borderRadius: 10,
     borderColor: "white",
     borderWidth: 2,
@@ -253,8 +249,8 @@ const styles = StyleSheet.create({
   },
   log: {
     fontFamily: "Helvetica",
-    fontSize: 15,
-    lineHeight: 18,
+    fontSize: 13,
+    lineHeight: 16,
     marginVertical: 2,
     color: "white",
   },

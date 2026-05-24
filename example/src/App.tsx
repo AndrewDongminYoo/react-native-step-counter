@@ -1,7 +1,16 @@
 import * as React from "react";
-import { Button, Platform, StyleSheet, Text, View, type EventSubscription } from "react-native";
+import {
+  Button,
+  Platform,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type EventSubscription,
+} from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
+  createStepCountFilter,
   isStepCountingSupported,
   parseStepData,
   startStepCounterUpdate,
@@ -26,6 +35,7 @@ function newSessionId() {
 }
 
 export default function App(): React.JSX.Element {
+  const { width, height } = useWindowDimensions();
   const [loaded, setLoaded] = React.useState(false);
   const [supported, setSupported] = React.useState(false);
   const [granted, setGranted] = React.useState(false);
@@ -63,7 +73,6 @@ export default function App(): React.JSX.Element {
   const stopStepCounter = React.useCallback(() => {
     progressRef.current?.pause();
     stopStepCounterUpdate();
-    stepSubscriptionRef.current?.remove();
     stepSubscriptionRef.current = null;
 
     setStepData(initialState);
@@ -81,10 +90,6 @@ export default function App(): React.JSX.Element {
 
     progressRef.current?.play();
 
-    // Ensure old subscription is gone
-    stepSubscriptionRef.current?.remove();
-    stepSubscriptionRef.current = null;
-
     // New session boundary
     const nextSessionId = newSessionId();
     setSessionId(nextSessionId);
@@ -97,13 +102,34 @@ export default function App(): React.JSX.Element {
 
     const now = new Date();
     appendLog("START", { at: now.toISOString(), sessionId: nextSessionId });
+    const filterStepCountData = createStepCountFilter();
 
     // Subscribe once here; DO NOT subscribe elsewhere in UI.
     stepSubscriptionRef.current = startStepCounterUpdate(now, (data) => {
+      const filteredData = filterStepCountData(data);
+      if (!filteredData) {
+        setLogs((prev) => [
+          ...prev,
+          {
+            sessionId: nextSessionId,
+            ts: Date.now(),
+            tag: "stepCounterUpdateFiltered",
+            payload: JSON.stringify({
+              counterType: data.counterType,
+              rawSteps: data.steps,
+              rawDistance: data.distance,
+              startDate: data.startDate,
+              endDate: data.endDate,
+            }),
+          },
+        ]);
+        return;
+      }
+
       // NOTE: because sessionId is state, closure might reference old value.
       // For demo we log without relying on closure correctness; use ref if needed.
-      setStepData(data);
-      setCalories(parseStepData(data).calories);
+      setStepData(filteredData);
+      setCalories(parseStepData(filteredData).calories);
 
       // Log the raw event we get from wrapper callback (single source of truth)
       setLogs((prev) => [
@@ -112,11 +138,45 @@ export default function App(): React.JSX.Element {
           sessionId: nextSessionId,
           ts: Date.now(),
           tag: "stepCounterUpdate",
-          payload: JSON.stringify(data),
+          payload: JSON.stringify({
+            counterType: data.counterType,
+            rawSteps: data.steps,
+            acceptedSteps: filteredData.steps,
+            rawDistance: data.distance,
+            acceptedDistance: filteredData.distance,
+            startDate: filteredData.startDate,
+            endDate: filteredData.endDate,
+          }),
         },
       ]);
     });
   }, [appendLog, clearLogs]);
+
+  const requestAndStartStepCounter = React.useCallback(async () => {
+    if (startedRef.current) return;
+
+    const cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
+    setSupported(cap.supported === true);
+    setGranted(cap.granted === true);
+    appendLog("capabilities", cap);
+
+    if (!cap.supported) {
+      return;
+    }
+
+    let hasPermission = cap.granted === true;
+    if (!hasPermission) {
+      hasPermission = await getStepCounterPermission().catch(() => false);
+      setGranted(hasPermission);
+      appendLog("permission", { ok: hasPermission });
+    }
+
+    if (!hasPermission) {
+      return;
+    }
+
+    startStepCounter();
+  }, [appendLog, startStepCounter]);
 
   const restartStepCounter = React.useCallback(async () => {
     const hadSubscription = stepSubscriptionRef.current != null;
@@ -125,26 +185,11 @@ export default function App(): React.JSX.Element {
     // Stop first
     stopStepCounter();
 
-    // Re-check capability/permission rather than inferring from subscription existence
-    const cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
-    appendLog("capabilities", cap);
-
-    // If not granted, request permission (platform-specific branching stays yours)
-    if (cap.supported && !cap.granted) {
-      const ok = await getStepCounterPermission().catch(() => false);
-      setGranted(ok);
-      appendLog("permission", { ok });
-      if (!ok) {
-        // Don't start if user denied
-        return;
-      }
-    }
-
     progressRef.current?.reAnimate();
 
     // Start new session
-    startStepCounter();
-  }, [appendLog, startStepCounter, stopStepCounter, setGranted]);
+    await requestAndStartStepCounter();
+  }, [appendLog, requestAndStartStepCounter, stopStepCounter]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -178,10 +223,12 @@ export default function App(): React.JSX.Element {
         second: "2-digit",
       })
     : null;
+  const progressRadius = Math.min(132, Math.max(104, Math.floor(Math.min(width, height) / 3.1)));
+  const progressSize = progressRadius * 2;
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.statusRow}>
             <View style={[styles.statusDot, loaded ? styles.dotActive : styles.dotInactive]} />
@@ -190,35 +237,38 @@ export default function App(): React.JSX.Element {
             </Text>
           </View>
 
-          <View style={styles.indicator}>
+          <View style={[styles.indicator, { width: progressSize, height: progressSize }]}>
             <CircularProgress
               ref={progressRef}
               value={stepData.steps}
               maxValue={10000}
-              valueSuffix=" steps"
-              progressValueFontSize={42}
-              radius={165}
+              radius={progressRadius}
               activeStrokeColor="#cdd27e"
               inActiveStrokeColor="#4c6394"
               inActiveStrokeOpacity={0.5}
-              inActiveStrokeWidth={40}
-              subtitle={calories}
-              activeStrokeWidth={40}
-              title="Step Count"
-              titleColor="#555"
-              titleFontSize={30}
-              titleStyle={{ fontWeight: "bold" }}
+              inActiveStrokeWidth={28}
+              activeStrokeWidth={28}
+              showProgressValue={false}
             />
+            <View pointerEvents="none" style={styles.progressValueOverlay}>
+              <Text adjustsFontSizeToFit numberOfLines={1} style={styles.progressValueText}>
+                {stepData.steps}
+              </Text>
+              <Text style={styles.progressUnitText}>steps</Text>
+              {calories ? <Text style={styles.progressMetaText}>{calories}</Text> : null}
+            </View>
           </View>
 
           <View style={styles.bGroup}>
-            <Button title="START" onPress={startStepCounter} disabled={loaded} />
+            <Button title="START" onPress={requestAndStartStepCounter} disabled={loaded} />
             <Button title="RESTART" onPress={restartStepCounter} />
             <Button title="STOP" onPress={stopStepCounter} disabled={!loaded} />
           </View>
 
           {/* LogCat becomes a pure renderer. No emitter subscription here. */}
-          <LogCat sessionId={sessionId} logs={logs} onClear={clearLogs} />
+          <View style={styles.logSection}>
+            <LogCat sessionId={sessionId} logs={logs} onClear={clearLogs} />
+          </View>
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -226,19 +276,23 @@ export default function App(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#2f3774",
+  },
   container: {
-    height: "100%",
+    flex: 1,
     alignItems: "center",
-    padding: 20,
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
     backgroundColor: "#2f3774",
   },
   statusRow: {
     flexDirection: "row",
     alignItems: "center",
-    position: "absolute",
-    top: 100,
-    zIndex: 30,
-    marginBottom: 8,
+    flexShrink: 0,
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
@@ -262,16 +316,50 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
   },
   indicator: {
-    marginTop: 10,
-    marginBottom: 20,
-    marginInline: 30,
+    alignItems: "center",
+    flexShrink: 0,
+    justifyContent: "center",
     position: "relative",
+  },
+  progressValueOverlay: {
+    alignItems: "center",
+    bottom: 0,
+    justifyContent: "center",
+    left: 0,
+    paddingHorizontal: 36,
+    position: "absolute",
+    right: 0,
+    top: 0,
+  },
+  progressValueText: {
+    color: "#d8dc78",
+    fontSize: 44,
+    fontWeight: "800",
+    lineHeight: 48,
+    textAlign: "center",
+  },
+  progressUnitText: {
+    color: "#e5e7eb",
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 2,
+    textAlign: "center",
+  },
+  progressMetaText: {
+    color: "#aeb9df",
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: "center",
   },
   bGroup: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-evenly",
-    display: "flex",
-    marginVertical: 8,
+    flexShrink: 0,
+  },
+  logSection: {
+    flex: 1,
+    minHeight: 180,
+    width: "100%",
   },
 });

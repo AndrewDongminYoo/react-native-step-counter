@@ -4,6 +4,7 @@ import App from "../App";
 // ─── mocks ──────────────────────────────────────────────────────────────────
 
 jest.mock("@dongminyu/react-native-step-counter", () => ({
+  createStepCountFilter: jest.fn(() => (data: unknown) => data),
   isStepCountingSupported: jest.fn(),
   startStepCounterUpdate: jest.fn(),
   stopStepCounterUpdate: jest.fn(),
@@ -29,14 +30,19 @@ import {
   startStepCounterUpdate,
   stopStepCounterUpdate,
 } from "@dongminyu/react-native-step-counter";
+import { getStepCounterPermission } from "../permission";
 
 const mockSupported = isStepCountingSupported as jest.Mock;
 const mockStart = startStepCounterUpdate as jest.Mock;
 const mockStop = stopStepCounterUpdate as jest.Mock;
+const mockPermission = getStepCounterPermission as jest.Mock;
+let mockSubscriptionRemove: jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockStart.mockReturnValue({ remove: jest.fn() });
+  mockSubscriptionRemove = jest.fn();
+  mockStart.mockReturnValue({ remove: mockSubscriptionRemove });
+  mockPermission.mockResolvedValue(true);
 });
 
 // ─── tests ───────────────────────────────────────────────────────────────────
@@ -72,7 +78,76 @@ describe("App", () => {
     fireEvent.press(screen.getByRole("button", { name: "STOP" }));
 
     expect(mockStop).toHaveBeenCalled();
+    expect(mockSubscriptionRemove).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "START" })).not.toBeDisabled();
     expect(screen.getByRole("button", { name: "STOP" })).toBeDisabled();
+  });
+
+  it("pressing START does not start updates when the sensor is unsupported", async () => {
+    mockSupported.mockResolvedValue({ supported: false, granted: false });
+    render(<App />);
+    await act(async () => {});
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole("button", { name: "START" }));
+    });
+
+    expect(mockPermission).not.toHaveBeenCalled();
+    expect(mockStart).not.toHaveBeenCalled();
+  });
+
+  it("pressing START requests permission before starting updates", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: false });
+    mockPermission.mockResolvedValue(true);
+    render(<App />);
+    await act(async () => {});
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole("button", { name: "START" }));
+    });
+
+    expect(mockPermission).toHaveBeenCalledTimes(1);
+    expect(mockStart).toHaveBeenCalledTimes(1);
+  });
+
+  it("logs flattened raw and accepted step values for live device checks", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    render(<App />);
+    await act(async () => {});
+
+    await act(async () => {
+      const callback = mockStart.mock.calls[0][1];
+      callback({
+        counterType: "STEP_COUNTER",
+        steps: 7,
+        startDate: 1700000000000,
+        endDate: 1700000001000,
+        distance: 5.334,
+      });
+    });
+
+    expect(await screen.findByText(/"rawSteps":/)).toBeTruthy();
+    expect(await screen.findByText(/"acceptedSteps":/)).toBeTruthy();
+    expect(await screen.findByText(/"counterType":/)).toBeTruthy();
+  });
+
+  it("renders the accepted step count in the app overlay", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    render(<App />);
+    await act(async () => {});
+
+    await act(async () => {
+      const callback = mockStart.mock.calls[0][1];
+      callback({
+        counterType: "STEP_COUNTER",
+        steps: 28,
+        startDate: 1700000000000,
+        endDate: 1700000001000,
+        distance: 21.336,
+      });
+    });
+
+    expect(await screen.findByText("28")).toBeTruthy();
+    expect(await screen.findByText("steps")).toBeTruthy();
   });
 });
