@@ -29,8 +29,8 @@
 
 ## Native Build Helpers (example workspace)
 
-- `yarn workspace @dongminyu/react-native-step-counter-example build:android`
-- `yarn workspace @dongminyu/react-native-step-counter-example build:ios`
+- `yarn workspace com.stepcounter.example build:android`
+- `yarn workspace com.stepcounter.example build:ios`
 
 ## Common macOS Utility Commands
 

@@ -1585,33 +1585,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dongminyu/react-native-step-counter-example@workspace:example":
-  version: 0.0.0-use.local
-  resolution: "@dongminyu/react-native-step-counter-example@workspace:example"
-  dependencies:
-    "@babel/core": "npm:^7.29.0"
-    "@babel/preset-env": "npm:^7.29.5"
-    "@babel/runtime": "npm:^7.29.2"
-    "@react-native-community/cli": "npm:20.1.3"
-    "@react-native-community/cli-platform-android": "npm:20.1.3"
-    "@react-native-community/cli-platform-ios": "npm:20.1.3"
-    "@react-native/babel-preset": "npm:0.85.3"
-    "@react-native/metro-config": "npm:0.85.3"
-    "@react-native/typescript-config": "npm:0.85.3"
-    "@types/react": "npm:^19.2.15"
-    react: "npm:19.2.3"
-    react-native: "npm:0.85.3"
-    react-native-builder-bob: "npm:^0.41.0"
-    react-native-circular-progress-indicator: "npm:^4.4.2"
-    react-native-monorepo-config: "npm:^0.3.5"
-    react-native-permissions: "npm:^5.5.1"
-    react-native-reanimated: "npm:^4.3.1"
-    react-native-safe-area-context: "npm:^5.8.0"
-    react-native-svg: "npm:^15.15.5"
-    react-native-worklets: "npm:^0.8.3"
-  languageName: unknown
-  linkType: soft
-
 "@dongminyu/react-native-step-counter@workspace:.":
   version: 0.0.0-use.local
   resolution: "@dongminyu/react-native-step-counter@workspace:."
@@ -4093,6 +4066,34 @@ __metadata:
   checksum: 10c0/4955c8f7daafca8ae7081d672e4bd89d553bd5782b5846d5a7e05effe93c2f15f7e9c0cb46f341b59f579a39fcf436241ff79594899d75d5f3460c03d607fe9e
   languageName: node
   linkType: hard
+
+"com.stepcounter.example@workspace:example":
+  version: 0.0.0-use.local
+  resolution: "com.stepcounter.example@workspace:example"
+  dependencies:
+    "@babel/core": "npm:^7.29.0"
+    "@babel/preset-env": "npm:^7.29.5"
+    "@babel/runtime": "npm:^7.29.2"
+    "@react-native-community/cli": "npm:20.1.3"
+    "@react-native-community/cli-platform-android": "npm:20.1.3"
+    "@react-native-community/cli-platform-ios": "npm:20.1.3"
+    "@react-native/babel-preset": "npm:0.85.3"
+    "@react-native/jest-preset": "npm:0.85.3"
+    "@react-native/metro-config": "npm:0.85.3"
+    "@react-native/typescript-config": "npm:0.85.3"
+    "@types/react": "npm:^19.2.15"
+    react: "npm:19.2.3"
+    react-native: "npm:0.85.3"
+    react-native-builder-bob: "npm:^0.41.0"
+    react-native-circular-progress-indicator: "npm:^4.4.2"
+    react-native-monorepo-config: "npm:^0.3.5"
+    react-native-permissions: "npm:^5.5.1"
+    react-native-reanimated: "npm:^4.3.1"
+    react-native-safe-area-context: "npm:^5.8.0"
+    react-native-svg: "npm:^15.15.5"
+    react-native-worklets: "npm:^0.8.3"
+  languageName: unknown
+  linkType: soft
 
 "command-exists@npm:^1.2.8":
   version: 1.2.9
