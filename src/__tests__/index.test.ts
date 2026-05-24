@@ -1,7 +1,7 @@
 import { TurboModuleRegistry } from "react-native";
 
 // Static imports work for pure functions — the native module is not invoked at call time.
-import { parseStepData, NAME, VERSION, type StepCountData } from "../index";
+import { createStepCountFilter, parseStepData, NAME, VERSION, type StepCountData } from "../index";
 import { eventName } from "../NativeStepCounter";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -99,6 +99,42 @@ describe("parseStepData", () => {
     const result = parseStepData(base);
     expect(result.startDate).toBe("22:13:20");
     expect(result.endDate).toBe("23:13:20");
+  });
+});
+
+// ─── createStepCountFilter ───────────────────────────────────────────────────
+
+describe("createStepCountFilter", () => {
+  const startDate = 1700000000000;
+
+  function stepData(steps: number, endOffsetMs: number): StepCountData {
+    return {
+      counterType: "STEP_COUNTER",
+      steps,
+      startDate,
+      endDate: startDate + endOffsetMs,
+      distance: steps * 0.762,
+    };
+  }
+
+  it("drops rotation-like bursts that exceed the configured cadence", () => {
+    const filter = createStepCountFilter({ minimumStepIntervalMs: 250 });
+
+    expect(filter(stepData(1, 100))).toBeNull();
+    expect(filter(stepData(2, 180))).toBeNull();
+
+    const next = filter(stepData(3, 1000));
+
+    expect(next?.steps).toBe(1);
+    expect(next?.distance).toBeCloseTo(0.762);
+  });
+
+  it("keeps normal walking cadence unchanged", () => {
+    const filter = createStepCountFilter({ minimumStepIntervalMs: 250 });
+
+    expect(filter(stepData(1, 300))?.steps).toBe(1);
+    expect(filter(stepData(2, 650))?.steps).toBe(2);
+    expect(filter(stepData(3, 1000))?.steps).toBe(3);
   });
 });
 

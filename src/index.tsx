@@ -61,6 +61,19 @@ const StepCounter = (
 
 const StepEventEmitter = new NativeEventEmitter(StepCounter);
 type StepCountUpdateCallback = (data: StepCountData) => void;
+export type StepCountFilter = (data: StepCountData) => StepCountData | null;
+
+export interface StepCountFilterOptions {
+  /**
+   * Minimum elapsed time expected per accepted step.
+   *
+   * Events that imply a faster cadence are treated as sensor false positives.
+   * 250ms allows up to 4 steps/second, which is already faster than typical walking.
+   */
+  minimumStepIntervalMs?: number;
+}
+
+const DEFAULT_MINIMUM_STEP_INTERVAL_MS = 250;
 
 // Tracks the subscription created by the most recent startStepCounterUpdate call.
 // Only this subscription is removed in stopStepCounterUpdate, so that external
@@ -90,6 +103,70 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
     startDate: startDateTime,
     endDate: endDateTime,
     distance: roundedDistance,
+  };
+}
+
+/**
+ * Create a stateful filter for live step-count updates.
+ *
+ * Native pedometer APIs can already include device/OS false positives, and the
+ * Android accelerometer fallback can also react to quick hand rotation. This
+ * helper drops updates that imply an impossible cadence and rebases later
+ * cumulative values so ignored burst steps do not come back on the next event.
+ */
+export function createStepCountFilter(options: StepCountFilterOptions = {}): StepCountFilter {
+  const minimumStepIntervalMs =
+    options.minimumStepIntervalMs && options.minimumStepIntervalMs > 0
+      ? options.minimumStepIntervalMs
+      : DEFAULT_MINIMUM_STEP_INTERVAL_MS;
+
+  let previousRawData: StepCountData | null = null;
+  let ignoredSteps = 0;
+  let ignoredDistance = 0;
+
+  return (data: StepCountData) => {
+    if (!Number.isFinite(data.steps) || data.steps < 0) {
+      return null;
+    }
+
+    if (previousRawData && data.steps < previousRawData.steps) {
+      previousRawData = data;
+      ignoredSteps = 0;
+      ignoredDistance = 0;
+      return data;
+    }
+
+    const referenceTime = previousRawData ? previousRawData.endDate : data.startDate;
+    const stepDelta = previousRawData ? data.steps - previousRawData.steps : data.steps;
+    const distanceDelta = previousRawData
+      ? data.distance - previousRawData.distance
+      : data.distance;
+    const elapsedMs =
+      Number.isFinite(data.endDate) && Number.isFinite(referenceTime)
+        ? data.endDate - referenceTime
+        : Number.POSITIVE_INFINITY;
+    const isSuspiciousBurst =
+      stepDelta > 0 && elapsedMs >= 0 && elapsedMs < stepDelta * minimumStepIntervalMs;
+
+    previousRawData = data;
+
+    if (isSuspiciousBurst) {
+      ignoredSteps += stepDelta;
+      if (distanceDelta > 0) {
+        ignoredDistance += distanceDelta;
+      }
+      return null;
+    }
+
+    if (ignoredSteps === 0 && ignoredDistance === 0) {
+      return data;
+    }
+
+    return {
+      ...data,
+      steps: Math.max(0, data.steps - ignoredSteps),
+      distance: Math.max(0, data.distance - ignoredDistance),
+    };
   };
 }
 
