@@ -1,4 +1,4 @@
-import TurboModuleRegistry from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { TurboModuleRegistry } from "react-native";
 
 // jest.mock factories are hoisted and cannot reference out-of-scope variables,
 // so all helpers and objects are defined inside the factory.

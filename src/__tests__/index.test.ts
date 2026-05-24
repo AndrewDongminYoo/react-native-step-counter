@@ -1,4 +1,4 @@
-import TurboModuleRegistry from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { TurboModuleRegistry } from "react-native";
 
 // Static imports work for pure functions — the native module is not invoked at call time.
 import { parseStepData, NAME, VERSION, type StepCountData } from "../index";
