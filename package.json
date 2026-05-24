@@ -34,6 +34,7 @@
   "scripts": {
     "example": "yarn workspace @dongminyu/react-native-step-counter-example",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build example/ios/Pods lib",
+    "test": "jest --runInBand --no-watchman",
     "prepare": "bob build",
     "typecheck": "tsc",
     "watchman-reset": "watchman watch-del $PWD && watchman watch-project $PWD"
