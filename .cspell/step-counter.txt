@@ -1,4 +1,5 @@
 # Package-Specific Dictionary Words
+393JTTV68D
 americanfootball
 Andale
 androiddebugkey
@@ -93,6 +94,7 @@ dotall
 dotenv
 dotslash
 drawables
+DRCT
 dribbble
 dropleft
 dropright
@@ -222,6 +224,8 @@ minizlib
 mkdirp
 MSGSEND
 mtrl
+mutationobserver
+mutationobservernativemodule
 nativemodule
 navicon
 nocache
@@ -278,6 +282,7 @@ reactperflogger
 readdirp
 realpath
 redash
+redbox
 regexpu
 regjsgen
 regjsparser

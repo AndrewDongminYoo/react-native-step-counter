@@ -1,5 +1,3 @@
-ENV['RCT_NEW_ARCH_ENABLED'] = '1'
-
 def node_require(script)
   # Resolve script with node to allow for hoisting
   require Pod::Executable.execute_command('node', ['-p',
@@ -41,15 +39,5 @@ target 'StepCounterExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
-
-    # fmt 10.x/11.x uses consteval which is broken on certain Apple Clang versions.
-    # Compiling fmt with C++17 makes FMT_CPLUSPLUS < 201709L evaluate to true,
-    # which sets FMT_USE_CONSTEVAL=0 and avoids the consteval code path entirely.
-    installer.pods_project.targets.each do |target|
-      next unless target.name == 'fmt'
-      target.build_configurations.each do |config|
-        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
-      end
-    end
   end
 end
