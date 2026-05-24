@@ -8,7 +8,7 @@
 - `example/`: React Native workspace for manual integration testing.
 - `lib/`: Generated build output from `bob build` (treat as generated artifacts).
 - `.github/`: CI workflows, issue templates, and PR template.
-- `docs/`: Generated API documentation.
+- `documents/`: Generated API documentation.
 
 ## Build, Test, and Development Commands
 

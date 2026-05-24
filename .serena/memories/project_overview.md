@@ -23,7 +23,7 @@
 - `example/`: runnable RN app for manual platform validation
 - `lib/`: generated build artifacts (do not hand-edit)
 - `.github/`: CI and PR/issue templates
-- `docs/`: generated API docs
+- `documents/`: generated API docs
 
 ## Environment Notes
 

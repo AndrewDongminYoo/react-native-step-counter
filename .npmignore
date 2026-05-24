@@ -1,7 +1,7 @@
 # Local/dev directories
 node_modules/
 example/
-docs/
+documents/
 .github/
 .trunk/
 .vscode/

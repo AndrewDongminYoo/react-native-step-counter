@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Home - Postman Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/ionicons.min.css" />
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css" />
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
+  </head>
+  <body>
+    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+    <label for="nav-trigger" class="navicon-button x">
+      <div class="navicon"></div>
+    </label>
+
+    <label for="nav-trigger" class="overlay"></label>
+
+    <nav>
+      <h2><a href="index.html">Home</a></h2>
+      <h3>Classes</h3>
+      <ul>
+        <li><a href="UnavailabilityError.html">UnavailabilityError</a></li>
+      </ul>
+      <h3>Global</h3>
+      <ul>
+        <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
+        <li><a href="global.html#NAME">NAME</a></li>
+        <li><a href="global.html#parseStepData">parseStepData</a></li>
+        <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
+        <li><a href="global.html#StepCounter">StepCounter</a></li>
+        <li><a href="global.html#stopStepCounterUpdate">stopStepCounterUpdate</a></li>
+      </ul>
+    </nav>
+
+    <div id="main">
+      <section class="readme">
+        <article>
+          <h1>React-Native Step Counter Library</h1>
+          <p>
+            <a href="https://ko-fi.com/M4M8Q4QZ7"
+              ><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="ko-fi"
+            /></a>
+          </p>
+          <p>한국어 사용자는 <a href="README.kr.md">Korean version.</a>를 참조하십시오.</p>
+          <p>
+            This library provides an interface for tracking the number of steps taken by the user in
+            a React Native app. It uses the Android <code>StepCounter</code> sensor, an
+            accelerometer fallback on Android devices without a step counter sensor, and Apple's
+            <code>Core Motion</code> framework on iOS.
+          </p>
+          <h2>Installation</h2>
+          <pre
+            class="prettyprint source lang-shell"
+          ><code>npm install @dongminyu/react-native-step-counter
+</code></pre>
+          <pre
+            class="prettyprint source lang-shell"
+          ><code>yarn add @dongminyu/react-native-step-counter
+</code></pre>
+          <p>
+            Native modules will automatically connect after React Native 0.60 version. So you don't
+            need to link the native modules manually.
+          </p>
+          <h2>Requirements</h2>
+          <ul>
+            <li>React Native <code>&gt;=0.71.0</code></li>
+            <li>
+              React Native CLI apps. Expo Go is not supported because this package includes native
+              code.
+            </li>
+          </ul>
+          <h3>ANDROID</h3>
+          <p>
+            Add the motion permission and sensor feature declarations if your app does not already
+            include them.
+          </p>
+          <pre
+            class="prettyprint source lang-xml"
+          ><code>&lt;!--  android/src/main/AndroidManifest.xml-->
+&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    package=&quot;com.stepcounter&quot;>
+  &lt;uses-permission android:name=&quot;android.permission.ACTIVITY_RECOGNITION&quot; />
+  &lt;uses-permission android:name=&quot;android.permission.BODY_SENSORS_BACKGROUND&quot; />
+
+  &lt;uses-feature
+    android:name=&quot;android.hardware.sensor.stepcounter&quot;
+    android:required=&quot;false&quot; />
+  &lt;uses-feature
+    android:name=&quot;android.hardware.sensor.accelerometer&quot;
+    android:required=&quot;true&quot; />
+&lt;/manifest>
+</code></pre>
+          <h3>iOS</h3>
+          <p>Add <code>NSMotionUsageDescription</code> to your app's <code>Info.plist</code>.</p>
+          <pre
+            class="prettyprint source lang-xml"
+          ><code>&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot;>
+&lt;plist version=&quot;1.0&quot;>
+  ...
+  &lt;key>NSMotionUsageDescription&lt;/key>
+  &lt;string>We want to access your motion data to count your steps.&lt;/string>
+  ...
+&lt;/plist>
+</code></pre>
+          <h2>Interface</h2>
+          <ul>
+            <li>
+              <p>
+                <code>isStepCountingSupported()</code>:
+                <code>Promise&lt;{ supported: boolean; granted: boolean }&gt;</code>: method to
+                check if the device has a feature related step counter or accelerometer.
+              </p>
+              <ul>
+                <li>
+                  One key for the response object is <code>granted</code>, whether the app user has
+                  granted this feature permission, and <code>supported</code> is whether the device
+                  supports this feature.
+                </li>
+                <li>
+                  Android can fall back to accelerometer-based counting when the hardware step
+                  counter is unavailable. You should still request and respect the platform
+                  motion/activity permission before starting updates.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>
+                <code>startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)</code>:
+                <code>EventSubscription</code>:
+              </p>
+              <ul>
+                <li>
+                  If the pedometer sensor is available and supported on the device, register it with
+                  the listener in the sensor manager, and return the step count event listener.
+                </li>
+                <li>
+                  If the pedometer sensor is not supported by the device or is not available,
+                  register the accelerometer sensor with the listener, generate an accel event
+                  through a vector algorithm filter and receive it to the app.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p><code>stopStepCounterUpdate(): void</code>:</p>
+              <ul>
+                <li>
+                  Removes the subscription registered by <code>startStepCounterUpdate</code> and
+                  stops the native sensor session.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>
+                <code>createStepCountFilter(options?: StepCountFilterOptions)</code>:
+                <code>(data: StepCountData) =&gt; StepCountData | null</code>:
+              </p>
+              <ul>
+                <li>
+                  Creates a stateful live-update filter for sensor false positives such as hand
+                  rotation.
+                </li>
+                <li>
+                  The filter drops bursts that imply a cadence faster than
+                  <code>minimumStepIntervalMs</code> and rebases later cumulative values so ignored
+                  steps do not come back on the next accepted event.
+                </li>
+                <li>
+                  Native hardware/OS pedometers can still report false positives before the package
+                  receives the event. Use this helper when your app needs stricter live-session
+                  counts than the raw sensor stream.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p><code>StepCountData</code>:</p>
+              <ul>
+                <li>
+                  <p><strong>Common Interface</strong></p>
+                  <ul>
+                    <li>
+                      <code>steps</code>: This is a number property that indicates the number of
+                      steps taken by the user during the specified time period.
+                    </li>
+                    <li>
+                      <code>startDate</code>: This is a number property that indicates the start
+                      date of the data in Unix timestamp format, measured in milliseconds.
+                    </li>
+                    <li>
+                      <code>endDate</code>: This is a number property that indicates the end date of
+                      the data in Unix timestamp format, measured in milliseconds.
+                    </li>
+                    <li>
+                      <code>distance</code>: This is a number property that indicates the distance
+                      in meters that the user has walked or run during the specified time period.
+                    </li>
+                    <li>
+                      <code>counterType</code>: (<code>CounterType</code>) The name of the sensor
+                      used to count the number of steps. One of
+                      <code>&quot;CMPedometer&quot;</code> (iOS),
+                      <code>&quot;STEP_COUNTER&quot;</code> (Android hardware sensor), or
+                      <code>&quot;ACCELEROMETER&quot;</code> (Android fallback).
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <p><strong>iOS Only</strong></p>
+                  <ul>
+                    <li>
+                      <code>floorsAscended</code>: This is a number property that indicates the
+                      number of floors the user has ascended during the specified time period. It
+                      can be nil if the device does not support this feature.
+                    </li>
+                    <li>
+                      <code>floorsDescended</code>: This is a number property that indicates the
+                      number of floors the user has descended during the specified time period. It
+                      can be nil if the device does not support this feature.
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <h2>Usage</h2>
+          <p>To use the Step Counter Library in your React Native app, follow these steps:</p>
+          <p>Import the library into your React Native app.</p>
+          <pre
+            class="prettyprint source lang-typescript"
+          ><code>import React, { useEffect, useState } from &quot;react&quot;;
+import {
+  createStepCountFilter,
+  isStepCountingSupported,
+  parseStepData,
+  startStepCounterUpdate,
+  stopStepCounterUpdate,
+} from &quot;@dongminyu/react-native-step-counter&quot;;
+</code></pre>
+          <p>
+            Use the <code>isStepCountingSupported</code> method to check if the device has a step
+            counter or accelerometer sensor.
+          </p>
+          <pre
+            class="prettyprint source lang-typescript"
+          ><code>const [supported, setSupported] = useState(false);
+const [granted, setGranted] = useState(false);
+
+async function askPermission() {
+  isStepCountingSupported().then((result) => {
+    console.debug(&quot;🚀 - isStepCountingSupported&quot;, result);
+    setGranted(result.granted === true);
+    setSupported(result.supported === true);
+  });
+}
+</code></pre>
+          <p>
+            Call the <code>startStepCounterUpdate</code> method to start the step counter service.
+          </p>
+          <pre
+            class="prettyprint source lang-typescript"
+          ><code>const [steps, setSteps] = useState(0);
+
+async function startStepCounter() {
+  const filterStepCountData = createStepCountFilter();
+
+  startStepCounterUpdate(new Date(), (data) => {
+    const filteredData = filterStepCountData(data);
+    if (!filteredData) {
+      return;
+    }
+
+    console.debug(parseStepData(filteredData));
+    setSteps(filteredData.steps);
+  });
+}
+</code></pre>
+          <p>
+            Here's an example of a complete React component that uses the
+            <code>NativeStepCounter</code>.
+          </p>
+          <p>
+            Link to Example Application:
+            <a
+              href="https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/example/src/App.tsx"
+              >here</a
+            >
+          </p>
+          <h2>Change Log</h2>
+          <p>
+            See the <a href="CHANGELOG.md"><code>Release Notes</code></a> for a list of changes.
+          </p>
+          <h2>Contributing</h2>
+          <p>
+            See the <a href="CONTRIBUTING.md"><code>Contributing Guide</code></a> to learn how to
+            contribute to the repository and the development workflow.
+          </p>
+          <h2>License</h2>
+          <p>MIT</p>
+          <hr />
+          <p>
+            Made with
+            <a href="https://github.com/callstack/react-native-builder-bob"
+              >create-react-native-library</a
+            >
+          </p>
+        </article>
+      </section>
+    </div>
+
+    <br class="clear" />
+
+    <footer>
+      Documentation generated at Sun May 24 2026 12:10:58 GMT+0900 (Korean Standard Time)
+    </footer>
+
+    <script>
+      prettyPrint();
+    </script>
+    <script src="scripts/linenumber.js"></script>
+  </body>
+</html>
