@@ -1585,33 +1585,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dongminyu/react-native-step-counter@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@dongminyu/react-native-step-counter@workspace:."
-  dependencies:
-    "@babel/core": "npm:^7.29.0"
-    "@react-native/babel-preset": "npm:0.85.3"
-    "@react-native/jest-preset": "npm:0.85.3"
-    "@release-it/conventional-changelog": "npm:^11.0.0"
-    "@testing-library/react-native": "npm:^13.3.3"
-    "@types/babel__core": "npm:^7.20.5"
-    "@types/jest": "npm:^29.5.14"
-    "@types/react": "npm:^19.2.15"
-    "@types/react-test-renderer": "npm:^19.1.0"
-    del-cli: "npm:^7.0.0"
-    jest: "npm:^29.7.0"
-    react: "npm:19.2.3"
-    react-native: "npm:0.85.3"
-    react-native-builder-bob: "npm:^0.41.0"
-    react-test-renderer: "npm:19.2.3"
-    release-it: "npm:^20.0.1"
-    typescript: "npm:^6.0.3"
-  peerDependencies:
-    react: "*"
-    react-native: ">=0.71.0"
-  languageName: unknown
-  linkType: soft
-
 "@hapi/hoek@npm:^9.0.0, @hapi/hoek@npm:^9.3.0":
   version: 9.3.0
   resolution: "@hapi/hoek@npm:9.3.0"
@@ -8323,6 +8296,33 @@ __metadata:
   checksum: 10c0/86d1375ce17d549b541d157148d9d093f9e918de47d3b0a5cbc4cb6afe619aa52e99f07dc62ee0878eaa70e8da3411193b24cfee1b7b271ffd295d0fce83d128
   languageName: node
   linkType: hard
+
+"react-native-step-counter-newarch@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "react-native-step-counter-newarch@workspace:."
+  dependencies:
+    "@babel/core": "npm:^7.29.0"
+    "@react-native/babel-preset": "npm:0.85.3"
+    "@react-native/jest-preset": "npm:0.85.3"
+    "@release-it/conventional-changelog": "npm:^11.0.0"
+    "@testing-library/react-native": "npm:^13.3.3"
+    "@types/babel__core": "npm:^7.20.5"
+    "@types/jest": "npm:^29.5.14"
+    "@types/react": "npm:^19.2.15"
+    "@types/react-test-renderer": "npm:^19.1.0"
+    del-cli: "npm:^7.0.0"
+    jest: "npm:^29.7.0"
+    react: "npm:19.2.3"
+    react-native: "npm:0.85.3"
+    react-native-builder-bob: "npm:^0.41.0"
+    react-test-renderer: "npm:19.2.3"
+    release-it: "npm:^20.0.1"
+    typescript: "npm:^6.0.3"
+  peerDependencies:
+    react: "*"
+    react-native: ">=0.71.0"
+  languageName: unknown
+  linkType: soft
 
 "react-native-svg@npm:^15.15.5":
   version: 15.15.5

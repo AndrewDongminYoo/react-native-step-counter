@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "@dongminyu/react-native-step-counter": ["./src/index"]
+      "react-native-step-counter-newarch": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

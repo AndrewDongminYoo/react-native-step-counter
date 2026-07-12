@@ -1,6 +1,6 @@
 # Project Overview
 
-- Name: `@dongminyu/react-native-step-counter`
+- Name: `react-native-step-counter-newarch`
 - Purpose: React Native native module for step counting on Android/iOS, exposing a TypeScript API. Android uses StepCounter sensor with accelerometer fallback, iOS uses Core Motion (`CMPedometer`).
 - Architecture: React Native New Architecture (TurboModule/Fabric) is required from `v0.3.0`; compatibility considerations for native platforms are documented in `README.md`.
 - Repo shape: Yarn workspace monorepo with library at root and integration example app in `example/`.

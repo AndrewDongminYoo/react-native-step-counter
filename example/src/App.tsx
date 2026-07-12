@@ -16,7 +16,7 @@ import {
   startStepCounterUpdate,
   stopStepCounterUpdate,
   type StepCountData,
-} from "@dongminyu/react-native-step-counter";
+} from "react-native-step-counter-newarch";
 import { getStepCounterPermission } from "./permission";
 import CircularProgress, { type ProgressRef } from "react-native-circular-progress-indicator";
 import LogCat, { type LogLine } from "./LogCat";

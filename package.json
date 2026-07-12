@@ -1,5 +1,5 @@
 {
-  "name": "@dongminyu/react-native-step-counter",
+  "name": "react-native-step-counter-newarch",
   "version": "0.4.0",
   "description": "This library provides an interface for tracking the number of steps taken by the user in a React Native app.",
   "main": "./lib/module/index.js",

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`@dongminyu/react-native-step-counter` is a React Native **TurboModule library** that tracks step counts using native device sensors. It uses the **New Architecture** (Fabric/TurboModules) and is built with `react-native-builder-bob`.
+`react-native-step-counter-newarch` is a React Native **TurboModule library** that tracks step counts using native device sensors. It uses the **New Architecture** (Fabric/TurboModules) and is built with `react-native-builder-bob`.
 
 - iOS: Uses `CMPedometer` (CoreMotion) and `SOMotionDetecter`
 - Android: Uses the hardware step counter sensor (API 19+) with accelerometer fallback
@@ -124,6 +124,6 @@ The `jest-config` package is used in `jest.config.js` for default `moduleFileExt
 
 ## Editing Native Code
 
-- **Xcode**: Open `example/ios/StepCounterExample.xcworkspace`. Library files are under `Pods > Development Pods > @dongminyu/react-native-step-counter`.
-- **Android Studio**: Open `example/android`. Library files appear under `dongminyu-react-native-step-counter`.
+- **Xcode**: Open `example/ios/StepCounterExample.xcworkspace`. Library files are under `Pods > Development Pods > react-native-step-counter-newarch`.
+- **Android Studio**: Open `example/android`. Library files appear under `react-native-step-counter-newarch`.
 - After any native change, rebuild the example app (`yarn example android` or `yarn example ios`).

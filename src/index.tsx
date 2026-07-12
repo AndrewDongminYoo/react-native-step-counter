@@ -11,7 +11,7 @@ import { NativeEventEmitter, Platform } from "react-native";
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
-  "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
+  "The package 'react-native-step-counter-newarch' doesn't seem to be linked. Make sure: \n\n" +
   Platform.select({
     ios: "- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n",
     android:
@@ -44,7 +44,7 @@ export interface ParsedStepCountData {
  * counterType - The type of counter used to count the steps.
  * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
  * @example
- * import { StepCounter } from '@dongminyu/react-native-step-counter';
+ * import { StepCounter } from 'react-native-step-counter-newarch';
  */
 const StepCounter = (
   StepCounterModule

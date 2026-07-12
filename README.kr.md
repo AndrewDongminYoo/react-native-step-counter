@@ -7,11 +7,11 @@ English-speaking developers, please return to the repository main page or click 
 ## 설치 방법
 
 ```shell
-npm install @dongminyu/react-native-step-counter
+npm install react-native-step-counter-newarch
 ```
 
 ```shell
-yarn add @dongminyu/react-native-step-counter
+yarn add react-native-step-counter-newarch
 ```
 
 리액트네이티브 0.60 버전 이후 설치된 네이티브 모듈은 오토 링크됩니다. 네이티브 모듈을 수동으로 연결할 필요가 없습니다.
@@ -100,7 +100,7 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from "@dongminyu/react-native-step-counter";
+} from "react-native-step-counter-newarch";
 ```
 
 `isStepCountingSupported` 메소드를 사용하여 장치에 스텝 카운터 또는 가속도계 센서가 있는지 확인합니다.
