@@ -31,7 +31,7 @@ export interface Spec extends TurboModule {
   /**
    * @description Check if the step counter is supported on the device.
    * @async
-   * @returns {Promise<{ supported: boolean; granted: boolean }>} Returns the `Promise` object,
+   * @returns {Promise<{ supported: boolean, granted: boolean }>} Returns the `Promise` object,
    * including information such as whether the user's device has a step counter sensor by default (`supported`)
    * and whether the user has allowed the app to measure the pedometer data. (`granted`)
    * granted - The permission is granted or not.
