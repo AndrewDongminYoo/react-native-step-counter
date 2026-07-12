@@ -2068,7 +2068,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - StepCounter (0.4.0):
+  - StepCounter (0.5.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2417,7 +2417,7 @@ SPEC CHECKSUMS:
   RNReanimated: 59bf185693b7294a0c515e19a6d1be54def61363
   RNSVG: a37350c7bc37452fd2b209efa0806f1de0f847ae
   RNWorklets: 32b9ca9e0588b838ce3202a9ea3971f553c9011c
-  StepCounter: 31024436290466609cdc216287ca9c7190ba099d
+  StepCounter: f17e2184888b06b1d1f81d3645ef1561c4ed06bc
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
 
 PODFILE CHECKSUM: cc844e779d2f3a18b09e701a6bedf73e1a9a94c6
