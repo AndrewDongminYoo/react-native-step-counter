@@ -12,12 +12,15 @@
 # Recorded 2026-07-12.
 [[IgnoredVulns]]
 id = "GHSA-h8w8-99g7-qmvj"
+ignoreUntil = 2026-10-01
 reason = "concurrent-ruby fixed in 1.3.7, blocked by intentional `< 1.3.4` pin in example/Gemfile (CocoaPods compat); example-only Ruby tooling, not in the published package. Re-evaluate 2026-10 or when the pin can be lifted."
 
 [[IgnoredVulns]]
 id = "GHSA-6wx8-w4f5-wwcr"
+ignoreUntil = 2026-10-01
 reason = "concurrent-ruby fixed in 1.3.7, blocked by intentional `< 1.3.4` pin in example/Gemfile (CocoaPods compat); example-only Ruby tooling, not in the published package. Re-evaluate 2026-10 or when the pin can be lifted."
 
 [[IgnoredVulns]]
 id = "GHSA-wv3x-4vxv-whpp"
+ignoreUntil = 2026-10-01
 reason = "concurrent-ruby fixed in 1.3.7, blocked by intentional `< 1.3.4` pin in example/Gemfile (CocoaPods compat); example-only Ruby tooling, not in the published package. Re-evaluate 2026-10 or when the pin can be lifted."
