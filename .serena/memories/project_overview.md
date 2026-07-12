@@ -8,11 +8,11 @@
 ## Tech Stack
 
 - TypeScript for JS bridge/public API (`src/`)
-- React Native 0.83 / React 19
+- React Native 0.85 / React 19
 - Native Android module under `android/src/main/`
 - Native iOS module under `ios/` (`StepCounter.mm`, `SOMotionDetecter.*`)
 - Build packaging via `react-native-builder-bob` -> output in `lib/`
-- Tests via Jest (`react-native` preset)
+- Tests via Jest (`@react-native/jest-preset` preset)
 - Quality/linting/formatting/security checks via Trunk
 
 ## High-Level Structure
