@@ -19,6 +19,7 @@
 
 - 🔨 Quoted the `NODE_BINARY` command in the iOS example build for consistency. ([b13954c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/b13954c))
 - 👷 Added native Android and iOS example build workflows. ([10d9750](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/10d9750))
+- 🔒 Resolved reported OSV advisories in transitive/dev dependencies via Yarn `resolutions` (`ws`, `undici`, `js-yaml`, `joi`, `launch-editor`, `shell-quote`, `tar`, `@babel/core`). The pin-blocked `concurrent-ruby` advisories — example iOS build tooling, not shipped in the package — are recorded in `example/osv-scanner.toml`.
 
 ## [0.4.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.3.1...v0.4.0) (2026-05-24)
 
