@@ -52,7 +52,7 @@ Please provide a concise description of what this PR does and why.
      startStepCounterUpdate,
      stopStepCounterUpdate,
      type ParsedStepCountData,
-   } from '@dongminyu/react-native-step-counter';
+   } from 'react-native-step-counter-newarch';
    // …
    ```
 

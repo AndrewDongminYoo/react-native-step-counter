@@ -29,6 +29,7 @@
       </ul>
       <h3>Global</h3>
       <ul>
+        <li><a href="global.html#createStepCountFilter">createStepCountFilter</a></li>
         <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
         <li><a href="global.html#NAME">NAME</a></li>
         <li><a href="global.html#parseStepData">parseStepData</a></li>
@@ -49,7 +50,7 @@ import StepCounterModule, { eventName, NAME, VERSION } from "./NativeStepCounter
 import { NativeEventEmitter, Platform } from "react-native";
 
 /* A way to check if the module is linked. */
-const LINKING_ERROR = "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" + Platform.select({
+const LINKING_ERROR = "The package 'react-native-step-counter-newarch' doesn't seem to be linked. Make sure: \n\n" + Platform.select({
   ios: "- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n",
   android: "- You have the Android development environment set up: `https://reactnative.dev/docs/environment-setup.`",
   default: ""
@@ -62,7 +63,7 @@ const LINKING_ERROR = "The package '@dongminyu/react-native-step-counter' doesn'
  * counterType - The type of counter used to count the steps.
  * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
  * @example
- * import { StepCounter } from '@dongminyu/react-native-step-counter';
+ * import { StepCounter } from 'react-native-step-counter-newarch';
  */
 const StepCounter = StepCounterModule ? StepCounterModule : new Proxy({}, {
   get() {
@@ -70,6 +71,8 @@ const StepCounter = StepCounterModule ? StepCounterModule : new Proxy({}, {
   }
 });
 const StepEventEmitter = new NativeEventEmitter(StepCounter);
+const DEFAULT_MINIMUM_STEP_INTERVAL_MS = 250;
+
 // Tracks the subscription created by the most recent startStepCounterUpdate call.
 // Only this subscription is removed in stopStepCounterUpdate, so that external
 // subscribers (e.g. debug log components) are not unintentionally removed.
@@ -107,6 +110,53 @@ export function parseStepData(data) {
 }
 
 /**
+ * Create a stateful filter for live step-count updates.
+ *
+ * Native pedometer APIs can already include device/OS false positives, and the
+ * Android accelerometer fallback can also react to quick hand rotation. This
+ * helper drops updates that imply an impossible cadence and rebases later
+ * cumulative values so ignored burst steps do not come back on the next event.
+ */
+export function createStepCountFilter(options = {}) {
+  const minimumStepIntervalMs = options.minimumStepIntervalMs &amp;&amp; options.minimumStepIntervalMs > 0 ? options.minimumStepIntervalMs : DEFAULT_MINIMUM_STEP_INTERVAL_MS;
+  let previousRawData = null;
+  let ignoredSteps = 0;
+  let ignoredDistance = 0;
+  return data => {
+    if (!Number.isFinite(data.steps) || data.steps &lt; 0) {
+      return null;
+    }
+    if (previousRawData &amp;&amp; data.steps &lt; previousRawData.steps) {
+      previousRawData = data;
+      ignoredSteps = 0;
+      ignoredDistance = 0;
+      return data;
+    }
+    const referenceTime = previousRawData ? previousRawData.endDate : data.startDate;
+    const stepDelta = previousRawData ? data.steps - previousRawData.steps : data.steps;
+    const distanceDelta = previousRawData ? data.distance - previousRawData.distance : data.distance;
+    const elapsedMs = Number.isFinite(data.endDate) &amp;&amp; Number.isFinite(referenceTime) ? data.endDate - referenceTime : Number.POSITIVE_INFINITY;
+    const isSuspiciousBurst = stepDelta > 0 &amp;&amp; elapsedMs >= 0 &amp;&amp; elapsedMs &lt; stepDelta * minimumStepIntervalMs;
+    previousRawData = data;
+    if (isSuspiciousBurst) {
+      ignoredSteps += stepDelta;
+      if (distanceDelta > 0) {
+        ignoredDistance += distanceDelta;
+      }
+      return null;
+    }
+    if (ignoredSteps === 0 &amp;&amp; ignoredDistance === 0) {
+      return data;
+    }
+    return {
+      ...data,
+      steps: Math.max(0, data.steps - ignoredSteps),
+      distance: Math.max(0, data.distance - ignoredDistance)
+    };
+  };
+}
+
+/**
  * If you're using a method or property that's not available on the current platform, throw this error.
  * @param {string} moduleName The name of the module.
  * @param {string} propertyName The name of the property.
@@ -128,7 +178,7 @@ class UnavailabilityError extends Error {
  * iOS 8.0+ only. Android is available since KitKat (4.4 / API 19).
  * @see https://developer.android.com/about/versions/android-4.4.html
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
- * @returns {Promise&lt;Record&lt;string, boolean>>} A promise that resolves with an object containing the stepCounter availability.
+ * @returns {Promise&lt;{ supported: boolean, granted: boolean }>} A promise that resolves with an object containing the stepCounter availability.
  * supported - Whether the stepCounter is supported on device.
  * granted - Whether user granted the permission.
  */
@@ -190,7 +240,7 @@ export { NAME, VERSION };
     <br class="clear" />
 
     <footer>
-      Documentation generated at Sun May 24 2026 12:10:58 GMT+0900 (Korean Standard Time)
+      Documentation generated at Sun Jul 12 2026 17:45:51 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

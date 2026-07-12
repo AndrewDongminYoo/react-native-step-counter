@@ -1,0 +1,26 @@
+# OSV-Scanner ignore list.
+# Each entry is a vulnerability that cannot currently be remediated by an
+# upgrade in this repository. Include a date so entries do not go stale.
+
+# concurrent-ruby (example/Gemfile.lock) is pinned to `< 1.3.4` in
+# `example/Gemfile` to avoid known CocoaPods / activesupport build failures.
+# The advisories below are all fixed in concurrent-ruby 1.3.7, but that pin
+# blocks the upgrade. This gem is part of the example app's iOS build tooling
+# (Ruby/CocoaPods) and is NOT shipped in the published npm package. Re-evaluate
+# by bumping the `< 1.3.4` pin to `>= 1.3.7` and running `bundle update` in the
+# iOS environment (the Gemfile already declares `logger`, the usual blocker).
+# Recorded 2026-07-12.
+[[IgnoredVulns]]
+id = "GHSA-h8w8-99g7-qmvj"
+ignoreUntil = 2026-10-01
+reason = "concurrent-ruby fixed in 1.3.7, blocked by intentional `< 1.3.4` pin in example/Gemfile (CocoaPods compat); example-only Ruby tooling, not in the published package. Re-evaluate 2026-10 or when the pin can be lifted."
+
+[[IgnoredVulns]]
+id = "GHSA-6wx8-w4f5-wwcr"
+ignoreUntil = 2026-10-01
+reason = "concurrent-ruby fixed in 1.3.7, blocked by intentional `< 1.3.4` pin in example/Gemfile (CocoaPods compat); example-only Ruby tooling, not in the published package. Re-evaluate 2026-10 or when the pin can be lifted."
+
+[[IgnoredVulns]]
+id = "GHSA-wv3x-4vxv-whpp"
+ignoreUntil = 2026-10-01
+reason = "concurrent-ruby fixed in 1.3.7, blocked by intentional `< 1.3.4` pin in example/Gemfile (CocoaPods compat); example-only Ruby tooling, not in the published package. Re-evaluate 2026-10 or when the pin can be lifted."

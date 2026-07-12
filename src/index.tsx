@@ -11,7 +11,7 @@ import { NativeEventEmitter, Platform } from "react-native";
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
-  "The package '@dongminyu/react-native-step-counter' doesn't seem to be linked. Make sure: \n\n" +
+  "The package 'react-native-step-counter-newarch' doesn't seem to be linked. Make sure: \n\n" +
   Platform.select({
     ios: "- You have run `pod install` in the `ios` directory and then clean, rebuild and re-run the app. You may also need to re-open Xcode to get the new pods.\n",
     android:
@@ -44,7 +44,7 @@ export interface ParsedStepCountData {
  * counterType - The type of counter used to count the steps.
  * @throws {Error} LINKING_ERROR - Throws Error If global variable turboModuleProxy is undefined.
  * @example
- * import { StepCounter } from '@dongminyu/react-native-step-counter';
+ * import { StepCounter } from 'react-native-step-counter-newarch';
  */
 const StepCounter = (
   StepCounterModule
@@ -196,7 +196,7 @@ class UnavailabilityError extends Error {
  * iOS 8.0+ only. Android is available since KitKat (4.4 / API 19).
  * @see https://developer.android.com/about/versions/android-4.4.html
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
- * @returns {Promise<{ supported: boolean; granted: boolean }>} A promise that resolves with an object containing the stepCounter availability.
+ * @returns {Promise<{ supported: boolean, granted: boolean }>} A promise that resolves with an object containing the stepCounter availability.
  * supported - Whether the stepCounter is supported on device.
  * granted - Whether user granted the permission.
  */

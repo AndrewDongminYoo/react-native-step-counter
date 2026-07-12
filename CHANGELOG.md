@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.4.0...v0.5.0) (2026-07-12)
+
+### ⚠ BREAKING CHANGES
+
+- 📦 **Package renamed to `react-native-step-counter-newarch`** (previously `@dongminyu/react-native-step-counter`). Update your dependency and every import path. The unscoped `react-native-step-counter` name is blocked by npm's name-similarity check (it normalizes to the same string as the 2016 `react-native-stepcounter` fork of `react-native-pedometer`), so the New Architecture identity is signaled with a `-newarch` suffix. The GitHub repository is unchanged. ([6f9caab](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/6f9caab))
+
+### Bug Fixes
+
+- 🐛 **JSDoc type parsing**: Corrected the `@returns` inline object type in the doc comments (`;` → `,`) so `jsdoc` can parse the type expression and generate the API documentation. ([a415320](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/a415320))
+
+### Documentation
+
+- 📝 **Knowledge layer reconciled**: Aligned `CLAUDE.md`, `AGENTS.md`, and the Serena memory files with the current code — public API surface, Jest preset, Node channel, React Native peer range, and the timestamp flow. ([c53b351](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/c53b351))
+- 📝 Regenerated the JSDoc API documentation. ([e6b0054](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/e6b0054))
+
+### Chore Changes
+
+- 🔨 Quoted the `NODE_BINARY` command in the iOS example build for consistency. ([b13954c](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/b13954c))
+- 👷 Added native Android and iOS example build workflows. ([10d9750](https://github.com/AndrewDongminYoo/react-native-step-counter/commit/10d9750))
+- 🔒 Resolved reported OSV advisories in transitive/dev dependencies via Yarn `resolutions` (`ws`, `undici`, `js-yaml`, `joi`, `launch-editor`, `shell-quote`, `tar`, `@babel/core`). The pin-blocked `concurrent-ruby` advisories — example iOS build tooling, not shipped in the package — are recorded in `example/osv-scanner.toml`.
+
 ## [0.4.0](https://github.com/AndrewDongminYoo/react-native-step-counter/compare/v0.3.1...v0.4.0) (2026-05-24)
 
 ### Features

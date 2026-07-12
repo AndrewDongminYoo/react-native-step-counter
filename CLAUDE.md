@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`@dongminyu/react-native-step-counter` is a React Native **TurboModule library** that tracks step counts using native device sensors. It uses the **New Architecture** (Fabric/TurboModules) and is built with `react-native-builder-bob`.
+`react-native-step-counter-newarch` is a React Native **TurboModule library** that tracks step counts using native device sensors. It uses the **New Architecture** (Fabric/TurboModules) and is built with `react-native-builder-bob`.
 
 - iOS: Uses `CMPedometer` (CoreMotion) and `SOMotionDetecter`
 - Android: Uses the hardware step counter sensor (API 19+) with accelerometer fallback
@@ -47,7 +47,7 @@ yarn example build:ios      # Build iOS in Debug mode
 ### Clean Build Artifacts
 
 ```sh
-yarn clean                  # Remove android/build, example/android/build, example/android/app/build, example/ios/build, lib/
+yarn clean                  # Remove android/build, example/android/build, example/android/app/build, example/ios/build, example/ios/Pods, lib/
 ```
 
 ### iOS Setup (after native changes)
@@ -72,9 +72,9 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 - **`src/index.tsx`** — Public API. Wraps the native module with a `NativeEventEmitter`, exposes:
   - `isStepCountingSupported()` → Promise with `{ supported, granted }`
   - `startStepCounterUpdate(start, callback)` → returns `EventSubscription`
-  - `stopStepCounterUpdate()` → removes all listeners and stops native updates
+  - `stopStepCounterUpdate()` → removes only the subscription created by the most recent `startStepCounterUpdate` (tracked as `_activeSubscription`) and stops native updates; external listeners are left intact
   - `parseStepData(data)` → transforms raw `StepCountData` into human-readable `ParsedStepCountData`
-  - `isSensorWorking` — boolean based on active listener count
+  - `createStepCountFilter(options?)` → returns a stateful filter that drops false-positive bursts (any cadence faster than `minimumStepIntervalMs`, default 250) and rebases later cumulative values so ignored steps do not reappear
 
 ### Native Layer
 
@@ -103,27 +103,27 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 
 ## Testing
 
-Jest is configured in `jest.config.js` (preset: `react-native`). `jest.setup.ts` mocks `TurboModuleRegistry.getEnforcing` globally, returning stubs for all native methods. Currently no test files exist; tests should be placed under `src/__tests__/`.
+Jest is configured in `jest.config.js` (preset: `@react-native/jest-preset`). `jest.setup.ts` mocks `TurboModuleRegistry.getEnforcing` globally, returning stubs for all native methods. Tests live under `src/__tests__/` (e.g. `index.test.ts`).
 
 The `jest-config` package is used in `jest.config.js` for default `moduleFileExtensions`. `modulePathIgnorePatterns` excludes `example/node_modules` and `lib/`.
 
 ## Compatibility
 
 - **v0.3.0+**: New Architecture (TurboModule/Fabric) is **required**. The library no longer supports the legacy bridge architecture.
-- **Not supported**: Expo Go, Expo managed workflow, React Native < 0.68.
+- **Not supported**: Expo Go, Expo managed workflow, React Native < 0.71 (the `react-native` peer dependency requires `>=0.71.0`).
 - For legacy architecture support, use a version prior to v0.3.0.
 
 ## Key Conventions
 
-- **Node version**: v22.20.0 (see `.nvmrc`)
+- **Node version**: `lts/jod` (Node 22 LTS; see `.nvmrc`)
 - **Package manager**: Yarn 4.x only — do not use npm or pnpm.
 - TypeScript strict mode is enabled with `noUnusedLocals`, `noUnusedParameters`, `noUncheckedIndexedAccess`.
 - Event name constant: `"StepCounter.stepCounterUpdate"` (defined in `NativeStepCounter.ts`).
-- **Timestamp flow**: JS passes `Date.getTime() / 1000` (seconds) to native via `startStepCounterUpdate`. Native returns `startDate`/`endDate` in `StepCountData` as Unix timestamps in **milliseconds**.
+- **Timestamp flow**: JS passes `Date.getTime()` (Unix **milliseconds**) to native via `startStepCounterUpdate`. Native auto-normalizes the incoming value (accepts both milliseconds and seconds) and returns `startDate`/`endDate` in `StepCountData` as Unix timestamps in **milliseconds**.
 - `parseStepData` assumes a daily goal of 10,000 steps and calculates calories as `steps * 0.045 kCal`.
 
 ## Editing Native Code
 
-- **Xcode**: Open `example/ios/StepCounterExample.xcworkspace`. Library files are under `Pods > Development Pods > @dongminyu/react-native-step-counter`.
-- **Android Studio**: Open `example/android`. Library files appear under `dongminyu-react-native-step-counter`.
+- **Xcode**: Open `example/ios/StepCounterExample.xcworkspace`. Library files are under `Pods > Development Pods > react-native-step-counter-newarch`.
+- **Android Studio**: Open `example/android`. Library files appear under `react-native-step-counter-newarch`.
 - After any native change, rebuild the example app (`yarn example android` or `yarn example ios`).

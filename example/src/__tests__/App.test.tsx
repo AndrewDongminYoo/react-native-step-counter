@@ -3,7 +3,7 @@ import App from "../App";
 
 // ─── mocks ──────────────────────────────────────────────────────────────────
 
-jest.mock("@dongminyu/react-native-step-counter", () => ({
+jest.mock("react-native-step-counter-newarch", () => ({
   createStepCountFilter: jest.fn(() => (data: unknown) => data),
   isStepCountingSupported: jest.fn(),
   startStepCounterUpdate: jest.fn(),
@@ -29,7 +29,7 @@ import {
   isStepCountingSupported,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from "@dongminyu/react-native-step-counter";
+} from "react-native-step-counter-newarch";
 import { getStepCounterPermission } from "../permission";
 
 const mockSupported = isStepCountingSupported as jest.Mock;

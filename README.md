@@ -9,11 +9,11 @@ This library provides an interface for tracking the number of steps taken by the
 ## Installation
 
 ```shell
-npm install @dongminyu/react-native-step-counter
+npm install react-native-step-counter-newarch
 ```
 
 ```shell
-yarn add @dongminyu/react-native-step-counter
+yarn add react-native-step-counter-newarch
 ```
 
 Native modules will automatically connect after React Native 0.60 version. So you don't need to link the native modules manually.
@@ -101,7 +101,7 @@ import {
   parseStepData,
   startStepCounterUpdate,
   stopStepCounterUpdate,
-} from "@dongminyu/react-native-step-counter";
+} from "react-native-step-counter-newarch";
 ```
 
 Use the `isStepCountingSupported` method to check if the device has a step counter or accelerometer sensor.

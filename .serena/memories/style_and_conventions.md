@@ -24,7 +24,7 @@
 
 ## Testing Conventions
 
-- Jest with `react-native` preset (`jest.config.js`)
+- Jest with `@react-native/jest-preset` preset (`jest.config.js`)
 - Test file names: `*.test.ts` or `*.test.tsx`
 - Prefer colocated tests or `src/__tests__/`
 

@@ -37,7 +37,7 @@
 
 ## Testing Guidelines
 
-- Jest is configured via `jest.config.js` (`react-native` preset) and `jest.setup.ts`.
+- Jest is configured via `jest.config.js` (`@react-native/jest-preset` preset) and `jest.setup.ts`.
 - Add tests as `*.test.ts` / `*.test.tsx` (prefer colocated tests or `src/__tests__/`).
 - Run unit tests with `yarn jest --coverage`.
 - For native changes, validate behavior in `example/` on affected platforms (Android/iOS).
