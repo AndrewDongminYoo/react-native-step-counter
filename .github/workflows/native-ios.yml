@@ -15,6 +15,8 @@ on:
       - example/ios/**
       - example/Gemfile*
       - example/package.json
+      # autolinking + codegen platform declarations for the example app
+      - example/react-native.config.js
       - package.json
       - .github/actions/setup/**
       - .github/workflows/native-ios.yml
