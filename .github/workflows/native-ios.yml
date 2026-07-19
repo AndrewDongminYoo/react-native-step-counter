@@ -8,6 +8,10 @@ on:
     paths:
       - ios/**
       - "*.podspec"
+      # codegen jsSrcsDir — a spec edit regenerates NativeStepCounterSpec,
+      # which the native sources implement, so it can break the build.
+      - src/**
+      - "!src/__tests__/**"
       - example/ios/**
       - example/Gemfile*
       - example/package.json

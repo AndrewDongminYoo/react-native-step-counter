@@ -7,6 +7,10 @@ on:
       - main
     paths:
       - android/**
+      # codegen jsSrcsDir — a spec edit regenerates NativeStepCounterSpec,
+      # which StepCounterModule subclasses, so it can break the build.
+      - src/**
+      - "!src/__tests__/**"
       - example/android/**
       - example/package.json
       - package.json
