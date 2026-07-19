@@ -2,6 +2,16 @@ name: Native Android Example Build
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - android/**
+      - example/android/**
+      - example/package.json
+      - package.json
+      - .github/actions/setup/**
+      - .github/workflows/native-android.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

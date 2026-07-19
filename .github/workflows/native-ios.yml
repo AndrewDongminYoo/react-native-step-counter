@@ -2,6 +2,18 @@ name: Native iOS Example Build
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ios/**
+      - "*.podspec"
+      - example/ios/**
+      - example/Gemfile*
+      - example/package.json
+      - package.json
+      - .github/actions/setup/**
+      - .github/workflows/native-ios.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,12 +52,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cocoapods-
 
+      # Always runs: `pod install` also generates codegen output under
+      # example/ios/build/generated, which is gitignored and not cached, so
+      # skipping this on a cache hit leaves Pods/ referencing podspecs that
+      # do not exist. The cache still saves the download, not the install.
       - name: Install cocoapods
-        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
           cd example
           bundle install
-          bundle exec pod repo update --verbose
           bundle exec pod install --project-directory=ios
 
       - name: Cache cocoapods
