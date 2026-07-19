@@ -2,6 +2,26 @@ name: Native Android Example Build
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    # Deliberately an ignore list, not an allow list. Too many things reach a
+    # native build indirectly — codegen reads src, autolinking reads
+    # react-native.config.js, the setup action installs from yarn.lock — and a
+    # path missing from an allow list skips the job silently, which looks
+    # identical to a pass. A path missing from an ignore list only costs one
+    # redundant build.
+    paths-ignore:
+      - "**/*.md"
+      - LICENSE
+      - src/__tests__/**
+      - .github/workflows/ci.yml
+      - .github/workflows/pages.yml
+  # Matches ci.yml. Merge groups do not honour paths-ignore, so this runs
+  # unconditionally once a merge queue is enabled.
+  merge_group:
+    types:
+      - checks_requested
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

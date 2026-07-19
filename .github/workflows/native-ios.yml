@@ -2,6 +2,26 @@ name: Native iOS Example Build
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    # Deliberately an ignore list, not an allow list. Too many things reach a
+    # native build indirectly — codegen reads src, autolinking reads
+    # react-native.config.js, the setup action installs from yarn.lock — and a
+    # path missing from an allow list skips the job silently, which looks
+    # identical to a pass. A path missing from an ignore list only costs one
+    # redundant build.
+    paths-ignore:
+      - "**/*.md"
+      - LICENSE
+      - src/__tests__/**
+      - .github/workflows/ci.yml
+      - .github/workflows/pages.yml
+  # Matches ci.yml. Merge groups do not honour paths-ignore, so this runs
+  # unconditionally once a merge queue is enabled.
+  merge_group:
+    types:
+      - checks_requested
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,12 +60,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cocoapods-
 
+      # Always runs: `pod install` also generates codegen output under
+      # example/ios/build/generated, which is gitignored and not cached, so
+      # skipping this on a cache hit leaves Pods/ referencing podspecs that
+      # do not exist. The cache still saves the download, not the install.
       - name: Install cocoapods
-        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
           cd example
           bundle install
-          bundle exec pod repo update --verbose
           bundle exec pod install --project-directory=ios
 
       - name: Cache cocoapods
