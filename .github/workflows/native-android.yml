@@ -17,6 +17,11 @@ on:
       - src/__tests__/**
       - .github/workflows/ci.yml
       - .github/workflows/pages.yml
+  # Matches ci.yml. Merge groups do not honour paths-ignore, so this runs
+  # unconditionally once a merge queue is enabled.
+  merge_group:
+    types:
+      - checks_requested
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
