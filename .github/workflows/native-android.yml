@@ -5,19 +5,18 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - android/**
-      # codegen jsSrcsDir — a spec edit regenerates NativeStepCounterSpec,
-      # which StepCounterModule subclasses, so it can break the build.
-      - src/**
-      - "!src/__tests__/**"
-      - example/android/**
-      - example/package.json
-      # autolinking + codegen platform declarations for the example app
-      - example/react-native.config.js
-      - package.json
-      - .github/actions/setup/**
-      - .github/workflows/native-android.yml
+    # Deliberately an ignore list, not an allow list. Too many things reach a
+    # native build indirectly — codegen reads src, autolinking reads
+    # react-native.config.js, the setup action installs from yarn.lock — and a
+    # path missing from an allow list skips the job silently, which looks
+    # identical to a pass. A path missing from an ignore list only costs one
+    # redundant build.
+    paths-ignore:
+      - "**/*.md"
+      - LICENSE
+      - src/__tests__/**
+      - .github/workflows/ci.yml
+      - .github/workflows/pages.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
