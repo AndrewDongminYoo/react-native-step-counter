@@ -30,7 +30,7 @@ yarn prepare                # Build the library (runs bob build → outputs to l
 yarn typecheck              # TypeScript type check (tsc --noEmit)
 trunk check                 # Lint with Trunk (prettier, ktlint, swiftformat, etc.)
 trunk fmt                   # Auto-fix lint issues
-yarn jest                   # Run unit tests (no test files exist currently)
+yarn jest                   # Run unit tests
 yarn jest path/to/file.test.ts  # Run a single test file
 ```
 
