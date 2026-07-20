@@ -13,8 +13,8 @@
 
 ## Testing
 
-- `yarn jest` - run unit tests
-- `yarn jest --coverage` - run tests with coverage
+- `yarn test` - run unit tests (jest --runInBand --no-watchman; the command CI runs)
+- `yarn test --coverage` - run tests with coverage
 
 ## Lint/Format/Security
 

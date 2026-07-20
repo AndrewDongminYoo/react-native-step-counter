@@ -33,7 +33,7 @@ Please provide a concise description of what this PR does and why.
 
 - [ ] My code follows the repository’s style guidelines
 - [ ] I have added tests covering my changes
-- [ ] I have run `trunk check` and `yarn jest` locally with no failures
+- [ ] I have run `trunk check` and `yarn test` locally with no failures
 - [ ] I have updated the README or relevant documentation
 - [ ] I have provided version and environment details if applicable
 
@@ -42,7 +42,7 @@ Please provide a concise description of what this PR does and why.
 1. `git checkout <this-branch>`
 2. `yarn`
 3. `yarn prepare`
-4. `yarn jest`
+4. `yarn test`
 5. **Example Usage:**
    ```js
    import {

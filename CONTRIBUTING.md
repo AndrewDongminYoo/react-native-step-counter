@@ -99,7 +99,7 @@ trunk fmt
 Remember to add tests for your change if possible. Run the unit tests by:
 
 ```sh
-yarn jest
+yarn test
 ```
 
 ### Publishing to npm
@@ -120,7 +120,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn typecheck`: type-check files with TypeScript.
 - `trunk check`: lint files with [Trunk](https://trunk.io/) (prettier, ktlint, swiftformat, etc.).
 - `trunk fmt`: auto-fix formatting issues.
-- `yarn jest`: run unit tests with [Jest](https://jestjs.io/).
+- `yarn test`: run unit tests with [Jest](https://jestjs.io/).
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.

@@ -30,8 +30,8 @@ yarn prepare                # Build the library (runs bob build → outputs to l
 yarn typecheck              # TypeScript type check (tsc --noEmit)
 trunk check                 # Lint with Trunk (prettier, ktlint, swiftformat, etc.)
 trunk fmt                   # Auto-fix lint issues
-yarn jest                   # Run unit tests
-yarn jest path/to/file.test.ts  # Run a single test file
+yarn test                   # Run unit tests (jest --runInBand --no-watchman; same command CI runs)
+yarn test path/to/file.test.ts  # Run a single test file
 ```
 
 ### Example App
@@ -103,7 +103,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 
 ## Testing
 
-Jest is configured in `jest.config.js` (preset: `@react-native/jest-preset`). `jest.setup.ts` mocks `TurboModuleRegistry.getEnforcing` globally, returning stubs for all native methods. Tests live under `src/__tests__/` (e.g. `index.test.ts`).
+Jest is configured in `jest.config.js` (preset: `@react-native/jest-preset`). `jest.setup.ts` mocks `TurboModuleRegistry.getEnforcing` globally, returning stubs for all native methods. Tests live under `src/__tests__/` (`index.test.ts`) and `example/src/__tests__/` (`App.test.tsx`, `LogCat.test.tsx`) — a single root Jest run covers both.
 
 The `jest-config` package is used in `jest.config.js` for default `moduleFileExtensions`. `modulePathIgnorePatterns` excludes `example/node_modules` and `lib/`.
 
