@@ -99,7 +99,7 @@
     "picomatch@npm:^2.3.1": "npm:2.3.2",
     "picomatch@npm:^4.0.3": "npm:4.0.4",
     "shell-quote": "1.8.4",
-    "tar": "7.5.16",
+    "tar": "^7.5.19",
     "undici@npm:7.24.5": "7.28.0",
     "ws@npm:^6.2.3": "6.2.4",
     "ws@npm:^7": "7.5.11",
