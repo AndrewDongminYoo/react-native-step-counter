@@ -1,0 +1,7 @@
+[[IgnoredVulns]]
+id = "GHSA-5p2g-fcmc-qvqq"
+reason = "image-size@1.2.1 has no patch available as of 2026-08-29. It is transitive through Metro from the root devDependencies. Re-evaluate when a fixed release is published."
+
+[[IgnoredVulns]]
+id = "GHSA-w3rx-r6r6-pgpr"
+reason = "image-size@1.2.1 has no patch available as of 2026-08-29. It is transitive through Metro from the root devDependencies. Re-evaluate when a fixed release is published."
