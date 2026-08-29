@@ -1,11 +1,25 @@
 version: "0.2"
-ignorePaths: []
+useGitignore: true
+enableGlobDot: true
+ignorePaths:
+  - .git
+  - .yarn/releases
+  - documents
+  - example/android/gradlew
 dictionaryDefinitions:
   - name: step-counter
     path: ./.cspell/step-counter.txt
     addWords: true
 dictionaries:
+  - en-gb
+  - filetypes
+  - fonts
+  - java
+  - kotlin
+  - node
+  - npm
+  - shellscript
+  - softwareTerms
   - step-counter
-words: []
-ignoreWords: []
-import: []
+  - swift
+  - typescript
