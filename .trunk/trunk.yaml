@@ -28,7 +28,6 @@ lint:
     - linters: [markdownlint]
       paths: [.github/**/*.md]
   enabled:
-    - grype@0.115.0
     - pinact@4.1.0
     - taplo@0.10.0
     - trivy@0.71.0
