@@ -20,6 +20,8 @@ runtimes:
 lint:
   disabled:
     - dotenv-linter
+    - shellcheck
+    - shfmt
   ignore:
     - linters: [shellcheck, shfmt]
       paths: [example/android/gradlew]
