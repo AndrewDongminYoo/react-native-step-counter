@@ -35,7 +35,6 @@ function loadModule(nativeMock: NativeMock): typeof import("../index") {
   let mod: typeof import("../index") | undefined;
   jest.isolateModules(() => {
     (TurboModuleRegistry.getEnforcing as jest.Mock).mockReturnValue(nativeMock);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     mod = require("../index") as typeof import("../index");
   });
   if (!mod) throw new Error("isolateModules did not load the module");
