@@ -50,21 +50,21 @@ beforeEach(() => {
 describe("App", () => {
   it('shows "Stopped" when sensor is not supported', async () => {
     mockSupported.mockResolvedValue({ supported: false, granted: false });
-    render(<App />);
+    await render(<App />);
     expect(await screen.findByText("Stopped")).toBeTruthy();
     expect(mockStart).not.toHaveBeenCalled();
   });
 
   it("auto-starts when sensor is supported and permission is already granted", async () => {
     mockSupported.mockResolvedValue({ supported: true, granted: true });
-    render(<App />);
+    await render(<App />);
     await act(async () => {});
     expect(mockStart).toHaveBeenCalledTimes(1);
   });
 
   it("START button is disabled while the counter is active", async () => {
     mockSupported.mockResolvedValue({ supported: true, granted: true });
-    render(<App />);
+    await render(<App />);
     await act(async () => {});
     expect(screen.getByRole("button", { name: "START" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "STOP" })).not.toBeDisabled();
@@ -72,10 +72,10 @@ describe("App", () => {
 
   it("pressing STOP calls stopStepCounterUpdate and re-enables START", async () => {
     mockSupported.mockResolvedValue({ supported: true, granted: true });
-    render(<App />);
+    await render(<App />);
     await act(async () => {});
 
-    fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+    await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
 
     expect(mockStop).toHaveBeenCalled();
     expect(mockSubscriptionRemove).not.toHaveBeenCalled();
@@ -85,12 +85,10 @@ describe("App", () => {
 
   it("pressing START does not start updates when the sensor is unsupported", async () => {
     mockSupported.mockResolvedValue({ supported: false, granted: false });
-    render(<App />);
+    await render(<App />);
     await act(async () => {});
 
-    await act(async () => {
-      fireEvent.press(screen.getByRole("button", { name: "START" }));
-    });
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
 
     expect(mockPermission).not.toHaveBeenCalled();
     expect(mockStart).not.toHaveBeenCalled();
@@ -99,12 +97,10 @@ describe("App", () => {
   it("pressing START requests permission before starting updates", async () => {
     mockSupported.mockResolvedValue({ supported: true, granted: false });
     mockPermission.mockResolvedValue(true);
-    render(<App />);
+    await render(<App />);
     await act(async () => {});
 
-    await act(async () => {
-      fireEvent.press(screen.getByRole("button", { name: "START" }));
-    });
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
 
     expect(mockPermission).toHaveBeenCalledTimes(1);
     expect(mockStart).toHaveBeenCalledTimes(1);
@@ -112,7 +108,7 @@ describe("App", () => {
 
   it("logs flattened raw and accepted step values for live device checks", async () => {
     mockSupported.mockResolvedValue({ supported: true, granted: true });
-    render(<App />);
+    await render(<App />);
     await act(async () => {});
 
     await act(async () => {
@@ -133,7 +129,7 @@ describe("App", () => {
 
   it("renders the accepted step count in the app overlay", async () => {
     mockSupported.mockResolvedValue({ supported: true, granted: true });
-    render(<App />);
+    await render(<App />);
     await act(async () => {});
 
     await act(async () => {

@@ -13,8 +13,8 @@ function makeLog(overrides: Partial<LogLine> = {}): LogLine {
 
 describe("LogCat", () => {
   describe("empty state", () => {
-    beforeEach(() => {
-      render(<LogCat sessionId="session-1" logs={[]} onClear={jest.fn()} />);
+    beforeEach(async () => {
+      await render(<LogCat sessionId="session-1" logs={[]} onClear={jest.fn()} />);
     });
 
     it("disables the Clear button when there are no logs", () => {
@@ -29,8 +29,8 @@ describe("LogCat", () => {
   describe("with matching logs", () => {
     const logs = [makeLog(), makeLog({ ts: 1700000001000, tag: "INFO" })];
 
-    beforeEach(() => {
-      render(<LogCat sessionId="session-1" logs={logs} onClear={jest.fn()} />);
+    beforeEach(async () => {
+      await render(<LogCat sessionId="session-1" logs={logs} onClear={jest.fn()} />);
     });
 
     it("enables the Clear button", () => {
@@ -42,18 +42,18 @@ describe("LogCat", () => {
     });
   });
 
-  it("filters out logs that belong to a different session", () => {
+  it("filters out logs that belong to a different session", async () => {
     const logs = [makeLog({ sessionId: "other-session" })];
-    render(<LogCat sessionId="session-1" logs={logs} onClear={jest.fn()} />);
+    await render(<LogCat sessionId="session-1" logs={logs} onClear={jest.fn()} />);
     // No matching logs → buttons remain disabled
     expect(screen.getByLabelText("Clear logs")).toBeDisabled();
     expect(screen.getByLabelText("Copy logs")).toBeDisabled();
   });
 
-  it("calls onClear when the Clear button is pressed", () => {
+  it("calls onClear when the Clear button is pressed", async () => {
     const onClear = jest.fn();
-    render(<LogCat sessionId="session-1" logs={[makeLog()]} onClear={onClear} />);
-    fireEvent.press(screen.getByLabelText("Clear logs"));
+    await render(<LogCat sessionId="session-1" logs={[makeLog()]} onClear={onClear} />);
+    await fireEvent.press(screen.getByLabelText("Clear logs"));
     expect(onClear).toHaveBeenCalledTimes(1);
   });
 });
