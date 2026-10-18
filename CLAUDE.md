@@ -28,7 +28,7 @@ All commands are run from the root directory unless noted.
 yarn                        # Install dependencies for all workspaces
 yarn prepare                # Build the library (runs bob build → outputs to lib/)
 yarn typecheck              # TypeScript type check (tsc --noEmit)
-trunk check                 # Lint with Trunk (prettier, ktlint, swiftformat, etc.)
+trunk check                 # Lint with Trunk (the linters enabled in .trunk/trunk.yaml)
 trunk fmt                   # Auto-fix lint issues
 yarn test                   # Run unit tests (jest --runInBand --no-watchman; same command CI runs)
 yarn test path/to/file.test.ts  # Run a single test file
@@ -99,7 +99,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 
 - **`react-native-builder-bob`** — Builds library to `lib/` in two targets: ESM module (`lib/module/`) and TypeScript declarations (`lib/typescript/`).
 - **Codegen** — Configured via `codegenConfig` in `package.json` (name: `StepCounterSpec`, type: `modules`, Java package: `com.stepcounter`).
-- **Trunk** — Manages linting (prettier, ktlint, swiftformat, shellcheck, markdownlint, yamllint, actionlint). Run via `trunk` CLI, not via yarn scripts.
+- **Trunk** — Runs every linter and security scanner. The `lint.enabled` list in `.trunk/trunk.yaml` is the only list of which ones run; do not copy it here. ESLint is one of them and reads `eslint.config.mjs`, so there is no `lint` script. Run via `trunk` CLI, not via yarn scripts.
 
 ## Testing
 
