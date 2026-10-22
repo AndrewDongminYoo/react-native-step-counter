@@ -1486,10 +1486,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.29.10":
+"@babel/runtime@npm:^7.25.0":
   version: 7.29.10
   resolution: "@babel/runtime@npm:7.29.10"
   checksum: 10c0/32f975da8e9c2cae6b33e1a477f8fe8bbff6722c982b5ce35f99affaf3a7a1b612c8272b43afa0e51d3000928d6f3ba38f9296301115db5640264907c027b0cd
+  languageName: node
+  linkType: hard
+
+"@babel/runtime@npm:^8.0.7":
+  version: 8.0.7
+  resolution: "@babel/runtime@npm:8.0.7"
+  checksum: 10c0/7ff1ca2d452a3359dc63bd36b25ff219ef04dfefbf7186900f1c296e55ade2ccc7f88dd2eb9d58ed253e3bde58fae97b9e40d80220ebfe510c99f7cf54837603
   languageName: node
   linkType: hard
 
@@ -4968,7 +4975,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
-    "@babel/runtime": "npm:^7.29.10"
+    "@babel/runtime": "npm:^8.0.7"
     "@react-native-community/cli": "npm:20.2.0"
     "@react-native-community/cli-platform-android": "npm:20.2.0"
     "@react-native-community/cli-platform-ios": "npm:20.2.0"
