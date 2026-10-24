@@ -10,12 +10,10 @@ updates:
       timezone: Asia/Seoul
     open-pull-requests-limit: 3
     groups:
-      github-actions-minor-patch:
+      # Every version update, majors included, in one PR; CI runs the actions it bumps.
+      github-actions:
         patterns:
           - "*"
-        update-types:
-          - minor
-          - patch
       github-actions-security:
         applies-to: security-updates
         patterns:
@@ -27,6 +25,12 @@ updates:
       day: monday
       timezone: Asia/Seoul
     open-pull-requests-limit: 3
+    ignore:
+      # React Native 0.88's Babel preset requires Babel 7 (#74: every Jest suite failed on @babel/core 8).
+      # update-types limits this to version updates; security updates still open.
+      - dependency-name: "@babel/*"
+        update-types:
+          - version-update:semver-major
     groups:
       npm-minor-patch:
         patterns:
@@ -47,6 +51,14 @@ updates:
       day: monday
       timezone: Asia/Seoul
     open-pull-requests-limit: 3
+    ignore:
+      # Gradle wrapper upgrades follow the React Native toolchain, not Dependabot (#70: Gradle 9.8.1 broke the build).
+      # update-types limits this to version updates; security updates still open.
+      - dependency-name: gradle-wrapper
+        update-types:
+          - version-update:semver-patch
+          - version-update:semver-minor
+          - version-update:semver-major
     groups:
       gradle-minor-patch:
         patterns:
