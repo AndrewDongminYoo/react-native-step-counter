@@ -58,7 +58,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
+    "@babel/core": "^8.0.7",
     "@eslint/compat": "^2.1.1",
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
@@ -85,7 +85,7 @@
     "typescript": "^6.0.3"
   },
   "resolutions": {
-    "@babel/core": "^7.29.7",
+    "@babel/core": "^8.0.7",
     "baseline-browser-mapping": "^2.11.0",
     "basic-ftp": "^6.2.3",
     "brace-expansion@npm:^1.1.7": "npm:^1.1.21",
