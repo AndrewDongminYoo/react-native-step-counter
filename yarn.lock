@@ -9946,8 +9946,8 @@ __metadata:
   linkType: hard
 
 "react-native-builder-bob@npm:^0.44.0":
-  version: 0.44.0
-  resolution: "react-native-builder-bob@npm:0.44.0"
+  version: 0.44.1
+  resolution: "react-native-builder-bob@npm:0.44.1"
   dependencies:
     "@babel/core": "npm:^7.29.7"
     "@babel/plugin-transform-flow-strip-types": "npm:^7.29.7"
@@ -9973,7 +9973,7 @@ __metadata:
     yargs: "npm:^18.2.0"
   bin:
     bob: bin/bob
-  checksum: 10c0/bf44bde23f9ce0d9dee00b802439bd65ba076eea0f505b74a7be106e24226b2d5b060f2c34649b4e976ad4443d27f1da2271ef19f9c6dcdfdedde6e6b9cd090c
+  checksum: 10c0/090c1b71c1ef8aad1b92eb6b54d886c9a965d3dd853b7185e028a5ab0f2dafac6b0ad8ea1c1684dc3203c1e5a0385a8d2c9ae310198ede0712a6148b699da755
   languageName: node
   linkType: hard
 
