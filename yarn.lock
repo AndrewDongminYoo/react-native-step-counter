@@ -10056,12 +10056,12 @@ __metadata:
   linkType: hard
 
 "react-native-safe-area-context@npm:^5.10.1":
-  version: 5.10.1
-  resolution: "react-native-safe-area-context@npm:5.10.1"
+  version: 5.11.0
+  resolution: "react-native-safe-area-context@npm:5.11.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/8aebfa832d483e385f9848b5ea92ce3e525a44cad5b3b363b5b190c1f559f3f01176f745ff7a2ad0e2191cb3fb2d0be26c8650956640f086562440c869713ec5
+  checksum: 10c0/b36141e17a5cf307a2eb1720b65c161035ac13e0c2e62bdac4dc2639346e9721649f9ae8c0e7a66a8f525cb1c580b3ea73f892167a97df8fea6cd80212703e00
   languageName: node
   linkType: hard
 
@@ -10114,8 +10114,8 @@ __metadata:
   linkType: hard
 
 "react-native-worklets@npm:^0.13.0":
-  version: 0.13.0
-  resolution: "react-native-worklets@npm:0.13.0"
+  version: 0.13.1
+  resolution: "react-native-worklets@npm:0.13.1"
   dependencies:
     "@babel/generator": "npm:^7.27.1"
     "@babel/plugin-transform-arrow-functions": "npm:^7.27.1"
@@ -10138,7 +10138,7 @@ __metadata:
     "@react-native/metro-config": "*"
     react: "*"
     react-native: 0.86 - 0.88
-  checksum: 10c0/bf35b75c9711019a9de757317afab7bc5f4015bf3770c64f1bb13fc5c8edae86b145642b721f6b3c886e4b52c69ea38c6331a3e59de6a1db3386976a6aadfc79
+  checksum: 10c0/914888189aacba41035e9f5fb605cc02c91f17199eb1d83b3b0d5b94152f1d8a4e47fbdfe4c044c495b7e951a1b8c9262e660dd7c47bc0f021c539c5438d3c55
   languageName: node
   linkType: hard
 
