@@ -28,7 +28,10 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Setup Trunk
-        uses: trunk-io/trunk-action/setup@e1234e67a86010d61ddac8d8ebf4b783e2ffd2fa # v2.0.0
+        run: |
+          curl -fsSL https://trunk.io/releases/trunk -o "$RUNNER_TEMP/trunk"
+          chmod +x "$RUNNER_TEMP/trunk"
+          printf 'TRUNK_PATH=%s\n' "$RUNNER_TEMP/trunk" >> "$GITHUB_ENV"
 
       - name: Lint
         run: |
