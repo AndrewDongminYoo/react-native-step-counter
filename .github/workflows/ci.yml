@@ -27,6 +27,16 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Setup Trunk
+        run: |
+          curl -fsSL https://trunk.io/releases/trunk -o "$RUNNER_TEMP/trunk"
+          chmod +x "$RUNNER_TEMP/trunk"
+          printf 'TRUNK_PATH=%s\n' "$RUNNER_TEMP/trunk" >> "$GITHUB_ENV"
+
+      - name: Lint
+        run: |
+          "$TRUNK_PATH" check --ci --all --no-fix --filter=eslint --monitor=false
+
       - name: Typecheck
         run: yarn typecheck
 
