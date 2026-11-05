@@ -5,14 +5,29 @@
 [[IgnoredVulns]]
 id = "GHSA-vfj7-8cjw-p6xm"
 ignoreUntil = 2027-04-18
-reason = "braces@3.0.3 has no patched release as of 2026-10-18. Dev-only path (micromatch via jest, metro); patterns are repo-authored globs. Approved by Dongmin Yu on 2026-10-18. Re-evaluate when a patch is released."
+reason = "braces@3.0.3 has no patched release as of 2026-10-18. Dev-only path (micromatch via jest, metro); patterns are repo-authored globs. Approved on 2026-10-18. Re-evaluate when a patch is released."
 
 [[IgnoredVulns]]
 id = "GHSA-ch52-4w7c-c8xp"
 ignoreUntil = 2027-04-18
-reason = "http-cache-semantics@4.2.0 has no patched release as of 2026-10-18. Dev-only path (node-gyp via make-fetch-happen, used only when installing native build headers); no shared cache serves other users. Approved by Dongmin Yu on 2026-10-18. Re-evaluate when a patch is released."
+reason = "http-cache-semantics@4.2.0 has no patched release as of 2026-10-18. Dev-only path (node-gyp via make-fetch-happen, used only when installing native build headers); no shared cache serves other users. Approved on 2026-10-18. Re-evaluate when a patch is released."
 
 [[IgnoredVulns]]
 id = "GHSA-hp3w-g68c-fv3c"
 ignoreUntil = 2027-04-18
-reason = "sprintf-js@1.0.3 has no patched release as of 2026-10-18. Dev-only path (argparse 1 via js-yaml 3 via @istanbuljs/load-nyc-config); format strings are not user-controlled. Approved by Dongmin Yu on 2026-10-18. Re-evaluate when a patch is released."
+reason = "sprintf-js@1.0.3 has no patched release as of 2026-10-18. Dev-only path (argparse 1 via js-yaml 3 via @istanbuljs/load-nyc-config); format strings are not user-controlled. Approved on 2026-10-18. Re-evaluate when a patch is released."
+
+[[IgnoredVulns]]
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2027-05-05
+reason = "glob@13.0.6 via jest@30.5.2 -> @jest/core@30.5.2 -> @jest/reporters, jest-config and jest-runtime@30.5.2 and via react-native-builder-bob@0.44.1, and glob@10.5.0 via jest -> @jest/transform -> babel-plugin-istanbul@8.0.2 -> test-exclude@7.0.2, have no compatible patch as of 2026-11-05: the advisory covers >= 9.0.0, <= 14.0.1 and the fix is glob 14.0.2. jest 30.5.2 is the newest jest and its three packages still require glob@^13.0.6, as does react-native-builder-bob 0.44.1, its newest release; babel-plugin-istanbul 8.0.2, its newest release, still requires test-exclude@^7.0.1, which requires glob@^10.4.1, and 10.5.0 is the last glob 10.x release. Medium severity, AbortSignal cancellation bypass that allows filesystem traversal after a timeout. Dev-only paths (jest and the builder-bob build tool), and no first-party source imports glob. Approved on 2026-11-05. Re-evaluate when jest and react-native-builder-bob accept glob 14 or babel-plugin-istanbul moves to a test-exclude release that does."
+
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2027-05-05
+reason = "minimatch@10.2.6 via the eslint@10.13.0 devDependency (directly and through @eslint/config-array@0.23.5), @react-native/eslint-config@0.88.0 -> @typescript-eslint/parser@8.72.0 -> @typescript-eslint/typescript-estree@8.72.0, glob@13.0.6, and test-exclude@7.0.2, and minimatch@9.0.9 via test-exclude@7.0.2 -> glob@10.5.0, have no compatible patch as of 2026-11-05: the advisory covers >= 7.0.0, < 11.0.1 and the fix is minimatch 11.0.1. The newest eslint (10.14.0) requires minimatch@^10.2.6, @eslint/config-array 0.23.5 and @typescript-eslint/typescript-estree 8.72.1, both the newest releases, require ^10.2.4 and ^10.2.2, and 10.2.6 and 9.0.9 are the last releases of their lines. Medium severity, DoS through globparts. Dev-only paths (eslint, jest, builder-bob), and no first-party source imports minimatch. Approved on 2026-11-05. Re-evaluate when eslint, @eslint/config-array and typescript-estree accept minimatch 11 and the jest and builder-bob chains move off glob 10 and 13."
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2027-05-05
+reason = "deepmerge@4.3.1 via the example workspace's @react-native-community/cli@20.2.0 (also through @react-native-community/cli-config@20.2.0 and @react-native-community/cli-doctor@20.2.0) and via jest@30.5.2 -> @jest/core@30.5.2 -> jest-config@30.5.2 has no patched release as of 2026-11-05: the advisory lists no first_patched_version for >= 4.2.0, <= 4.3.1, and 4.3.1 is the latest published version (npm view deepmerge version), itself affected. Low severity, prototype poisoning through mergeObject(). Every parent is a devDependency and no first-party source imports deepmerge; whether those tools call mergeObject() with untrusted input was not verified. Approved on 2026-11-05. Re-evaluate when deepmerge publishes a patched release or @react-native-community/cli and jest-config drop it."
