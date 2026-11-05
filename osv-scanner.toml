@@ -5,14 +5,14 @@
 [[IgnoredVulns]]
 id = "GHSA-vfj7-8cjw-p6xm"
 ignoreUntil = 2027-04-18
-reason = "braces@3.0.3 has no patched release as of 2026-10-18. Dev-only path (micromatch via jest, metro); patterns are repo-authored globs. Approved by Dongmin Yu on 2026-10-18. Re-evaluate when a patch is released."
+reason = "braces@3.0.3 has no patched release as of 2026-10-18. Dev-only path (micromatch via jest, metro); patterns are repo-authored globs. Approved on 2026-10-18. Re-evaluate when a patch is released."
 
 [[IgnoredVulns]]
 id = "GHSA-ch52-4w7c-c8xp"
 ignoreUntil = 2027-04-18
-reason = "http-cache-semantics@4.2.0 has no patched release as of 2026-10-18. Dev-only path (node-gyp via make-fetch-happen, used only when installing native build headers); no shared cache serves other users. Approved by Dongmin Yu on 2026-10-18. Re-evaluate when a patch is released."
+reason = "http-cache-semantics@4.2.0 has no patched release as of 2026-10-18. Dev-only path (node-gyp via make-fetch-happen, used only when installing native build headers); no shared cache serves other users. Approved on 2026-10-18. Re-evaluate when a patch is released."
 
 [[IgnoredVulns]]
 id = "GHSA-hp3w-g68c-fv3c"
 ignoreUntil = 2027-04-18
-reason = "sprintf-js@1.0.3 has no patched release as of 2026-10-18. Dev-only path (argparse 1 via js-yaml 3 via @istanbuljs/load-nyc-config); format strings are not user-controlled. Approved by Dongmin Yu on 2026-10-18. Re-evaluate when a patch is released."
+reason = "sprintf-js@1.0.3 has no patched release as of 2026-10-18. Dev-only path (argparse 1 via js-yaml 3 via @istanbuljs/load-nyc-config); format strings are not user-controlled. Approved on 2026-10-18. Re-evaluate when a patch is released."
