@@ -1,4 +1,5 @@
 import { render, fireEvent, screen } from "@testing-library/react-native";
+import { Clipboard } from "react-native";
 import LogCat, { type LogLine } from "../LogCat";
 
 function makeLog(overrides: Partial<LogLine> = {}): LogLine {
@@ -55,5 +56,55 @@ describe("LogCat", () => {
     await render(<LogCat sessionId="session-1" logs={[makeLog()]} onClear={onClear} />);
     await fireEvent.press(screen.getByLabelText("Clear logs"));
     expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  describe("clipboard export", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it.each([
+      '{"steps":100,"walking":true,"missing":null,"metadata":{"tags":["walk","run"]}}',
+      '[1,"walking",false,null,{"nested":true}]',
+      '"walking \\"now\\""',
+      "false",
+      "null",
+      "9007199254740993",
+      '{"steps":',
+      "",
+      '{ "steps": 1.25, "message": "[object Object]" }',
+    ])("copies the serialized payload verbatim: %s", async (payload) => {
+      const setString = jest.spyOn(Clipboard, "setString").mockImplementation(() => {});
+      await render(
+        <LogCat sessionId="session-1" logs={[makeLog({ payload })]} onClear={jest.fn()} />
+      );
+
+      await fireEvent.press(screen.getByLabelText("Copy logs"));
+
+      expect(setString).toHaveBeenCalledTimes(1);
+      expect(setString).toHaveBeenCalledWith(`22:13:20 [TEST] ${payload}`);
+      expect(screen.getByText("Copied")).toBeTruthy();
+    });
+
+    it("copies only active-session logs in their original order", async () => {
+      const setString = jest.spyOn(Clipboard, "setString").mockImplementation(() => {});
+      const logs = [
+        makeLog({ tag: "FIRST", payload: '{"steps":1}' }),
+        makeLog({ sessionId: "other-session", tag: "HIDDEN", payload: "excluded" }),
+        makeLog({ ts: 1700000001000, tag: "SECOND", payload: "not JSON" }),
+      ];
+      await render(<LogCat sessionId="session-1" logs={logs} onClear={jest.fn()} />);
+
+      await fireEvent.press(screen.getByLabelText("Copy logs"));
+
+      expect(setString).toHaveBeenCalledTimes(1);
+      expect(setString).toHaveBeenCalledWith(
+        '22:13:20 [FIRST] {"steps":1}\n22:13:21 [SECOND] not JSON'
+      );
+    });
   });
 });

@@ -55,7 +55,7 @@ const LogCat = ({
     const text = visibleLines
       .map((l) => {
         const time = new Date(l.ts).toLocaleTimeString([], { hour12: false });
-        return `${time} [${l.tag}] ${safeJson(l.payload)}`;
+        return `${time} [${l.tag}] ${l.payload}`;
       })
       .join("\n");
 
