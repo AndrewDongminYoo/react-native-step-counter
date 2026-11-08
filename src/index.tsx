@@ -208,12 +208,14 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
  * Start to subscribe stepCounter updates.
  * Only the past seven days worth of data is stored and available for you to retrieve.
  * Specifying a start date that is more than seven days in the past returns only the available data.
+ * If native start throws synchronously, the new listener is removed and the error is rethrown.
  * ### iOS
  * `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613950-startupdates
  * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates
  * @param {Date} start A date indicating the start of the range over which to measure steps.
  * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
+ * @throws {RangeError} If start is an invalid Date, before replacing the current subscription.
  * @returns {EventSubscription} - Returns a Subscription that enables you to call.
  * When you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
  * @example
@@ -229,15 +231,27 @@ export function startStepCounterUpdate(
   if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
+  const from = start.getTime();
+  if (!Number.isFinite(from)) {
+    throw new RangeError("start must be a valid Date");
+  }
   // Clean up any previous subscription registered by this library before creating a new one.
   _activeSubscription?.remove();
   _activeSubscription = null;
-  const from = start.getTime();
-  _activeSubscription = StepEventEmitter.addListener(eventName, (data) =>
+  const subscription = StepEventEmitter.addListener(eventName, (data) =>
     callBack(data as StepCountData)
   );
-  StepCounter.startStepCounterUpdate(from);
-  return _activeSubscription;
+  _activeSubscription = subscription;
+  try {
+    StepCounter.startStepCounterUpdate(from);
+  } catch (error) {
+    subscription.remove();
+    if (_activeSubscription === subscription) {
+      _activeSubscription = null;
+    }
+    throw error;
+  }
+  return subscription;
 }
 
 /**
