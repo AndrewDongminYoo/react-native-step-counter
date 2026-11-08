@@ -190,6 +190,82 @@ describe("startStepCounterUpdate", () => {
     expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects an invalid date without registering a listener or starting native updates", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+
+    expect(() => startStepCounterUpdate(new Date(NaN), jest.fn())).toThrow(RangeError);
+
+    expect(nativeMock.addListener).not.toHaveBeenCalled();
+    expect(nativeMock.startStepCounterUpdate).not.toHaveBeenCalled();
+  });
+
+  it("preserves the active subscription when a replacement date is invalid", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate, stopStepCounterUpdate } = loadModule(nativeMock);
+    startStepCounterUpdate(new Date(), jest.fn());
+
+    expect(() => startStepCounterUpdate(new Date(NaN), jest.fn())).toThrow(RangeError);
+
+    expect(nativeMock.removeListeners).not.toHaveBeenCalled();
+    expect(nativeMock.addListener).toHaveBeenCalledTimes(1);
+    expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledTimes(1);
+    stopStepCounterUpdate();
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+  });
+
+  it("removes a failed start's listener and recovers on a later start", () => {
+    const failure = new Error("Native start failed");
+    const nativeMock = makeNativeMock({
+      startStepCounterUpdate: jest.fn().mockImplementationOnce(() => {
+        throw failure;
+      }),
+    });
+    const { startStepCounterUpdate, stopStepCounterUpdate } = loadModule(nativeMock);
+
+    let thrown: unknown;
+    try {
+      startStepCounterUpdate(new Date(), jest.fn());
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBe(failure);
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+
+    stopStepCounterUpdate();
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    const subscription = startStepCounterUpdate(new Date(), jest.fn());
+    expect(typeof subscription.remove).toBe("function");
+    stopStepCounterUpdate();
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(2);
+    expect(nativeMock.addListener).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([0, -1, 8640000000000000])("forwards the finite timestamp %s unchanged", (from) => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate, stopStepCounterUpdate } = loadModule(nativeMock);
+
+    startStepCounterUpdate(new Date(from), jest.fn());
+
+    expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledWith(from);
+    stopStepCounterUpdate();
+  });
+
+  it("does not remove a newer subscription when an older start fails reentrantly", () => {
+    const failure = new Error("Outer native start failed");
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate, stopStepCounterUpdate } = loadModule(nativeMock);
+    nativeMock.startStepCounterUpdate?.mockImplementationOnce(() => {
+      startStepCounterUpdate(new Date(), jest.fn());
+      throw failure;
+    });
+
+    expect(() => startStepCounterUpdate(new Date(), jest.fn())).toThrow(failure);
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    stopStepCounterUpdate();
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(2);
+  });
+
   it("throws an UnavailabilityError when the native method is absent", () => {
     const nativeMock = makeNativeMock({ startStepCounterUpdate: undefined });
     const { startStepCounterUpdate } = loadModule(nativeMock);
