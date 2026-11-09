@@ -132,6 +132,19 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
   const retiredBackends = new Set<CounterType>();
 
   return (data: StepCountData) => {
+    // iOS serializes an unavailable distance as NSNull. Preserve step updates
+    // and hold the last distance only within the same session/backend.
+    if (data.distance === null && data.counterType === "CMPedometer") {
+      data = {
+        ...data,
+        distance:
+          previousRawData &&
+          data.startDate === previousRawData.startDate &&
+          data.counterType === previousRawData.counterType
+            ? previousRawData.distance
+            : 0,
+      };
+    }
     if (
       !Number.isSafeInteger(data.steps) ||
       data.steps < 0 ||

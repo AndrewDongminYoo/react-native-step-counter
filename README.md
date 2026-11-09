@@ -75,6 +75,7 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
   - Creates a stateful live-update filter for sensor false positives such as hand rotation.
   - The filter compares cumulative steps with elapsed measurement time since `startDate` using `minimumStepIntervalMs` (default 250 ms), preserving valid batches even when reports arrive close together. Totals that exceed this session budget are rejected and rebased out of later steps and distance. False steps hidden by earlier idle time cannot be identified by this conservative check.
   - Invalid counts/dates/distances, duplicate or backwards end dates, and decreasing same-session steps/distances are ignored without resetting totals. A newer `startDate` starts a fresh session; older sessions are ignored. A backend switch at the same start date requires a newer end date and retires the old backend until the next session.
+  - When iOS reports an unavailable distance as `null`, step updates remain usable: the filter holds the last distance for that session/backend, or starts at zero until a distance is available.
   - Create one filter per subscription. Recreate it for a counter reset or restart that reuses the same `startDate` and backend, or a switch back to a retired backend; cumulative values alone cannot identify those boundaries. Explicit session/backend boundaries may restart at a smaller total.
   - Native hardware/OS pedometers can still report false positives before the package receives the event. Use this helper when your app needs stricter live-session counts than the raw sensor stream.
 

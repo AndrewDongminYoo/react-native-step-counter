@@ -184,6 +184,41 @@ describe("createStepCountFilter", () => {
     expect(filter(stepData(12, 12000))?.distance).toBeCloseTo(9.144);
   });
 
+  it("keeps iOS steps when native distance is unavailable", () => {
+    const filter = createStepCountFilter();
+    const unavailable = {
+      ...stepData(2, 1000),
+      counterType: "CMPedometer" as const,
+      // The native dictionary emits NSNull although the public type is numeric.
+      distance: null as unknown as number,
+    };
+    expect(filter(unavailable)).toMatchObject({ steps: 2, distance: 0 });
+    expect(
+      filter({ ...unavailable, steps: 3, endDate: startDate + 2000, distance: 2 })
+    ).toMatchObject({ steps: 3, distance: 2 });
+    expect(filter({ ...unavailable, steps: 4, endDate: startDate + 3000 })).toMatchObject({
+      steps: 4,
+      distance: 2,
+    });
+  });
+
+  it("does not carry unavailable distance across explicit session or backend boundaries", () => {
+    const filter = createStepCountFilter();
+    filter(stepData(10, 10000));
+    const unavailable = {
+      ...stepData(1, 11000),
+      counterType: "CMPedometer" as const,
+      distance: null as unknown as number,
+    };
+    expect(filter({ ...unavailable, counterType: "CMPedometer" })).toMatchObject({
+      steps: 1,
+      distance: 0,
+    });
+    expect(
+      filter({ ...unavailable, endDate: startDate + 13000, startDate: startDate + 12000 })
+    ).toMatchObject({ steps: 1, distance: 0 });
+  });
+
   it("clears burst adjustments at a newer explicit session and ignores old sessions", () => {
     const filter = createStepCountFilter();
     expect(filter(stepData(1, 100))).toBeNull();

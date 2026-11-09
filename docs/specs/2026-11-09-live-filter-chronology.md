@@ -11,6 +11,7 @@ Keep rejection and distance rebasing for totals that exceed the session's config
 This conservative test cannot distinguish false steps hidden by earlier idle time from legitimate batches.
 
 Reject nonfinite, negative, or fractional step totals, nonfinite or reversed dates, and nonfinite or negative distances before state mutation.
+The native iOS dictionary's unavailable `distance: null` is an exception: preserve step updates and hold the same identity's previous distance, or use zero until a distance is available.
 Within one session/backend, ignore duplicate or backwards end dates and decreasing steps or distances without resetting the baseline.
 Use a snapshot so caller mutations cannot change internal state.
 
