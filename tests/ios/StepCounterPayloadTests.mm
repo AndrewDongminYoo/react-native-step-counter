@@ -22,6 +22,11 @@ int main(int argc, const char *argv[]) {
       }
       if (![NSJSONSerialization isValidJSONObject:actual]) return 1;
     }
+    NSDate *fractionalStart = [NSDate dateWithTimeIntervalSince1970:0.1255];
+    NSDate *fractionalEnd = [NSDate dateWithTimeIntervalSince1970:1.8755];
+    NSDictionary *fractional = StepCounterPayload(fractionalStart, fractionalEnd, nil, nil, nil, nil);
+    if (![fractional[@"startDate"] isEqualToNumber:@125] ||
+        ![fractional[@"endDate"] isEqualToNumber:@1875]) return 1;
     NSDictionary *empty = StepCounterPayload(nil, nil, nil, nil, nil, nil);
     if (empty[@"steps"] != [NSNull null] || empty[@"startDate"] != [NSNull null]) return 1;
     puts("Native iOS payload fixtures passed");
