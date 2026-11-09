@@ -9,6 +9,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.WritableMap
 import com.stepcounter.StepCounterModule
+import kotlin.concurrent.Volatile
 
 /**
  * the base class for sensor listen service
@@ -124,6 +125,8 @@ abstract class SensorListenService(
         }
       }
 
+  /** Registration status shared with the sensor callback thread. */
+  @Volatile
   var isRunning: Boolean = false
     private set
 
@@ -176,7 +179,8 @@ abstract class SensorListenService(
       }
 
   /**
-   * this class is not implemented Service class now, but made it work so
+   * Reset this session and register its sensor, emitting metadata only after success.
+   * @return Whether registration succeeded. Missing sensors and denied or failed registrations leave the session stopped.
    * @see android.content.Context.startService
    * @see android.content.Context.stopService
    * @see SensorManager.registerListener
@@ -204,7 +208,7 @@ abstract class SensorListenService(
   }
 
   /**
-   * this class is not implemented Service class now, but made it work so
+   * Stop accepting events and unregister the sensor listener.
    * @see android.content.Context.startService
    * @see android.content.Context.stopService
    * @see SensorManager.unregisterListener
@@ -241,13 +245,9 @@ abstract class SensorListenService(
    * @see <a href="https://developer.android.com/reference/android/hardware/Sensor#REPORTING_MODE_ON_CHANGE">Reporting Mode On Change</a>
    */
   override fun onSensorChanged(event: SensorEvent?) {
-    if (!isRunning || event?.sensor == null ||
-      event.sensor != detectedSensor ||
-      event.sensor.type != sensorType ||
-      detectedSensor?.type != event.sensor.type
-    ) {
-      return
-    }
+    if (event == null || !isRunning) return
+    val sensor = event.sensor ?: return
+    if (sensor != detectedSensor || sensor.type != sensorType) return
     if (updateCurrentSteps(event.values)) {
       counterModule.sendDeviceEvent("stepCounterUpdate", stepsParamsMap)
     }

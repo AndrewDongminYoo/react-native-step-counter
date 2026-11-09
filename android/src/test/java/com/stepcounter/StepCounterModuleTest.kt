@@ -3,6 +3,7 @@ package com.stepcounter
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.Sensor
+import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
@@ -189,6 +190,30 @@ class StepCounterModuleTest {
     assertFalse(fixture.capabilities(module).getBoolean("working"))
     assertTrue(fixture.active.isEmpty())
   }
+
+  @Test
+  fun callbacksRequireTheRegisteredSensorAndAnActiveSession() {
+    val module = fixture.module()
+    module.startStepCounterUpdate(0.0)
+    val listener = fixture.active.keys.single()
+    val sensor = fixture.active.values.single()
+    listener.onSensorChanged(null)
+    listener.onSensorChanged(fixture.event(null, 1000f))
+    val otherSensor = mock(Sensor::class.java)
+    `when`(otherSensor.type).thenReturn(Sensor.TYPE_STEP_COUNTER)
+    listener.onSensorChanged(fixture.event(otherSensor, 1000f))
+    `when`(sensor.type).thenReturn(Sensor.TYPE_ACCELEROMETER)
+    listener.onSensorChanged(fixture.event(sensor, 1000f))
+    `when`(sensor.type).thenReturn(Sensor.TYPE_STEP_COUNTER)
+    listener.onSensorChanged(fixture.event(sensor, 100f))
+    listener.onSensorChanged(fixture.event(sensor, 101f))
+    assertEquals(1, fixture.stepUpdates.size)
+    assertEquals(1.0, fixture.stepUpdates.single().getDouble("steps"), 0.0)
+
+    module.stopStepCounterUpdate()
+    listener.onSensorChanged(fixture.event(sensor, 102f))
+    assertEquals(1, fixture.stepUpdates.size)
+  }
 }
 
 private data class SelectionCase(
@@ -224,6 +249,7 @@ private class AndroidSensorFixture : AutoCloseable {
   val active = mutableMapOf<SensorEventListener, Sensor>()
   val lifecycle = mutableSetOf<LifecycleEventListener>()
   val sensorInfo = mutableListOf<Any>()
+  val stepUpdates = mutableListOf<WritableMap>()
   private val sensors = mutableMapOf<Int, Sensor>()
   private val context =
     mock(ReactApplicationContext::class.java) {
@@ -248,6 +274,9 @@ private class AndroidSensorFixture : AutoCloseable {
     mock(RCTDeviceEventEmitter::class.java) {
       if (it.method.name == "emit" && it.getArgument<String>(0) == "StepCounter.stepsSensorInfo") {
         sensorInfo.add(it.getArgument(1))
+      }
+      if (it.method.name == "emit" && it.getArgument<String>(0) == "StepCounter.stepCounterUpdate") {
+        stepUpdates.add(it.getArgument(1))
       }
       null
     }
@@ -308,6 +337,19 @@ private class AndroidSensorFixture : AutoCloseable {
   }
 
   fun module() = StepCounterModule(context)
+
+  fun event(
+    sensor: Sensor?,
+    reading: Float,
+  ): SensorEvent {
+    val event = mock(SensorEvent::class.java)
+    event.sensor = sensor
+    SensorEvent::class.java
+      .getField("values")
+      .apply { isAccessible = true }
+      .set(event, floatArrayOf(reading))
+    return event
+  }
 
   fun capabilities(module: StepCounterModule): WritableMap {
     val promise = mock(Promise::class.java)

@@ -197,8 +197,11 @@ class UnavailabilityError extends Error {
  * @see https://developer.android.com/about/versions/android-4.4.html
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
  * @returns {Promise<{ supported: boolean, granted: boolean }>} A promise that resolves with an object containing the stepCounter availability.
- * supported - Whether the stepCounter is supported on device.
- * granted - Whether user granted the permission.
+ * supported - Whether a counting sensor is present, including the Android accelerometer fallback.
+ * granted - Whether permission is allowed, independently of sensor availability.
+ * Android requires activity recognition for both backends on API 29+ under the package consent policy.
+ * API 24–28 requires no activity runtime permission, so `granted` is true.
+ * Check capabilities again after requesting permission; support does not guarantee registration.
  */
 export function isStepCountingSupported(): Promise<{ supported: boolean; granted: boolean }> {
   return StepCounter.isStepCountingSupported();
