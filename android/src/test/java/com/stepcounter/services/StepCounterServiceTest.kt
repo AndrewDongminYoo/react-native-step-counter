@@ -23,6 +23,21 @@ class StepCounterServiceTest {
   private val service = StepCounterService(module, sensorManager)
 
   @Test
+  fun nativePayloadsUseCanonicalDiscriminatorsAndOmitFloors() {
+    mockStatic(Arguments::class.java).use { arguments ->
+      arguments.`when`<Any> { Arguments.createMap() }.thenAnswer { JavaOnlyMap() }
+      val services = listOf(service to "STEP_COUNTER", AccelerometerService(module, sensorManager) to "ACCELEROMETER")
+      for ((producer, expectedType) in services) {
+        val payload = producer.stepsParamsMap
+        assertEquals(expectedType, payload.getString("counterType"))
+        assertEquals(0.0, payload.getDouble("distance"), 0.0)
+        assertFalse(payload.hasKey("floorsAscended"))
+        assertFalse(payload.hasKey("floorsDescended"))
+      }
+    }
+  }
+
+  @Test
   fun countsFromTheFirstNonzeroReading() {
     assertFalse(service.updateCurrentSteps(floatArrayOf(100f), 0L))
     assertEquals(0.0, service.currentSteps, 0.0)

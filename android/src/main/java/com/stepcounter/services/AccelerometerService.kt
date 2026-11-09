@@ -17,7 +17,7 @@ import kotlin.math.min
  * @param counterModule The module that is responsible for the communication with the react-native layer
  * @param sensorManager The sensor manager that is responsible for the sensor
  *
- * @property sensorTypeString The type of the sensor as a string "Accelerometer"
+ * @property sensorTypeString The type of the sensor as a string "ACCELEROMETER"
  * @property sensorType The type of the sensor
  * @property detectedSensor The sensor that is detected
  * @property currentSteps The current steps
@@ -47,7 +47,7 @@ class AccelerometerService internal constructor(
     sensorManager: SensorManager,
   ) : this(counterModule, sensorManager, AndroidSensorClock)
 
-  override val sensorTypeString = "Accelerometer"
+  override val sensorTypeString = "ACCELEROMETER"
   override val sensorType = Sensor.TYPE_ACCELEROMETER
   override val detectedSensor: Sensor? = sensorManager.getDefaultSensor(sensorType)
   override var currentSteps: Double = 0.0

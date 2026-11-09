@@ -119,14 +119,22 @@
               </p>
               <ul>
                 <li>
-                  One key for the response object is <code>granted</code>, whether the app user has
-                  granted this feature permission, and <code>supported</code> is whether the device
-                  supports this feature.
+                  <code>supported</code> reports whether a counting sensor is present. On Android,
+                  either an actual step counter or an accelerometer is sufficient; a hardware
+                  feature flag alone is not.
                 </li>
                 <li>
-                  Android can fall back to accelerometer-based counting when the hardware step
-                  counter is unavailable. You should still request and respect the platform
-                  motion/activity permission before starting updates.
+                  <code>granted</code> reports permission independently of hardware availability. On
+                  Android 10 (API 29) and later, this package requires
+                  <code>ACTIVITY_RECOGNITION</code> for both backends and never uses the
+                  accelerometer to bypass a denial. On API 24–28, that runtime permission is not
+                  required, so <code>granted</code> is <code>true</code>.
+                </li>
+                <li>
+                  Request permission when needed, then check capabilities again before starting. The
+                  existing Android-only runtime <code>working</code> field indicates successful
+                  sensor registration until stop or host destruction; it does not guarantee sensor
+                  delivery and is not part of the public TypeScript result type.
                 </li>
               </ul>
             </li>
@@ -137,13 +145,15 @@
               </p>
               <ul>
                 <li>
-                  If the pedometer sensor is available and supported on the device, register it with
-                  the listener in the sensor manager, and return the step count event listener.
+                  Android refreshes permission and sensors on every start, stops the previous
+                  backend, and prefers the hardware step counter.
                 </li>
                 <li>
-                  If the pedometer sensor is not supported by the device or is not available,
-                  register the accelerometer sensor with the listener, generate an accel event
-                  through a vector algorithm filter and receive it to the app.
+                  If the hardware counter is absent or registration fails, Android tries an
+                  available accelerometer only while permission remains allowed. Missing sensors,
+                  denied permission, or failed registrations leave native counting stopped; no
+                  sensor metadata is emitted for a failed registration. The returned JS subscription
+                  alone does not confirm native registration.
                 </li>
               </ul>
             </li>
@@ -167,9 +177,31 @@
                   rotation.
                 </li>
                 <li>
-                  The filter drops bursts that imply a cadence faster than
-                  <code>minimumStepIntervalMs</code> and rebases later cumulative values so ignored
-                  steps do not come back on the next accepted event.
+                  The filter compares cumulative steps with elapsed measurement time since
+                  <code>startDate</code> using <code>minimumStepIntervalMs</code> (default 250 ms),
+                  preserving valid batches even when reports arrive close together. Totals that
+                  exceed this session budget are rejected and rebased out of later steps and
+                  distance. False steps hidden by earlier idle time cannot be identified by this
+                  conservative check.
+                </li>
+                <li>
+                  Invalid counts/dates/distances, duplicate or backwards end dates, and decreasing
+                  same-session steps/distances are ignored without resetting totals. A newer
+                  <code>startDate</code> starts a fresh session; older sessions are ignored. A
+                  backend switch at the same start date requires a newer end date and retires the
+                  old backend until the next session.
+                </li>
+                <li>
+                  When distance is unavailable, the filter preserves <code>null</code> and continues
+                  processing steps. Only observed distance increments between adjacent numeric
+                  reports can be removed for rejected bursts; increments across unavailable
+                  intervals cannot be attributed and remain uncorrected.
+                </li>
+                <li>
+                  Create one filter per subscription. Recreate it for a counter reset or restart
+                  that reuses the same <code>startDate</code> and backend, or a switch back to a
+                  retired backend; cumulative values alone cannot identify those boundaries.
+                  Explicit session/backend boundaries may restart at a smaller total.
                 </li>
                 <li>
                   Native hardware/OS pedometers can still report false positives before the package
@@ -194,11 +226,16 @@
                     </li>
                     <li>
                       <code>endDate</code>: This is a number property that indicates the end date of
-                      the data in Unix timestamp format, measured in milliseconds.
+                      the data in Unix timestamp format, measured in milliseconds. On Android, this
+                      is the sensor measurement time mapped to epoch milliseconds using a fixed
+                      clock anchor captured at session start. Delayed or batched delivery and
+                      wall-clock changes during that session do not alter measurement intervals;
+                      restarting captures a new anchor.
                     </li>
                     <li>
-                      <code>distance</code>: This is a number property that indicates the distance
-                      in meters that the user has walked or run during the specified time period.
+                      <code>distance</code>: Distance in meters (<code>number | null</code>).
+                      Android estimates it as steps × 0.762; iOS reports <code>null</code> when
+                      unavailable. A measured zero remains <code>0</code>.
                     </li>
                     <li>
                       <code>counterType</code>: (<code>CounterType</code>) The name of the sensor
@@ -214,19 +251,40 @@
                   <ul>
                     <li>
                       <code>floorsAscended</code>: This is a number property that indicates the
-                      number of floors the user has ascended during the specified time period. It
-                      can be nil if the device does not support this feature.
+                      number of floors the user has ascended during the specified time period. Its
+                      type is <code>number | null | undefined</code>: iOS sends
+                      <code>null</code> when unavailable; Android omits this field.
                     </li>
                     <li>
                       <code>floorsDescended</code>: This is a number property that indicates the
-                      number of floors the user has descended during the specified time period. It
-                      can be nil if the device does not support this feature.
+                      number of floors the user has descended during the specified time period. Its
+                      type is <code>number | null | undefined</code>: iOS sends
+                      <code>null</code> when unavailable; Android omits this field.
                     </li>
                   </ul>
                 </li>
               </ul>
             </li>
           </ul>
+          <h2>Payload compatibility</h2>
+          <p>
+            Unavailable distance remains <code>null</code> in raw callbacks and filtered output;
+            <code>parseStepData</code> returns <code>&quot;N/A&quot;</code> for it. This replaces
+            the filter's previous zero/last-distance substitution. Strict TypeScript consumers must
+            guard nullable distance before arithmetic or formatting:
+          </p>
+          <pre
+            class="prettyprint source lang-typescript"
+          ><code>const distanceLabel = data.distance === null ? &quot;N/A&quot; : `${data.distance.toFixed(1)}m`;
+const floorsLabel = data.floorsAscended == null ? &quot;N/A&quot; : `${data.floorsAscended}`;
+</code></pre>
+          <p>
+            Android runtime discriminators now match the declared <code>CounterType</code> union.
+            Replace comparisons against <code>&quot;Step Counter&quot;</code> or
+            <code>&quot;Accelerometer&quot;</code> with <code>&quot;STEP_COUNTER&quot;</code> or
+            <code>&quot;ACCELEROMETER&quot;</code>. The callback signature and public export names
+            remain unchanged.
+          </p>
           <h2>Usage</h2>
           <p>To use the Step Counter Library in your React Native app, follow these steps:</p>
           <p>Import the library into your React Native app.</p>
@@ -315,7 +373,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Sun Jul 12 2026 17:45:51 GMT+0900 (Korean Standard Time)
+      Documentation generated at Mon Nov 09 2026 20:41:16 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

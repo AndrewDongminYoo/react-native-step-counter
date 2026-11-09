@@ -50,6 +50,11 @@ jobs:
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
 
+      - name: Test native payload contract
+        run: |
+          xcrun clang++ -fobjc-arc -fblocks -framework Foundation tests/ios/StepCounterPayloadTests.mm -o "$RUNNER_TEMP/step-counter-payload-tests"
+          "$RUNNER_TEMP/step-counter-payload-tests" tests/fixtures/ios-step-payloads.json
+
       - name: Restore cocoapods
         id: cocoapods-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

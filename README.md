@@ -75,7 +75,7 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
   - Creates a stateful live-update filter for sensor false positives such as hand rotation.
   - The filter compares cumulative steps with elapsed measurement time since `startDate` using `minimumStepIntervalMs` (default 250 ms), preserving valid batches even when reports arrive close together. Totals that exceed this session budget are rejected and rebased out of later steps and distance. False steps hidden by earlier idle time cannot be identified by this conservative check.
   - Invalid counts/dates/distances, duplicate or backwards end dates, and decreasing same-session steps/distances are ignored without resetting totals. A newer `startDate` starts a fresh session; older sessions are ignored. A backend switch at the same start date requires a newer end date and retires the old backend until the next session.
-  - When iOS reports an unavailable distance as `null`, step updates remain usable: the filter holds the last distance for that session/backend, or starts at zero until a distance is available.
+  - When distance is unavailable, the filter preserves `null` and continues processing steps. Only observed distance increments between adjacent numeric reports can be removed for rejected bursts; increments across unavailable intervals cannot be attributed and remain uncorrected.
   - Create one filter per subscription. Recreate it for a counter reset or restart that reuses the same `startDate` and backend, or a switch back to a retired backend; cumulative values alone cannot identify those boundaries. Explicit session/backend boundaries may restart at a smaller total.
   - Native hardware/OS pedometers can still report false positives before the package receives the event. Use this helper when your app needs stricter live-session counts than the raw sensor stream.
 
@@ -86,12 +86,27 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
     - `endDate`: This is a number property that indicates the end date of the data in Unix timestamp format, measured in milliseconds.
       On Android, this is the sensor measurement time mapped to epoch milliseconds using a fixed clock anchor captured at session start.
       Delayed or batched delivery and wall-clock changes during that session do not alter measurement intervals; restarting captures a new anchor.
-    - `distance`: This is a number property that indicates the distance in meters that the user has walked or run during the specified time period.
+    - `distance`: Distance in meters (`number | null`). Android estimates it as steps × 0.762; iOS reports `null` when unavailable. A measured zero remains `0`.
     - `counterType`: (`CounterType`) The name of the sensor used to count the number of steps. One of `"CMPedometer"` (iOS), `"STEP_COUNTER"` (Android hardware sensor), or `"ACCELEROMETER"` (Android fallback).
 
   - **iOS Only**
-    - `floorsAscended`: This is a number property that indicates the number of floors the user has ascended during the specified time period. It can be nil if the device does not support this feature.
-    - `floorsDescended`: This is a number property that indicates the number of floors the user has descended during the specified time period. It can be nil if the device does not support this feature.
+    - `floorsAscended`: This is a number property that indicates the number of floors the user has ascended during the specified time period. Its type is `number | null | undefined`: iOS sends `null` when unavailable; Android omits this field.
+    - `floorsDescended`: This is a number property that indicates the number of floors the user has descended during the specified time period. Its type is `number | null | undefined`: iOS sends `null` when unavailable; Android omits this field.
+
+## Payload compatibility
+
+Unavailable distance remains `null` in raw callbacks and filtered output; `parseStepData` returns `"N/A"` for it.
+This replaces the filter's previous zero/last-distance substitution.
+Strict TypeScript consumers must guard nullable distance before arithmetic or formatting:
+
+```typescript
+const distanceLabel = data.distance === null ? "N/A" : `${data.distance.toFixed(1)}m`;
+const floorsLabel = data.floorsAscended == null ? "N/A" : `${data.floorsAscended}`;
+```
+
+Android runtime discriminators now match the declared `CounterType` union.
+Replace comparisons against `"Step Counter"` or `"Accelerometer"` with `"STEP_COUNTER"` or `"ACCELEROMETER"`.
+The callback signature and public export names remain unchanged.
 
 ## Usage
 
