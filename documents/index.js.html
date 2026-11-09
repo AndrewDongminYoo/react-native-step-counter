@@ -96,7 +96,7 @@ export function parseStepData(data) {
   const kCal = (steps * 0.045).toFixed(2) + "kCal";
   const endDateTime = new Date(endDate).toLocaleTimeString("en-gb");
   const startDateTime = new Date(startDate).toLocaleTimeString("en-gb");
-  const roundedDistance = distance.toFixed(1) + "m";
+  const roundedDistance = distance === null ? "N/A" : distance.toFixed(1) + "m";
   const stepGoalStatus = steps >= dailyGoal ? "Goal Reached" : `${steps}/${dailyGoal} steps`;
   return {
     dailyGoal: stepGoalStatus,
@@ -114,30 +114,65 @@ export function parseStepData(data) {
  *
  * Native pedometer APIs can already include device/OS false positives, and the
  * Android accelerometer fallback can also react to quick hand rotation. This
- * helper drops updates that imply an impossible cadence and rebases later
- * cumulative values so ignored burst steps do not come back on the next event.
+ * helper rejects totals that exceed the session's measurement-time cadence budget
+ * and rebases later values so demonstrated impossible steps do not come back.
+ * It cannot detect false steps hidden by idle time earlier in the session.
+ * A newer startDate or backend change resets adjustments; stale events are ignored.
+ * Create a fresh filter when restarting with the same startDate and backend.
+ * Unavailable distance remains null. Distance correction cannot attribute increments
+ * across unavailable intervals; only observed adjacent increments are removed.
  */
 export function createStepCountFilter(options = {}) {
-  const minimumStepIntervalMs = options.minimumStepIntervalMs &amp;&amp; options.minimumStepIntervalMs > 0 ? options.minimumStepIntervalMs : DEFAULT_MINIMUM_STEP_INTERVAL_MS;
+  const minimumStepIntervalMs = Number.isFinite(options.minimumStepIntervalMs) &amp;&amp; options.minimumStepIntervalMs !== undefined &amp;&amp; options.minimumStepIntervalMs > 0 ? options.minimumStepIntervalMs : DEFAULT_MINIMUM_STEP_INTERVAL_MS;
   let previousRawData = null;
   let ignoredSteps = 0;
   let ignoredDistance = 0;
+  let lastKnownDistance = null;
+  const retiredBackends = new Set();
   return data => {
-    if (!Number.isFinite(data.steps) || data.steps &lt; 0) {
+    if (!Number.isSafeInteger(data.steps) || data.steps &lt; 0 || !Number.isFinite(data.startDate) || !Number.isFinite(data.endDate) || !Number.isFinite(data.endDate - data.startDate) || data.endDate &lt; data.startDate || data.distance !== null &amp;&amp; (!Number.isFinite(data.distance) || data.distance &lt; 0)) {
       return null;
     }
-    if (previousRawData &amp;&amp; data.steps &lt; previousRawData.steps) {
-      previousRawData = data;
-      ignoredSteps = 0;
-      ignoredDistance = 0;
-      return data;
+    if (previousRawData) {
+      if (data.startDate &lt; previousRawData.startDate) {
+        return null;
+      }
+      if (data.startDate > previousRawData.startDate) {
+        previousRawData = null;
+        ignoredSteps = 0;
+        ignoredDistance = 0;
+        lastKnownDistance = null;
+        retiredBackends.clear();
+      } else {
+        if (data.endDate &lt;= previousRawData.endDate) {
+          return null;
+        }
+        if (data.counterType !== previousRawData.counterType) {
+          if (retiredBackends.has(data.counterType)) {
+            return null;
+          }
+          retiredBackends.add(previousRawData.counterType);
+          previousRawData = null;
+          ignoredSteps = 0;
+          ignoredDistance = 0;
+          lastKnownDistance = null;
+        } else if (data.steps &lt; previousRawData.steps || data.distance !== null &amp;&amp; lastKnownDistance !== null &amp;&amp; data.distance &lt; lastKnownDistance) {
+          // A decrease alone cannot distinguish a reset from a stale report.
+          return null;
+        }
+      }
     }
-    const referenceTime = previousRawData ? previousRawData.endDate : data.startDate;
     const stepDelta = previousRawData ? data.steps - previousRawData.steps : data.steps;
-    const distanceDelta = previousRawData ? data.distance - previousRawData.distance : data.distance;
-    const elapsedMs = Number.isFinite(data.endDate) &amp;&amp; Number.isFinite(referenceTime) ? data.endDate - referenceTime : Number.POSITIVE_INFINITY;
-    const isSuspiciousBurst = stepDelta > 0 &amp;&amp; elapsedMs >= 0 &amp;&amp; elapsedMs &lt; stepDelta * minimumStepIntervalMs;
-    previousRawData = data;
+    // An unavailable interval cannot be attributed to rejected steps.
+    const distanceDelta = data.distance === null || previousRawData &amp;&amp; previousRawData.distance === null ? 0 : data.distance - (previousRawData?.distance ?? 0);
+    const elapsedMs = data.endDate - data.startDate;
+    // Cumulative reports may arrive close together even when their steps were
+    // measured over a longer window. Only the session total proves an excess.
+    const isSuspiciousBurst = stepDelta > 0 &amp;&amp; data.steps - ignoredSteps > elapsedMs / minimumStepIntervalMs;
+    previousRawData = {
+      ...data
+    };
+    if (data.distance !== null) lastKnownDistance = data.distance;
     if (isSuspiciousBurst) {
       ignoredSteps += stepDelta;
       if (distanceDelta > 0) {
@@ -151,7 +186,7 @@ export function createStepCountFilter(options = {}) {
     return {
       ...data,
       steps: Math.max(0, data.steps - ignoredSteps),
-      distance: Math.max(0, data.distance - ignoredDistance)
+      distance: data.distance === null ? null : Math.max(0, data.distance - ignoredDistance)
     };
   };
 }
@@ -179,8 +214,11 @@ class UnavailabilityError extends Error {
  * @see https://developer.android.com/about/versions/android-4.4.html
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613963-isstepcountingavailable
  * @returns {Promise&lt;{ supported: boolean, granted: boolean }>} A promise that resolves with an object containing the stepCounter availability.
- * supported - Whether the stepCounter is supported on device.
- * granted - Whether user granted the permission.
+ * supported - Whether a counting sensor is present, including the Android accelerometer fallback.
+ * granted - Whether permission is allowed, independently of sensor availability.
+ * Android requires activity recognition for both backends on API 29+ under the package consent policy.
+ * API 24–28 requires no activity runtime permission, so `granted` is true.
+ * Check capabilities again after requesting permission; support does not guarantee registration.
  */
 export function isStepCountingSupported() {
   return StepCounter.isStepCountingSupported();
@@ -190,12 +228,14 @@ export function isStepCountingSupported() {
  * Start to subscribe stepCounter updates.
  * Only the past seven days worth of data is stored and available for you to retrieve.
  * Specifying a start date that is more than seven days in the past returns only the available data.
+ * If native start throws synchronously, the new listener is removed and the error is rethrown.
  * ### iOS
  * `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613950-startupdates
  * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates
  * @param {Date} start A date indicating the start of the range over which to measure steps.
  * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
+ * @throws {RangeError} If start is an invalid Date, before replacing the current subscription.
  * @returns {EventSubscription} - Returns a Subscription that enables you to call.
  * When you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
  * @example
@@ -208,13 +248,25 @@ export function startStepCounterUpdate(start, callBack) {
   if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
   }
+  const from = start.getTime();
+  if (!Number.isFinite(from)) {
+    throw new RangeError("start must be a valid Date");
+  }
   // Clean up any previous subscription registered by this library before creating a new one.
   _activeSubscription?.remove();
   _activeSubscription = null;
-  const from = start.getTime();
-  _activeSubscription = StepEventEmitter.addListener(eventName, data => callBack(data));
-  StepCounter.startStepCounterUpdate(from);
-  return _activeSubscription;
+  const subscription = StepEventEmitter.addListener(eventName, data => callBack(data));
+  _activeSubscription = subscription;
+  try {
+    StepCounter.startStepCounterUpdate(from);
+  } catch (error) {
+    subscription.remove();
+    if (_activeSubscription === subscription) {
+      _activeSubscription = null;
+    }
+    throw error;
+  }
+  return subscription;
 }
 
 /**
@@ -240,7 +292,7 @@ export { NAME, VERSION };
     <br class="clear" />
 
     <footer>
-      Documentation generated at Sun Jul 12 2026 17:45:51 GMT+0900 (Korean Standard Time)
+      Documentation generated at Mon Nov 09 2026 20:41:16 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

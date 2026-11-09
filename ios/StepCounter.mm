@@ -2,6 +2,7 @@
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
 #import "StepCounter.h"
+#import "StepCounterPayload.h"
 #import "SOMotionDetecter.h"
 
 @interface StepCounter ()
@@ -201,30 +202,8 @@ RCT_EXPORT_METHOD(startStepsDetection) {
 }
 
 - (NSDictionary *)dictionaryFromPedometerData:(CMPedometerData *)data {
-  if (!data) {
-    return @{
-      @"counterType": @"CMPedometer",
-      @"startDate": [NSNull null],
-      @"endDate": [NSNull null],
-      @"steps": [NSNull null],
-      @"distance": [NSNull null],
-      @"floorsAscended": [NSNull null],
-      @"floorsDescended": [NSNull null],
-    };
-  }
-
-  NSNumber *startDate = @((long long)(data.startDate.timeIntervalSince1970 * 1000.0));
-  NSNumber *endDate = @((long long)(data.endDate.timeIntervalSince1970 * 1000.0));
-
-  return @{
-    @"counterType": @"CMPedometer",
-    @"startDate": startDate ?: [NSNull null],
-    @"endDate": endDate ?: [NSNull null],
-    @"steps": data.numberOfSteps ?: [NSNull null],
-    @"distance": data.distance ?: [NSNull null],
-    @"floorsAscended": data.floorsAscended ?: [NSNull null],
-    @"floorsDescended": data.floorsDescended ?: [NSNull null],
-  };
+  return StepCounterPayload(data.startDate, data.endDate, data.numberOfSteps, data.distance,
+                            data.floorsAscended, data.floorsDescended);
 }
 
 - (BOOL)authorizationStatus {

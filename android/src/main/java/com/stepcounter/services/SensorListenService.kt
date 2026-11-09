@@ -86,9 +86,9 @@ abstract class SensorListenService internal constructor(
   /**
    * @return if the [sensor][detectedSensor] is
    * [accelerometer][Sensor.TYPE_ACCELEROMETER],
-   * "Accelerometer"
+   * "ACCELEROMETER"
    * if it's [stepCounter][Sensor.TYPE_STEP_COUNTER],
-   * "Step Counter".
+   * "STEP_COUNTER".
    */
   abstract val sensorTypeString: String
 

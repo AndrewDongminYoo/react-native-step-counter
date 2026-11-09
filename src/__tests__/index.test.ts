@@ -85,6 +85,11 @@ describe("parseStepData", () => {
     expect(parseStepData({ ...base, distance: 1234 }).distance).toBe("1234.0m");
   });
 
+  it("formats unavailable distance without fabricating zero", () => {
+    expect(parseStepData({ ...base, distance: null }).distance).toBe("N/A");
+    expect(parseStepData({ ...base, distance: 0 }).distance).toBe("0.0m");
+  });
+
   it('shows "Goal Reached" when steps >= 10 000', () => {
     expect(parseStepData({ ...base, steps: 10000 }).dailyGoal).toBe("Goal Reached");
     expect(parseStepData({ ...base, steps: 15000 }).dailyGoal).toBe("Goal Reached");
@@ -189,16 +194,15 @@ describe("createStepCountFilter", () => {
     const unavailable = {
       ...stepData(2, 1000),
       counterType: "CMPedometer" as const,
-      // The native dictionary emits NSNull although the public type is numeric.
-      distance: null as unknown as number,
+      distance: null,
     };
-    expect(filter(unavailable)).toMatchObject({ steps: 2, distance: 0 });
+    expect(filter(unavailable)).toMatchObject({ steps: 2, distance: null });
     expect(
       filter({ ...unavailable, steps: 3, endDate: startDate + 2000, distance: 2 })
     ).toMatchObject({ steps: 3, distance: 2 });
     expect(filter({ ...unavailable, steps: 4, endDate: startDate + 3000 })).toMatchObject({
       steps: 4,
-      distance: 2,
+      distance: null,
     });
   });
 
@@ -208,15 +212,46 @@ describe("createStepCountFilter", () => {
     const unavailable = {
       ...stepData(1, 11000),
       counterType: "CMPedometer" as const,
-      distance: null as unknown as number,
+      distance: null,
     };
     expect(filter({ ...unavailable, counterType: "CMPedometer" })).toMatchObject({
       steps: 1,
-      distance: 0,
+      distance: null,
     });
     expect(
       filter({ ...unavailable, endDate: startDate + 13000, startDate: startDate + 12000 })
-    ).toMatchObject({ steps: 1, distance: 0 });
+    ).toMatchObject({ steps: 1, distance: null });
+  });
+
+  it("rejects a decreasing known distance even across unavailable reports", () => {
+    const filter = createStepCountFilter();
+    filter(stepData(1, 1000));
+    expect(filter({ ...stepData(2, 2000), distance: null })?.distance).toBeNull();
+    expect(filter({ ...stepData(3, 3000), distance: 0 })).toBeNull();
+    expect(filter(stepData(3, 4000))?.steps).toBe(3);
+  });
+
+  it("does not infer rejected distance across gaps and resumes adjacent correction", () => {
+    const filter = createStepCountFilter();
+    expect(filter({ ...stepData(1, 100), distance: null })).toBeNull();
+    expect(filter({ ...stepData(10, 200), distance: 5 })).toBeNull();
+    expect(filter({ ...stepData(20, 300), distance: 6 })).toBeNull();
+    expect(filter({ ...stepData(21, 1000), distance: null })).toMatchObject({
+      steps: 1,
+      distance: null,
+    });
+    expect(filter({ ...stepData(22, 2000), distance: 10 })).toMatchObject({
+      steps: 2,
+      distance: 9,
+    });
+  });
+
+  it("preserves nullable and omitted floor metrics", () => {
+    const filter = createStepCountFilter();
+    expect(
+      filter({ ...stepData(1, 1000), floorsAscended: null, floorsDescended: null })
+    ).toMatchObject({ floorsAscended: null, floorsDescended: null });
+    expect(filter(stepData(2, 2000))).not.toHaveProperty("floorsAscended");
   });
 
   it("clears burst adjustments at a newer explicit session and ignores old sessions", () => {

@@ -1,0 +1,29 @@
+[
+  {
+    "counterType": "CMPedometer",
+    "steps": 2,
+    "startDate": 1700000000000,
+    "endDate": 1700000001000,
+    "distance": null,
+    "floorsAscended": null,
+    "floorsDescended": null
+  },
+  {
+    "counterType": "CMPedometer",
+    "steps": 3,
+    "startDate": 1700000000000,
+    "endDate": 1700000002000,
+    "distance": 2.5,
+    "floorsAscended": 1,
+    "floorsDescended": 0
+  },
+  {
+    "counterType": "CMPedometer",
+    "steps": 4,
+    "startDate": 1700000000000,
+    "endDate": 1700000003000,
+    "distance": null,
+    "floorsAscended": 0,
+    "floorsDescended": null
+  }
+]

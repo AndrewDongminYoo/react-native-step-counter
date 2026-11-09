@@ -9,18 +9,18 @@ export type CounterType = "STEP_COUNTER" | "ACCELEROMETER" | "CMPedometer";
  * steps - The number of steps taken during the time period.
  * startDate - The start date of the data.
  * endDate - The end date of the data.
- * distance - The distance in meters that the user has walked or run.
- * floorsAscended - number of floors ascended (iOS only)
- * floorsDescended - number of floors descended (iOS only)
+ * distance - Distance in meters, or null when unavailable. Android estimates this from steps.
+ * floorsAscended - number of floors ascended (iOS only, null when unavailable)
+ * floorsDescended - number of floors descended (iOS only, null when unavailable)
  */
 export type StepCountData = {
   counterType: CounterType;
   steps: number; // number of steps
   startDate: number; // Unix timestamp in milliseconds (long)
   endDate: number; // Unix timestamp in milliseconds (long)
-  distance: number; // distance in meters (android: probably not accurate)
-  floorsAscended?: number; // number of floors ascended (iOS only)
-  floorsDescended?: number; // number of floors descended (iOS only)
+  distance: number | null; // meters; Android estimate, null when unavailable on iOS
+  floorsAscended?: number | null; // number of floors ascended (iOS only, null when unavailable)
+  floorsDescended?: number | null; // number of floors descended (iOS only, null when unavailable)
 };
 
 export const NAME = "StepCounter";

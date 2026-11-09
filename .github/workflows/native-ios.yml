@@ -42,6 +42,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Test native payload contract
+        run: |
+          xcrun clang++ -fobjc-arc -fblocks -framework Foundation tests/ios/StepCounterPayloadTests.mm -o "$RUNNER_TEMP/step-counter-payload-tests"
+          "$RUNNER_TEMP/step-counter-payload-tests" tests/fixtures/ios-step-payloads.json
+
       - name: Setup
         uses: ./.github/actions/setup
 

@@ -94,7 +94,7 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
   const kCal = (steps * 0.045).toFixed(2) + "kCal";
   const endDateTime = new Date(endDate).toLocaleTimeString("en-gb");
   const startDateTime = new Date(startDate).toLocaleTimeString("en-gb");
-  const roundedDistance = distance.toFixed(1) + "m";
+  const roundedDistance = distance === null ? "N/A" : distance.toFixed(1) + "m";
   const stepGoalStatus = steps >= dailyGoal ? "Goal Reached" : `${steps}/${dailyGoal} steps`;
   return {
     dailyGoal: stepGoalStatus,
@@ -117,6 +117,8 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
  * It cannot detect false steps hidden by idle time earlier in the session.
  * A newer startDate or backend change resets adjustments; stale events are ignored.
  * Create a fresh filter when restarting with the same startDate and backend.
+ * Unavailable distance remains null. Distance correction cannot attribute increments
+ * across unavailable intervals; only observed adjacent increments are removed.
  */
 export function createStepCountFilter(options: StepCountFilterOptions = {}): StepCountFilter {
   const minimumStepIntervalMs =
@@ -129,22 +131,10 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
   let previousRawData: StepCountData | null = null;
   let ignoredSteps = 0;
   let ignoredDistance = 0;
+  let lastKnownDistance: number | null = null;
   const retiredBackends = new Set<CounterType>();
 
   return (data: StepCountData) => {
-    // iOS serializes an unavailable distance as NSNull. Preserve step updates
-    // and hold the last distance only within the same session/backend.
-    if (data.distance === null && data.counterType === "CMPedometer") {
-      data = {
-        ...data,
-        distance:
-          previousRawData &&
-          data.startDate === previousRawData.startDate &&
-          data.counterType === previousRawData.counterType
-            ? previousRawData.distance
-            : 0,
-      };
-    }
     if (
       !Number.isSafeInteger(data.steps) ||
       data.steps < 0 ||
@@ -152,8 +142,7 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
       !Number.isFinite(data.endDate) ||
       !Number.isFinite(data.endDate - data.startDate) ||
       data.endDate < data.startDate ||
-      !Number.isFinite(data.distance) ||
-      data.distance < 0
+      (data.distance !== null && (!Number.isFinite(data.distance) || data.distance < 0))
     ) {
       return null;
     }
@@ -166,6 +155,7 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
         previousRawData = null;
         ignoredSteps = 0;
         ignoredDistance = 0;
+        lastKnownDistance = null;
         retiredBackends.clear();
       } else {
         if (data.endDate <= previousRawData.endDate) {
@@ -179,7 +169,13 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
           previousRawData = null;
           ignoredSteps = 0;
           ignoredDistance = 0;
-        } else if (data.steps < previousRawData.steps || data.distance < previousRawData.distance) {
+          lastKnownDistance = null;
+        } else if (
+          data.steps < previousRawData.steps ||
+          (data.distance !== null &&
+            lastKnownDistance !== null &&
+            data.distance < lastKnownDistance)
+        ) {
           // A decrease alone cannot distinguish a reset from a stale report.
           return null;
         }
@@ -187,9 +183,11 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
     }
 
     const stepDelta = previousRawData ? data.steps - previousRawData.steps : data.steps;
-    const distanceDelta = previousRawData
-      ? data.distance - previousRawData.distance
-      : data.distance;
+    // An unavailable interval cannot be attributed to rejected steps.
+    const distanceDelta =
+      data.distance === null || (previousRawData && previousRawData.distance === null)
+        ? 0
+        : data.distance - (previousRawData?.distance ?? 0);
     const elapsedMs = data.endDate - data.startDate;
     // Cumulative reports may arrive close together even when their steps were
     // measured over a longer window. Only the session total proves an excess.
@@ -197,6 +195,7 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
       stepDelta > 0 && data.steps - ignoredSteps > elapsedMs / minimumStepIntervalMs;
 
     previousRawData = { ...data };
+    if (data.distance !== null) lastKnownDistance = data.distance;
 
     if (isSuspiciousBurst) {
       ignoredSteps += stepDelta;
@@ -213,7 +212,7 @@ export function createStepCountFilter(options: StepCountFilterOptions = {}): Ste
     return {
       ...data,
       steps: Math.max(0, data.steps - ignoredSteps),
-      distance: Math.max(0, data.distance - ignoredDistance),
+      distance: data.distance === null ? null : Math.max(0, data.distance - ignoredDistance),
     };
   };
 }

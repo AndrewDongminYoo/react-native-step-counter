@@ -65,9 +65,9 @@
               object - The Object that contains the step count data. counterType - The type of
               counter used to count the steps. steps - The number of steps taken during the time
               period. startDate - The start date of the data. endDate - The end date of the data.
-              distance - The distance in meters that the user has walked or run. floorsAscended -
-              number of floors ascended (iOS only) floorsDescended - number of floors descended (iOS
-              only)
+              distance - Distance in meters, or null when unavailable. Android estimates this from
+              steps. floorsAscended - number of floors ascended (iOS only, null when unavailable)
+              floorsDescended - number of floors descended (iOS only, null when unavailable)
             </p>
           </div>
 
@@ -128,9 +128,14 @@
             <p>Create a stateful filter for live step-count updates.</p>
             <p>
               Native pedometer APIs can already include device/OS false positives, and the Android
-              accelerometer fallback can also react to quick hand rotation. This helper drops
-              updates that imply an impossible cadence and rebases later cumulative values so
-              ignored burst steps do not come back on the next event.
+              accelerometer fallback can also react to quick hand rotation. This helper rejects
+              totals that exceed the session's measurement-time cadence budget and rebases later
+              values so demonstrated impossible steps do not come back. It cannot detect false steps
+              hidden by idle time earlier in the session. A newer startDate or backend change resets
+              adjustments; stale events are ignored. Create a fresh filter when restarting with the
+              same startDate and backend. Unavailable distance remains null. Distance correction
+              cannot attribute increments across unavailable intervals; only observed adjacent
+              increments are removed.
             </p>
           </div>
 
@@ -139,7 +144,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line74">line 74</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line79">line 79</a>
                 </li>
               </ul>
             </dd>
@@ -165,7 +170,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line139">line 139</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line177">line 177</a>
                 </li>
               </ul>
             </dd>
@@ -194,8 +199,12 @@
           <div class="param-desc">
             <p>
               A promise that resolves with an object containing the stepCounter availability.
-              supported - Whether the stepCounter is supported on device. granted - Whether user
-              granted the permission.
+              supported - Whether a counting sensor is present, including the Android accelerometer
+              fallback. granted - Whether permission is allowed, independently of sensor
+              availability. Android requires activity recognition for both backends on API 29+ under
+              the package consent policy. API 24–28 requires no activity runtime permission, so
+              <code>granted</code> is true. Check capabilities again after requesting permission;
+              support does not guarantee registration.
             </p>
           </div>
 
@@ -280,7 +289,8 @@
             <p>
               Start to subscribe stepCounter updates. Only the past seven days worth of data is
               stored and available for you to retrieve. Specifying a start date that is more than
-              seven days in the past returns only the available data.
+              seven days in the past returns only the available data. If native start throws
+              synchronously, the new listener is removed and the error is rethrown.
             </p>
             <h3>iOS</h3>
             <p>
@@ -337,7 +347,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line161">line 161</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line201">line 201</a>
                 </li>
               </ul>
             </dd>
@@ -360,6 +370,26 @@
                 </li>
               </ul>
             </dd>
+          </dl>
+
+          <h5>Throws:</h5>
+
+          <dl>
+            <dt>
+              <div class="param-desc">
+                <p>If start is an invalid Date, before replacing the current subscription.</p>
+              </div>
+            </dt>
+            <dd></dd>
+            <dt>
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">RangeError</span>
+                </dd>
+              </dl>
+            </dt>
+            <dd></dd>
           </dl>
 
           <h5>Returns:</h5>
@@ -407,7 +437,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line181">line 181</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line233">line 233</a>
                 </li>
               </ul>
             </dd>
@@ -438,7 +468,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Sun Jul 12 2026 17:45:51 GMT+0900 (Korean Standard Time)
+      Documentation generated at Mon Nov 09 2026 20:41:16 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>
