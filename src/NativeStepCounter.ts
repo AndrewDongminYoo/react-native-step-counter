@@ -32,10 +32,11 @@ export interface Spec extends TurboModule {
    * @description Check if the step counter is supported on the device.
    * @async
    * @returns {Promise<{ supported: boolean, granted: boolean }>} Returns the `Promise` object,
-   * including information such as whether the user's device has a step counter sensor by default (`supported`)
-   * and whether the user has allowed the app to measure the pedometer data. (`granted`)
-   * granted - The permission is granted or not.
-   * supported - The step counter is supported or not.
+   * including whether a counting sensor is present (`supported`) and permission is allowed (`granted`).
+   * On Android, either an actual step counter or an accelerometer provides support.
+   * Both backends require activity recognition permission on API 29+ under the package consent policy.
+   * On API 24–28 no activity runtime permission is required, so `granted` is true.
+   * Check capabilities again after requesting permission; support does not guarantee successful registration.
    * @example
    * isStepCountingSupported().then((response) => {
    *   const { granted, supported } = response;

@@ -155,7 +155,7 @@ export default function App(): React.JSX.Element {
   const requestAndStartStepCounter = React.useCallback(async () => {
     if (startedRef.current) return;
 
-    const cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
+    let cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
     setSupported(cap.supported === true);
     setGranted(cap.granted === true);
     appendLog("capabilities", cap);
@@ -164,14 +164,15 @@ export default function App(): React.JSX.Element {
       return;
     }
 
-    let hasPermission = cap.granted === true;
-    if (!hasPermission) {
-      hasPermission = await getStepCounterPermission().catch(() => false);
-      setGranted(hasPermission);
-      appendLog("permission", { ok: hasPermission });
+    if (!cap.granted) {
+      const requested = await getStepCounterPermission().catch(() => false);
+      cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
+      setSupported(cap.supported === true);
+      setGranted(cap.granted === true);
+      appendLog("permission", { requested, ...cap });
     }
 
-    if (!hasPermission) {
+    if (!cap.supported || !cap.granted) {
       return;
     }
 

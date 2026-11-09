@@ -112,15 +112,20 @@ abstract class SensorListenService(
   val stepsSensorInfo: WritableMap
     get() =
       Arguments.createMap().apply {
-        putNumber("minDelay", detectedSensor!!.minDelay)
-        putNumber("maxDelay", detectedSensor!!.maxDelay)
-        putString("name", detectedSensor!!.name)
-        putString("vendor", detectedSensor!!.vendor)
-        putNumber("power", detectedSensor!!.power)
-        putNumber("resolution", detectedSensor!!.resolution)
-        putBoolean("wakeUpSensor", detectedSensor!!.isWakeUpSensor)
-        putBoolean("additionalInfoSupported", detectedSensor!!.isAdditionalInfoSupported)
+        detectedSensor?.let { sensor ->
+          putNumber("minDelay", sensor.minDelay)
+          putNumber("maxDelay", sensor.maxDelay)
+          putString("name", sensor.name)
+          putString("vendor", sensor.vendor)
+          putNumber("power", sensor.power)
+          putNumber("resolution", sensor.resolution)
+          putBoolean("wakeUpSensor", sensor.isWakeUpSensor)
+          putBoolean("additionalInfoSupported", sensor.isAdditionalInfoSupported)
+        }
       }
+
+  var isRunning: Boolean = false
+    private set
 
   /**
    * Number of in-database-saved calories.
@@ -176,13 +181,26 @@ abstract class SensorListenService(
    * @see android.content.Context.stopService
    * @see SensorManager.registerListener
    */
-  fun startService(startDateMillis: Long? = null) {
+  fun startService(startDateMillis: Long? = null): Boolean {
+    stopService()
     startDate =
       startDateMillis?.takeIf { it > 0 } ?: System.currentTimeMillis()
     resetSessionState()
+    val sensor = detectedSensor ?: return false
+    isRunning =
+      try {
+        sensorManager.registerListener(this, sensor, samplingPeriodUs)
+      } catch (error: SecurityException) {
+        Log.w(TAG_NAME, "Sensor permission denied during registration", error)
+        false
+      }
+    if (!isRunning) {
+      sensorManager.unregisterListener(this)
+      return false
+    }
     counterModule.sendDeviceEvent("stepsSensorInfo", stepsSensorInfo)
     Log.d(TAG_NAME, "SensorManager.stepsSensorInfo: $stepsSensorInfo")
-    sensorManager.registerListener(this, detectedSensor, samplingPeriodUs)
+    return true
   }
 
   /**
@@ -193,6 +211,7 @@ abstract class SensorListenService(
    */
   fun stopService() {
     Log.d(TAG_NAME, "SensorListenService.stopService")
+    isRunning = false
     sensorManager.unregisterListener(this)
   }
 
@@ -222,7 +241,7 @@ abstract class SensorListenService(
    * @see <a href="https://developer.android.com/reference/android/hardware/Sensor#REPORTING_MODE_ON_CHANGE">Reporting Mode On Change</a>
    */
   override fun onSensorChanged(event: SensorEvent?) {
-    if (event?.sensor == null ||
+    if (!isRunning || event?.sensor == null ||
       event.sensor != detectedSensor ||
       event.sensor.type != sensorType ||
       detectedSensor?.type != event.sensor.type

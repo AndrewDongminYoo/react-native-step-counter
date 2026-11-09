@@ -95,7 +95,10 @@ describe("App", () => {
   });
 
   it("pressing START requests permission before starting updates", async () => {
-    mockSupported.mockResolvedValue({ supported: true, granted: false });
+    mockSupported
+      .mockResolvedValueOnce({ supported: true, granted: false })
+      .mockResolvedValueOnce({ supported: true, granted: false })
+      .mockResolvedValue({ supported: true, granted: true });
     mockPermission.mockResolvedValue(true);
     await render(<App />);
     await act(async () => {});
@@ -104,6 +107,33 @@ describe("App", () => {
 
     expect(mockPermission).toHaveBeenCalledTimes(1);
     expect(mockStart).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not start when native permission remains denied after the request", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: false });
+    mockPermission.mockResolvedValue(true);
+    await render(<App />);
+    await act(async () => {});
+
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+
+    expect(mockPermission).toHaveBeenCalledTimes(1);
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "START" })).not.toBeDisabled();
+  });
+
+  it("does not start when sensors become unavailable during the permission request", async () => {
+    mockSupported
+      .mockResolvedValueOnce({ supported: true, granted: false })
+      .mockResolvedValueOnce({ supported: true, granted: false })
+      .mockResolvedValue({ supported: false, granted: true });
+    await render(<App />);
+    await act(async () => {});
+
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "START" })).not.toBeDisabled();
   });
 
   it("logs flattened raw and accepted step values for live device checks", async () => {
