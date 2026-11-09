@@ -59,6 +59,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Test Android hardware-counter sessions
+        working-directory: example/android
+        run: ./gradlew :react-native-step-counter-newarch:testDebugUnitTest --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a
+
       - name: Build example for Android
         env:
           JAVA_OPTS: -XX:MaxHeapSize=6g
