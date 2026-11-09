@@ -74,7 +74,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
   - `startStepCounterUpdate(start, callback)` → returns `EventSubscription`
   - `stopStepCounterUpdate()` → removes only the subscription created by the most recent `startStepCounterUpdate` (tracked as `_activeSubscription`) and stops native updates; external listeners are left intact
   - `parseStepData(data)` → transforms raw `StepCountData` into human-readable `ParsedStepCountData`
-  - `createStepCountFilter(options?)` → returns a stateful filter that drops false-positive bursts (any cadence faster than `minimumStepIntervalMs`, default 250) and rebases later cumulative values so ignored steps do not reappear
+  - `createStepCountFilter(options?)` → compares cumulative steps with elapsed session measurement time (`minimumStepIntervalMs`, default 250), preserving valid delayed batches and rebasing demonstrated impossible totals. It rejects invalid/stale/decreasing same-session data, resets adjustments at newer start dates or backend switches, and retires previous backends until the next session. Recreate the filter for indistinguishable restarts or counter resets.
 
 ### Native Layer
 
