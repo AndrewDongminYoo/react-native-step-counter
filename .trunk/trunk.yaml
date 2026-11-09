@@ -18,6 +18,11 @@ runtimes:
     - python@3.14.4
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
+  definitions:
+    - name: pinact
+      commands:
+        - name: upgrade
+          enabled: true
   disabled:
     - grype
     - dotenv-linter
@@ -31,19 +36,18 @@ lint:
     - linters: [markdownlint]
       paths: [.github/**/*.md]
   enabled:
-    - pinact@4.1.1!:
-        commands: [lint, upgrade]
-    - taplo@0.10.0
-    - trivy@0.76.2
-    - osv-scanner@2.7.0
     - actionlint@1.7.12
     - checkov@3.4.3
     - eslint@10.14.0
     - git-diff-check
     - ktlint@1.8.0
     - markdownlint@0.50.0
+    - osv-scanner@2.7.0
     - oxipng@10.2.1
+    - pinact@4.1.1!
     - prettier@3.9.10
+    - taplo@0.10.0
+    - trivy@0.76.2
     - trufflehog@3.99.8
     - yamllint@1.38.0
 actions:
