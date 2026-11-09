@@ -30,10 +30,16 @@ import java.util.concurrent.TimeUnit
  * @see SensorListenService.updateCurrentSteps
  * @see TimeUnit.toMillis
  */
-class StepCounterService(
+class StepCounterService internal constructor(
   counterModule: StepCounterModule,
   sensorManager: SensorManager,
-) : SensorListenService(counterModule, sensorManager) {
+  clock: SensorClock,
+) : SensorListenService(counterModule, sensorManager, clock) {
+  constructor(
+    counterModule: StepCounterModule,
+    sensorManager: SensorManager,
+  ) : this(counterModule, sensorManager, AndroidSensorClock)
+
   override val sensorTypeString = "Step Counter"
   override val sensorType = Sensor.TYPE_STEP_COUNTER
   override val detectedSensor: Sensor? = sensorManager.getDefaultSensor(sensorType)
@@ -53,7 +59,10 @@ class StepCounterService(
    * @see android.hardware.SensorEvent.values
    * @see android.hardware.SensorEvent.timestamp
    */
-  override fun updateCurrentSteps(eventData: FloatArray): Boolean {
+  override fun updateCurrentSteps(
+    eventData: FloatArray,
+    timestampNs: Long,
+  ): Boolean {
     val reading = eventData[0].toDouble()
     val baseline = previousSteps
     if (baseline == null) {

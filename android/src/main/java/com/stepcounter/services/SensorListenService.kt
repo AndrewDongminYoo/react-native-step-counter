@@ -23,11 +23,23 @@ import kotlin.concurrent.Volatile
  * @see <a href="https://reactnative.dev/docs/native-modules-android#listening-to-lifecycle-events">LifecycleEventListener: document</a>
  * @see <a href="https://github.com/facebook/react-native/blob/main/ReactAndroid/src/main/java/com/facebook/react/bridge/LifecycleEventListener.java">LifecycleEventListener: original file</a>
  */
-abstract class SensorListenService(
+abstract class SensorListenService internal constructor(
   private val counterModule: StepCounterModule,
   private val sensorManager: SensorManager,
+  private val clock: SensorClock,
 ) : SensorEventListener,
   LifecycleEventListener {
+  constructor(
+    counterModule: StepCounterModule,
+    sensorManager: SensorManager,
+  ) : this(counterModule, sensorManager, AndroidSensorClock)
+
+  // Start/stop use the service monitor; hardware APIs must stay outside this state lock.
+  private val stateLock = Any()
+  private var anchorEpochMillis: Long = 0
+  private var anchorElapsedNs: Long = 0
+  private var lastMeasurementNs: Long? = null
+
   /**
    * the accelerometer sensor type
    * [TYPE_ACCELEROMETER][Sensor.TYPE_ACCELEROMETER]: 1<br/>
@@ -101,13 +113,15 @@ abstract class SensorListenService(
    */
   val stepsParamsMap: WritableMap
     get() =
-      Arguments.createMap().apply {
-        putNumber("steps", currentSteps)
-        putNumber("distance", distance)
-        putNumber("startDate", startDate)
-        putNumber("endDate", endDate)
-        putString("counterType", sensorTypeString)
-        putNumber("calories", calories)
+      synchronized(stateLock) {
+        Arguments.createMap().apply {
+          putNumber("steps", currentSteps)
+          putNumber("distance", distance)
+          putNumber("startDate", startDate)
+          putNumber("endDate", endDate)
+          putString("counterType", sensorTypeString)
+          putNumber("calories", calories)
+        }
       }
 
   val stepsSensorInfo: WritableMap
@@ -160,13 +174,12 @@ abstract class SensorListenService(
   /**
    * Start date of the step counting. UTC milliseconds
    */
-  private var startDate: Long = System.currentTimeMillis()
+  private var startDate: Long = 0
 
   /**
    * End date of the step counting. UTC milliseconds
    */
-  private val endDate: Long
-    get() = System.currentTimeMillis()
+  private var endDate: Long = 0
 
   private val sensorDelay: Int
     get() =
@@ -185,24 +198,35 @@ abstract class SensorListenService(
    * @see android.content.Context.stopService
    * @see SensorManager.registerListener
    */
+  @Synchronized
   fun startService(startDateMillis: Long? = null): Boolean {
     stopService()
-    startDate =
-      startDateMillis?.takeIf { it > 0 } ?: System.currentTimeMillis()
-    resetSessionState()
+    synchronized(stateLock) {
+      // SensorEvent.timestamp shares elapsedRealtimeNanos' time base, including deep sleep.
+      // Keep this anchor fixed until restart, even when the wall clock is adjusted.
+      anchorElapsedNs = clock.elapsedRealtimeNanos()
+      anchorEpochMillis = clock.epochMillis()
+      startDate = startDateMillis?.takeIf { it > 0 } ?: anchorEpochMillis
+      endDate = anchorEpochMillis
+      lastMeasurementNs = null
+      resetSessionState()
+    }
     val sensor = detectedSensor ?: return false
-    isRunning =
+    val registered =
       try {
         sensorManager.registerListener(this, sensor, samplingPeriodUs)
       } catch (error: SecurityException) {
         Log.w(TAG_NAME, "Sensor permission denied during registration", error)
         false
       }
-    if (!isRunning) {
+    if (!registered) {
       sensorManager.unregisterListener(this)
       return false
     }
-    counterModule.sendDeviceEvent("stepsSensorInfo", stepsSensorInfo)
+    synchronized(stateLock) {
+      isRunning = true
+      counterModule.sendDeviceEvent("stepsSensorInfo", stepsSensorInfo)
+    }
     Log.d(TAG_NAME, "SensorManager.stepsSensorInfo: $stepsSensorInfo")
     return true
   }
@@ -213,9 +237,12 @@ abstract class SensorListenService(
    * @see android.content.Context.stopService
    * @see SensorManager.unregisterListener
    */
+  @Synchronized
   fun stopService() {
     Log.d(TAG_NAME, "SensorListenService.stopService")
-    isRunning = false
+    synchronized(stateLock) {
+      isRunning = false
+    }
     sensorManager.unregisterListener(this)
   }
 
@@ -233,10 +260,8 @@ abstract class SensorListenService(
    * The object may be part of an internal pool and may be reused by
    * the framework. If you need to hold on to the event, you must make a copy.
    *
-   * **NOTE2:** Since the timestamp delivered from JavaScript is based on milliseconds,
-   * mistakes can occur if the timestamp of sensor events recorded every moment in nanoseconds is delivered as it is.
-   * Thus, we convert timestamp (nanoseconds recorded in sensor events) using [toMillis][java.util.concurrent.TimeUnit.toMillis] method,
-   * or call [currentTimeInMillis][System.currentTimeMillis] method according to the function execution time.
+   * Measurement nanoseconds drive detection and are converted through a fixed session
+   * elapsed-realtime/epoch anchor for public millisecond dates, never callback time.
    *
    * @param event the [SensorEvent][android.hardware.SensorEvent].
    * @see <a href="https://developer.android.com/reference/android/hardware/SensorEvent">Hardware Activity Sensors</a>
@@ -245,11 +270,17 @@ abstract class SensorListenService(
    * @see <a href="https://developer.android.com/reference/android/hardware/Sensor#REPORTING_MODE_ON_CHANGE">Reporting Mode On Change</a>
    */
   override fun onSensorChanged(event: SensorEvent?) {
-    if (event == null || !isRunning) return
-    val sensor = event.sensor ?: return
-    if (sensor != detectedSensor || sensor.type != sensorType) return
-    if (updateCurrentSteps(event.values)) {
-      counterModule.sendDeviceEvent("stepCounterUpdate", stepsParamsMap)
+    synchronized(stateLock) {
+      if (event == null || !isRunning) return
+      val sensor = event.sensor ?: return
+      if (sensor != detectedSensor || sensor.type != sensorType) return
+      val timestampNs = event.timestamp
+      if (lastMeasurementNs?.let { timestampNs <= it } == true) return
+      lastMeasurementNs = timestampNs
+      if (updateCurrentSteps(event.values, timestampNs)) {
+        endDate = anchorEpochMillis + (timestampNs - anchorElapsedNs) / 1_000_000
+        counterModule.sendDeviceEvent("stepCounterUpdate", stepsParamsMap)
+      }
     }
   }
 
@@ -258,9 +289,13 @@ abstract class SensorListenService(
    * implemented in [StepCounterService] and [AccelerometerService]
    * with different motion sensor handling algorithm.
    * @param eventData the detected vector of sensor event
+   * @param timestampNs measurement time in elapsed-realtime nanoseconds
    * @return if the current steps is updated, return true, otherwise return false
    */
-  abstract fun updateCurrentSteps(eventData: FloatArray): Boolean
+  abstract fun updateCurrentSteps(
+    eventData: FloatArray,
+    timestampNs: Long,
+  ): Boolean
 
   /**
    * Called when the accuracy of the registered sensor has changed.
