@@ -86,7 +86,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 
 **Android (`android/src/main/java/com/stepcounter/`)**:
 
-- `StepCounterModule.kt` — Extends `NativeStepCounterSpec`. Selects sensor service based on device capability (prefers hardware step counter, falls back to accelerometer). Requires `ACTIVITY_RECOGNITION` permission.
+- `StepCounterModule.kt` — Extends `NativeStepCounterSpec`. Refreshes actual sensors and permission at each start, preferring the hardware counter with accelerometer fallback. Both backends require `ACTIVITY_RECOGNITION` on API 29+ under the package consent policy; API 24–28 needs no activity runtime grant. The existing Android runtime `working` field tracks successful registration, while the public JS capability type stays `{ supported, granted }`.
 - `StepCounterPackage.kt` — Standard RN package registration.
 - `services/SensorListenService.kt` — Abstract base for sensor services; registers with `SensorManager` and emits events via `RCTDeviceEventEmitter`.
 - `services/StepCounterService.kt` — Uses `TYPE_STEP_COUNTER` hardware sensor (API 19+).

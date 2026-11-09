@@ -9,6 +9,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.WritableMap
 import com.stepcounter.StepCounterModule
+import kotlin.concurrent.Volatile
 
 /**
  * the base class for sensor listen service
@@ -112,15 +113,22 @@ abstract class SensorListenService(
   val stepsSensorInfo: WritableMap
     get() =
       Arguments.createMap().apply {
-        putNumber("minDelay", detectedSensor!!.minDelay)
-        putNumber("maxDelay", detectedSensor!!.maxDelay)
-        putString("name", detectedSensor!!.name)
-        putString("vendor", detectedSensor!!.vendor)
-        putNumber("power", detectedSensor!!.power)
-        putNumber("resolution", detectedSensor!!.resolution)
-        putBoolean("wakeUpSensor", detectedSensor!!.isWakeUpSensor)
-        putBoolean("additionalInfoSupported", detectedSensor!!.isAdditionalInfoSupported)
+        detectedSensor?.let { sensor ->
+          putNumber("minDelay", sensor.minDelay)
+          putNumber("maxDelay", sensor.maxDelay)
+          putString("name", sensor.name)
+          putString("vendor", sensor.vendor)
+          putNumber("power", sensor.power)
+          putNumber("resolution", sensor.resolution)
+          putBoolean("wakeUpSensor", sensor.isWakeUpSensor)
+          putBoolean("additionalInfoSupported", sensor.isAdditionalInfoSupported)
+        }
       }
+
+  /** Registration status shared with the sensor callback thread. */
+  @Volatile
+  var isRunning: Boolean = false
+    private set
 
   /**
    * Number of in-database-saved calories.
@@ -171,28 +179,43 @@ abstract class SensorListenService(
       }
 
   /**
-   * this class is not implemented Service class now, but made it work so
+   * Reset this session and register its sensor, emitting metadata only after success.
+   * @return Whether registration succeeded. Missing sensors and denied or failed registrations leave the session stopped.
    * @see android.content.Context.startService
    * @see android.content.Context.stopService
    * @see SensorManager.registerListener
    */
-  fun startService(startDateMillis: Long? = null) {
+  fun startService(startDateMillis: Long? = null): Boolean {
+    stopService()
     startDate =
       startDateMillis?.takeIf { it > 0 } ?: System.currentTimeMillis()
     resetSessionState()
+    val sensor = detectedSensor ?: return false
+    isRunning =
+      try {
+        sensorManager.registerListener(this, sensor, samplingPeriodUs)
+      } catch (error: SecurityException) {
+        Log.w(TAG_NAME, "Sensor permission denied during registration", error)
+        false
+      }
+    if (!isRunning) {
+      sensorManager.unregisterListener(this)
+      return false
+    }
     counterModule.sendDeviceEvent("stepsSensorInfo", stepsSensorInfo)
     Log.d(TAG_NAME, "SensorManager.stepsSensorInfo: $stepsSensorInfo")
-    sensorManager.registerListener(this, detectedSensor, samplingPeriodUs)
+    return true
   }
 
   /**
-   * this class is not implemented Service class now, but made it work so
+   * Stop accepting events and unregister the sensor listener.
    * @see android.content.Context.startService
    * @see android.content.Context.stopService
    * @see SensorManager.unregisterListener
    */
   fun stopService() {
     Log.d(TAG_NAME, "SensorListenService.stopService")
+    isRunning = false
     sensorManager.unregisterListener(this)
   }
 
@@ -222,13 +245,9 @@ abstract class SensorListenService(
    * @see <a href="https://developer.android.com/reference/android/hardware/Sensor#REPORTING_MODE_ON_CHANGE">Reporting Mode On Change</a>
    */
   override fun onSensorChanged(event: SensorEvent?) {
-    if (event?.sensor == null ||
-      event.sensor != detectedSensor ||
-      event.sensor.type != sensorType ||
-      detectedSensor?.type != event.sensor.type
-    ) {
-      return
-    }
+    if (event == null || !isRunning) return
+    val sensor = event.sensor ?: return
+    if (sensor != detectedSensor || sensor.type != sensorType) return
     if (updateCurrentSteps(event.values)) {
       counterModule.sendDeviceEvent("stepCounterUpdate", stepsParamsMap)
     }

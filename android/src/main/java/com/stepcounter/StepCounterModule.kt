@@ -1,7 +1,9 @@
 package com.stepcounter
 
 import android.content.Context
+import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.util.Log
 import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
@@ -16,7 +18,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEm
 import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
-import com.stepcounter.utils.AndroidVersionHelper
 
 /**
  * This class is the native module for the react-native-step-counter package.
@@ -41,18 +42,20 @@ class StepCounterModule(
   }
 
   private val appContext: ReactApplicationContext = reactContext
-  private var sensorManager: SensorManager =
+  private val sensorManager: SensorManager =
     reactContext.getSystemService(
       Context.SENSOR_SERVICE,
     ) as SensorManager
   private val stepsOK: Boolean
-    get() = checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
-  private val accelOK: Boolean
-    get() = AndroidVersionHelper.isHardwareAccelerometerEnabled(appContext)
+    get() =
+      Build.VERSION.SDK_INT < VERSION_CODES.Q ||
+        checkSelfPermission(appContext, STEP_COUNTER) == PERMISSION_GRANTED
   private val supported: Boolean
-    get() = AndroidVersionHelper.isHardwareStepCounterEnabled(appContext)
+    get() =
+      sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null ||
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
   private val walkingStatus: Boolean
-    get() = stepCounterListener !== null
+    get() = stepCounterListener?.isRunning == true
 
   /**
    * gets the step counter listener
@@ -66,20 +69,6 @@ class StepCounterModule(
   private var stepCounterListener: SensorListenService? = null
 
   /**
-   * The method that is called when the module is initialized.
-   * It checks the permission and the availability for the step counter sensor and initializes the step counter service.
-   */
-  init {
-    stepCounterListener =
-      if (stepsOK) {
-        StepCounterService(this, sensorManager)
-      } else {
-        AccelerometerService(this, sensorManager)
-      }
-    appContext.addLifecycleEventListener(stepCounterListener)
-  }
-
-  /**
    * The method ask if the step counter sensor is supported.
    * @param promise the promise that is used to return the result to the react-native code
    * @see Promise.resolve
@@ -89,14 +78,15 @@ class StepCounterModule(
    */
   @ReactMethod
   override fun isStepCountingSupported(promise: Promise) {
-    Log.d(TAG_NAME, "hardware_step_counter? $supported")
-    Log.d(TAG_NAME, "step_counter granted? $stepsOK")
-    Log.d(TAG_NAME, "accelerometer granted? $accelOK")
+    val granted = stepsOK
+    if (!granted) {
+      stopStepCounterUpdate()
+    }
     sendDeviceEvent("stepDetected", walkingStatus)
     promise.resolve(
       Arguments.createMap().apply {
         putBoolean("supported", supported)
-        putBoolean("granted", stepsOK || accelOK)
+        putBoolean("granted", granted)
         putBoolean("working", walkingStatus)
       },
     )
@@ -109,13 +99,24 @@ class StepCounterModule(
   @ReactMethod
   override fun startStepCounterUpdate(from: Double) {
     val sessionStartMillis = normalizeStartTimestampToMillis(from)
-    stepCounterListener = stepCounterListener ?: if (stepsOK) {
-      StepCounterService(this, sensorManager)
-    } else {
-      AccelerometerService(this, sensorManager)
+    stopStepCounterUpdate()
+    for (sensorType in listOf(Sensor.TYPE_STEP_COUNTER, Sensor.TYPE_ACCELEROMETER)) {
+      // Apply the same consent policy to fallback, including a grant lost during registration.
+      if (!stepsOK) break
+      val service =
+        if (sensorType == Sensor.TYPE_STEP_COUNTER) {
+          StepCounterService(this, sensorManager)
+        } else {
+          AccelerometerService(this, sensorManager)
+        }
+      if (service.startService(sessionStartMillis)) {
+        stepCounterListener = service
+        appContext.addLifecycleEventListener(service)
+        sendDeviceEvent("stepDetected", true)
+        return
+      }
     }
-    Log.d(TAG_NAME, "startStepCounterUpdate")
-    stepCounterListener!!.startService(sessionStartMillis)
+    Log.w(TAG_NAME, "No permitted sensor could be registered")
   }
 
   /**
@@ -125,7 +126,12 @@ class StepCounterModule(
   @ReactMethod
   override fun stopStepCounterUpdate() {
     Log.d(TAG_NAME, "stopStepCounterUpdate")
-    stepCounterListener!!.stopService()
+    stepCounterListener?.let {
+      it.stopService()
+      appContext.removeLifecycleEventListener(it)
+    }
+    stepCounterListener = null
+    sendDeviceEvent("stepDetected", false)
   }
 
   /**

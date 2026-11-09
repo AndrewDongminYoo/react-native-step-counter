@@ -60,12 +60,13 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
 ## Interface
 
 - `isStepCountingSupported()`: `Promise<{ supported: boolean; granted: boolean }>`: method to check if the device has a feature related step counter or accelerometer.
-  - One key for the response object is `granted`, whether the app user has granted this feature permission, and `supported` is whether the device supports this feature.
-  - Android can fall back to accelerometer-based counting when the hardware step counter is unavailable. You should still request and respect the platform motion/activity permission before starting updates.
+  - `supported` reports whether a counting sensor is present. On Android, either an actual step counter or an accelerometer is sufficient; a hardware feature flag alone is not.
+  - `granted` reports permission independently of hardware availability. On Android 10 (API 29) and later, this package requires `ACTIVITY_RECOGNITION` for both backends and never uses the accelerometer to bypass a denial. On API 24–28, that runtime permission is not required, so `granted` is `true`.
+  - Request permission when needed, then check capabilities again before starting. The existing Android-only runtime `working` field indicates successful sensor registration until stop or host destruction; it does not guarantee sensor delivery and is not part of the public TypeScript result type.
 
 - `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: `EventSubscription`:
-  - If the pedometer sensor is available and supported on the device, register it with the listener in the sensor manager, and return the step count event listener.
-  - If the pedometer sensor is not supported by the device or is not available, register the accelerometer sensor with the listener, generate an accel event through a vector algorithm filter and receive it to the app.
+  - Android refreshes permission and sensors on every start, stops the previous backend, and prefers the hardware step counter.
+  - If the hardware counter is absent or registration fails, Android tries an available accelerometer only while permission remains allowed. Missing sensors, denied permission, or failed registrations leave native counting stopped; no sensor metadata is emitted for a failed registration. The returned JS subscription alone does not confirm native registration.
 
 - `stopStepCounterUpdate(): void`:
   - Removes the subscription registered by `startStepCounterUpdate` and stops the native sensor session.

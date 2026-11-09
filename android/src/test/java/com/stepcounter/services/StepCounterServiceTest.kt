@@ -10,6 +10,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.`when`
@@ -77,16 +79,17 @@ class StepCounterServiceTest {
   private fun restartWithBaseline(baseline: Float) {
     // Keep counting and start/stop logic real; replace hardware, JNI maps and logging only.
     `when`(sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)).thenReturn(sensor)
+    `when`(sensorManager.registerListener(any<android.hardware.SensorEventListener>(), any<Sensor>(), anyInt())).thenReturn(true)
     val countingService = StepCounterService(module, sensorManager)
     mockStatic(Arguments::class.java).use { arguments ->
       arguments.`when`<Any> { Arguments.createMap() }.thenAnswer { JavaOnlyMap() }
       mockStatic(Log::class.java).use {
-        countingService.startService()
+        assertTrue(countingService.startService())
         countingService.updateCurrentSteps(floatArrayOf(100f))
         countingService.updateCurrentSteps(floatArrayOf(110f))
         assertEquals(10.0, countingService.currentSteps, 0.0)
         countingService.stopService()
-        countingService.startService()
+        assertTrue(countingService.startService())
         assertEquals(0.0, countingService.currentSteps, 0.0)
         assertFalse(countingService.updateCurrentSteps(floatArrayOf(baseline)))
         assertEquals(0.0, countingService.currentSteps, 0.0)
