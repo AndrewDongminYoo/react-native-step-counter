@@ -15,9 +15,8 @@ import java.util.concurrent.TimeUnit
  * @property sensorDelay The integer enum value of delay of the sensor.
  *   choose between SensorManager.SENSOR_DELAY_NORMAL or SensorManager.SENSOR_DELAY_UI
  * @property detectedSensor The sensor that is detected
- * @property previousSteps The initial steps or the previous steps.
- *   step counter sensor is recording since the last reboot.
- *   so if previous step is null, we need to initialize the previous steps with the current steps minus 1.
+ * @property previousSteps The first cumulative sensor reading in this session,
+ *   or null until a baseline has been initialized. Zero is a valid baseline.
  * @property currentSteps The current steps
  * @constructor Creates a new StepCounterService
  * @see SensorListenService
@@ -38,42 +37,36 @@ class StepCounterService(
   override val sensorTypeString = "Step Counter"
   override val sensorType = Sensor.TYPE_STEP_COUNTER
   override val detectedSensor: Sensor? = sensorManager.getDefaultSensor(sensorType)
-  private var previousSteps: Double = 0.0
-    set(value) {
-      if (field < value) {
-        field = value
-      }
-    }
+  private var previousSteps: Double? = null
   override var currentSteps: Double = 0.0
-    set(value) {
-      if (field < value) {
-        field = value
-      }
-    }
 
   override fun resetSessionState() {
-    previousSteps = 0.0
+    previousSteps = null
     currentSteps = 0.0
   }
 
   /**
    * This function is responsible for updating the current steps.
    * @param [eventData][FloatArray(1) values][android.hardware.SensorEvent.values] The step counter event data
-   * @return The current steps
+   * @return Whether the session step count increased
    * @see android.hardware.SensorEvent
    * @see android.hardware.SensorEvent.values
    * @see android.hardware.SensorEvent.timestamp
    */
   override fun updateCurrentSteps(eventData: FloatArray): Boolean {
-    // if the time difference is greater than the delay, set the current steps to the step count minus the initial steps
-    // if the previous steps aren't initialized yet,
-    return if (previousSteps == 0.0) {
-      previousSteps = eventData[0].toDouble()
-      false
-    } else {
-      currentSteps = eventData[0].toDouble().minus(previousSteps)
-      // set the last update to the current time
-      true
+    val reading = eventData[0].toDouble()
+    val baseline = previousSteps
+    if (baseline == null) {
+      previousSteps = reading
+      return false
     }
+
+    val steps = reading - baseline
+    if (steps <= currentSteps) {
+      return false
+    }
+
+    currentSteps = steps
+    return true
   }
 }
