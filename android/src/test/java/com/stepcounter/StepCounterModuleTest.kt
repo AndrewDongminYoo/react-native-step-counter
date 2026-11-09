@@ -7,6 +7,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.content.PermissionChecker
 import com.facebook.react.bridge.Arguments
@@ -282,6 +283,8 @@ private class AndroidSensorFixture : AutoCloseable {
     }
   private val arguments = mockStatic(Arguments::class.java)
   private val logging = mockStatic(Log::class.java)
+  private val clock = mockStatic(SystemClock::class.java)
+  private var timestampNs = 0L
   private val permission = mockStatic(PermissionChecker::class.java)
 
   init {
@@ -344,6 +347,7 @@ private class AndroidSensorFixture : AutoCloseable {
   ): SensorEvent {
     val event = mock(SensorEvent::class.java)
     event.sensor = sensor
+    event.timestamp = ++timestampNs
     SensorEvent::class.java
       .getField("values")
       .apply { isAccessible = true }
@@ -360,6 +364,7 @@ private class AndroidSensorFixture : AutoCloseable {
   }
 
   override fun close() {
+    clock.close()
     permission.close()
     logging.close()
     arguments.close()

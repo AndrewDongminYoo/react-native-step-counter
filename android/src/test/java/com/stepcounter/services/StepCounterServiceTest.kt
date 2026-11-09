@@ -24,45 +24,45 @@ class StepCounterServiceTest {
 
   @Test
   fun countsFromTheFirstNonzeroReading() {
-    assertFalse(service.updateCurrentSteps(floatArrayOf(100f)))
+    assertFalse(service.updateCurrentSteps(floatArrayOf(100f), 0L))
     assertEquals(0.0, service.currentSteps, 0.0)
-    assertTrue(service.updateCurrentSteps(floatArrayOf(110f)))
+    assertTrue(service.updateCurrentSteps(floatArrayOf(110f), 0L))
     assertEquals(10.0, service.currentSteps, 0.0)
   }
 
   @Test
   fun zeroIsAValidBaseline() {
-    assertFalse(service.updateCurrentSteps(floatArrayOf(0f)))
-    assertTrue(service.updateCurrentSteps(floatArrayOf(1f)))
+    assertFalse(service.updateCurrentSteps(floatArrayOf(0f), 0L))
+    assertTrue(service.updateCurrentSteps(floatArrayOf(1f), 0L))
     assertEquals(1.0, service.currentSteps, 0.0)
-    assertTrue(service.updateCurrentSteps(floatArrayOf(3f)))
+    assertTrue(service.updateCurrentSteps(floatArrayOf(3f), 0L))
     assertEquals(3.0, service.currentSteps, 0.0)
   }
 
   @Test
   fun repeatedBaselineDoesNotRequestAnEvent() {
-    service.updateCurrentSteps(floatArrayOf(100f))
-    assertFalse(service.updateCurrentSteps(floatArrayOf(100f)))
+    service.updateCurrentSteps(floatArrayOf(100f), 0L)
+    assertFalse(service.updateCurrentSteps(floatArrayOf(100f), 0L))
     assertEquals(0.0, service.currentSteps, 0.0)
   }
 
   @Test
   fun repeatedTotalDoesNotRequestAnEvent() {
-    service.updateCurrentSteps(floatArrayOf(100f))
-    service.updateCurrentSteps(floatArrayOf(110f))
-    assertFalse(service.updateCurrentSteps(floatArrayOf(110f)))
+    service.updateCurrentSteps(floatArrayOf(100f), 0L)
+    service.updateCurrentSteps(floatArrayOf(110f), 0L)
+    assertFalse(service.updateCurrentSteps(floatArrayOf(110f), 0L))
     assertEquals(10.0, service.currentSteps, 0.0)
   }
 
   @Test
   fun decreasingReadingsDoNotLowerOrRebaseTheSessionTotal() {
-    service.updateCurrentSteps(floatArrayOf(100f))
-    service.updateCurrentSteps(floatArrayOf(110f))
-    assertFalse(service.updateCurrentSteps(floatArrayOf(105f)))
+    service.updateCurrentSteps(floatArrayOf(100f), 0L)
+    service.updateCurrentSteps(floatArrayOf(110f), 0L)
+    assertFalse(service.updateCurrentSteps(floatArrayOf(105f), 0L))
     assertEquals(10.0, service.currentSteps, 0.0)
-    assertFalse(service.updateCurrentSteps(floatArrayOf(90f)))
+    assertFalse(service.updateCurrentSteps(floatArrayOf(90f), 0L))
     assertEquals(10.0, service.currentSteps, 0.0)
-    assertTrue(service.updateCurrentSteps(floatArrayOf(111f)))
+    assertTrue(service.updateCurrentSteps(floatArrayOf(111f), 0L))
     assertEquals(11.0, service.currentSteps, 0.0)
   }
 
@@ -80,20 +80,29 @@ class StepCounterServiceTest {
     // Keep counting and start/stop logic real; replace hardware, JNI maps and logging only.
     `when`(sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)).thenReturn(sensor)
     `when`(sensorManager.registerListener(any<android.hardware.SensorEventListener>(), any<Sensor>(), anyInt())).thenReturn(true)
-    val countingService = StepCounterService(module, sensorManager)
+    val countingService =
+      StepCounterService(
+        module,
+        sensorManager,
+        object : SensorClock {
+          override fun epochMillis() = 1_700_000_000_000L
+
+          override fun elapsedRealtimeNanos() = 0L
+        },
+      )
     mockStatic(Arguments::class.java).use { arguments ->
       arguments.`when`<Any> { Arguments.createMap() }.thenAnswer { JavaOnlyMap() }
       mockStatic(Log::class.java).use {
         assertTrue(countingService.startService())
-        countingService.updateCurrentSteps(floatArrayOf(100f))
-        countingService.updateCurrentSteps(floatArrayOf(110f))
+        countingService.updateCurrentSteps(floatArrayOf(100f), 0L)
+        countingService.updateCurrentSteps(floatArrayOf(110f), 0L)
         assertEquals(10.0, countingService.currentSteps, 0.0)
         countingService.stopService()
         assertTrue(countingService.startService())
         assertEquals(0.0, countingService.currentSteps, 0.0)
-        assertFalse(countingService.updateCurrentSteps(floatArrayOf(baseline)))
+        assertFalse(countingService.updateCurrentSteps(floatArrayOf(baseline), 0L))
         assertEquals(0.0, countingService.currentSteps, 0.0)
-        assertTrue(countingService.updateCurrentSteps(floatArrayOf(baseline + 2f)))
+        assertTrue(countingService.updateCurrentSteps(floatArrayOf(baseline + 2f), 0L))
         assertEquals(2.0, countingService.stepsParamsMap.getDouble("steps"), 0.0)
       }
     }

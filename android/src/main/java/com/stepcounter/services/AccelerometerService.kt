@@ -37,10 +37,16 @@ import kotlin.math.min
  * @see SensorManager.SENSOR_DELAY_NORMAL
  * @see Sensor.TYPE_ACCELEROMETER
  */
-class AccelerometerService(
+class AccelerometerService internal constructor(
   counterModule: StepCounterModule,
   sensorManager: SensorManager,
-) : SensorListenService(counterModule, sensorManager) {
+  clock: SensorClock,
+) : SensorListenService(counterModule, sensorManager, clock) {
+  constructor(
+    counterModule: StepCounterModule,
+    sensorManager: SensorManager,
+  ) : this(counterModule, sensorManager, AndroidSensorClock)
+
   override val sensorTypeString = "Accelerometer"
   override val sensorType = Sensor.TYPE_ACCELEROMETER
   override val detectedSensor: Sensor? = sensorManager.getDefaultSensor(sensorType)
@@ -48,7 +54,7 @@ class AccelerometerService(
   private var velocityRingCounter: Int = 0
   private var accelRingCounter: Int = 0
   private var oldVelocityEstimate: Float = 0f
-  private var lastStepTimeNs: Long = 0
+  private var lastStepTimeNs: Long? = null
 
   // We want to keep a history of values to do a rolling average of the current
   private val accelRingX = FloatArray(ACCEL_RING_SIZE)
@@ -63,7 +69,7 @@ class AccelerometerService(
     velocityRingCounter = 0
     accelRingCounter = 0
     oldVelocityEstimate = 0f
-    lastStepTimeNs = 0
+    lastStepTimeNs = null
     accelRingX.fill(0f)
     accelRingY.fill(0f)
     accelRingZ.fill(0f)
@@ -84,8 +90,10 @@ class AccelerometerService(
    * @see android.hardware.SensorEvent.values
    * @see android.hardware.SensorEvent.timestamp
    */
-  override fun updateCurrentSteps(eventData: FloatArray): Boolean {
-    val timeNs = System.nanoTime()
+  override fun updateCurrentSteps(
+    eventData: FloatArray,
+    timestampNs: Long,
+  ): Boolean {
     // First step is to update our guess of where the global z vector is.
     accelRingCounter++
     // We keep a rolling average of the last 50 values
@@ -111,11 +119,11 @@ class AccelerometerService(
     // If the velocity estimate is greater than the threshold and the previous
     val isWalkingOrRunning: Boolean =
       STEP_THRESHOLD in oldVelocityEstimate..<velocityEstimate &&
-        timeNs - lastStepTimeNs > STEP_DELAY_NS
+        (lastStepTimeNs?.let { timestampNs - it > STEP_DELAY_NS } ?: true)
     if (isWalkingOrRunning) {
       currentSteps = currentSteps.plus(1)
-      Log.d(TAG_NAME, "STATUS: $currentSteps steps. TIMESTAMP: $timeNs")
-      lastStepTimeNs = timeNs
+      Log.d(TAG_NAME, "STATUS: $currentSteps steps. TIMESTAMP: $timestampNs")
+      lastStepTimeNs = timestampNs
     }
     oldVelocityEstimate = velocityEstimate
     return isWalkingOrRunning

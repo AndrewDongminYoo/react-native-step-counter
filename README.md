@@ -81,6 +81,8 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
     - `steps`: This is a number property that indicates the number of steps taken by the user during the specified time period.
     - `startDate`: This is a number property that indicates the start date of the data in Unix timestamp format, measured in milliseconds.
     - `endDate`: This is a number property that indicates the end date of the data in Unix timestamp format, measured in milliseconds.
+      On Android, this is the sensor measurement time mapped to epoch milliseconds using a fixed clock anchor captured at session start.
+      Delayed or batched delivery and wall-clock changes during that session do not alter measurement intervals; restarting captures a new anchor.
     - `distance`: This is a number property that indicates the distance in meters that the user has walked or run during the specified time period.
     - `counterType`: (`CounterType`) The name of the sensor used to count the number of steps. One of `"CMPedometer"` (iOS), `"STEP_COUNTER"` (Android hardware sensor), or `"ACCELEROMETER"` (Android fallback).
 
