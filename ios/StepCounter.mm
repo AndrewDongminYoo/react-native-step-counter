@@ -11,6 +11,8 @@
 
 // Session control
 @property (nonatomic, strong) NSDate *sessionStartDate;
+@property (nonatomic, strong) NSObject *sessionGeneration;
+@property (nonatomic) BOOL invalidated;
 
 // Baseline + monotonic
 @property (nonatomic) NSInteger baselineSteps;      // steps recorded at session start
@@ -73,20 +75,24 @@ RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
                   endDate:(NSDate *)endDate
                   handler:(RCTResponseSenderBlock)handler) {
-  [self.pedometer queryPedometerDataFromDate:startDate
+  __weak StepCounter *weakSelf = self;
+  dispatch_sync(_stateQueue, ^{
+    if (self->_invalidated) return;
+    [self.pedometer queryPedometerDataFromDate:startDate
                                       toDate:endDate
-                                 withHandler:^(CMPedometerData *pedometerData, NSError *error) {
-    handler(@[
-      error.description ?: [NSNull null],
-      [self dictionaryFromPedometerData:pedometerData]
-    ]);
-  }];
+                                 withHandler:^(CMPedometerData *data, NSError *error) {
+      StepCounter *strongSelf = weakSelf;
+      if (!strongSelf) return;
+      dispatch_sync(strongSelf->_stateQueue, ^{
+        if (strongSelf->_invalidated) return;
+        handler(@[error.description ?: [NSNull null],
+                  [strongSelf dictionaryFromPedometerData:data]]);
+      });
+    }];
+  });
 }
 
 RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
-  // Stop any in-progress pedometer session before starting a new one.
-  [self.pedometer stopPedometerUpdates];
-
   // --- Timestamp guard (ms vs seconds) ---
   // Valid Unix timestamp in seconds is ~1.7–2.0e9 (2024–2033),
   // while milliseconds is ~1.7–2.0e12.
@@ -99,81 +105,92 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
   if ([requested timeIntervalSinceDate:now] > 60.0) { // > 60s into the future
     requested = now;
   }
-  // Reset session state atomically before starting new handlers.
+  // Lifecycle, state mutation and event enqueueing share one serialization boundary.
+  // A fresh object identifies a session even when callers reuse the same date.
+  NSObject *generation = [NSObject new];
+  NSDate *sessionStart = [requested copy];
+  __weak StepCounter *weakSelf = self;
   dispatch_sync(_stateQueue, ^{
-    self->_sessionStartDate = requested;
+    if (self->_invalidated) return;
+    self->_sessionGeneration = generation;
+    [self.pedometer stopPedometerUpdates];
+    self->_sessionStartDate = sessionStart;
     self->_baselineSteps = 0;
     self->_lastEmittedSteps = 0;
     self->_baselineReady = NO;
-  });
 
-  // 1) Establish baseline at session start (start -> now).
-  // This makes "reset/restart" deterministic: emitted steps are delta since sessionStartDate.
-  [self.pedometer queryPedometerDataFromDate:_sessionStartDate
+    [self.pedometer queryPedometerDataFromDate:sessionStart
                                       toDate:now
                                  withHandler:^(CMPedometerData *data, NSError *error) {
-    dispatch_sync(self->_stateQueue, ^{
-      self->_baselineSteps = error ? 0 : data.numberOfSteps.integerValue;
-      self->_baselineReady = YES;
-    });
-    if (error) {
-      [self sendEventWithName:@"StepCounter.errorOccurred" body:error];
-    }
-  }];
+      StepCounter *strongSelf = weakSelf;
+      if (!strongSelf) return;
+      dispatch_sync(strongSelf->_stateQueue, ^{
+        if (strongSelf->_sessionGeneration != generation) return;
+        strongSelf->_baselineSteps = error ? 0 : data.numberOfSteps.integerValue;
+        strongSelf->_baselineReady = YES;
+        if (error) {
+          [strongSelf sendEventWithName:@"StepCounter.errorOccurred" body:error];
+        }
+      });
+    }];
 
-  // 2) Live updates from sessionStartDate.
-  [self.pedometer startPedometerUpdatesFromDate:_sessionStartDate
+    [self.pedometer startPedometerUpdatesFromDate:sessionStart
                                     withHandler:^(CMPedometerData *data, NSError *error) {
-    if (error) {
-      [self sendEventWithName:@"StepCounter.errorOccurred" body:error];
-      return;
-    }
-    if (!data) return;
+      StepCounter *strongSelf = weakSelf;
+      if (!strongSelf) return;
+      dispatch_sync(strongSelf->_stateQueue, ^{
+        if (strongSelf->_sessionGeneration != generation) return;
+        if (error) {
+          [strongSelf sendEventWithName:@"StepCounter.errorOccurred" body:error];
+          return;
+        }
+        if (!data || !strongSelf->_baselineReady) return;
 
-    __block NSDictionary *body = nil;
-    dispatch_sync(self->_stateQueue, ^{
-      if (!self->_baselineReady) return;
+        // Date matching filters OS windows; generation establishes ownership.
+        NSTimeInterval startDiff = fabs([data.startDate timeIntervalSinceDate:sessionStart]);
+        if (startDiff > 1.0) return;
+        NSInteger cumulative = data.numberOfSteps.integerValue;
+        NSInteger delta = cumulative - strongSelf->_baselineSteps;
+        if (delta < 0) {
+          delta = 0;
+          strongSelf->_baselineSteps = cumulative;
+        }
+        if (delta <= strongSelf->_lastEmittedSteps) return;
+        strongSelf->_lastEmittedSteps = delta;
+        NSMutableDictionary *body = [[strongSelf dictionaryFromPedometerData:data] mutableCopy];
+        body[@"steps"] = @(delta);
+        body[@"counterType"] = @"CMPedometer";
+        [strongSelf sendEventWithName:@"StepCounter.stepCounterUpdate" body:body];
+      });
+    }];
+  });
+}
 
-      // Filter: accept only updates whose startDate matches the session start.
-      // iOS can interleave "segment/window" updates with different startDate values.
-      NSTimeInterval startDiff = fabs([data.startDate timeIntervalSinceDate:self->_sessionStartDate]);
-      if (startDiff > 1.0) return;
-
-      NSInteger cumulative = data.numberOfSteps.integerValue;
-      NSInteger delta = cumulative - self->_baselineSteps;
-
-      // If OS performs corrections or timestamps shift, delta can go negative.
-      // Clamp + rebase to keep future deltas sane.
-      if (delta < 0) {
-        delta = 0;
-        self->_baselineSteps = cumulative;
-      }
-
-      // Monotonic guard: never emit backwards.
-      if (delta <= self->_lastEmittedSteps) return;
-      self->_lastEmittedSteps = delta;
-
-      NSMutableDictionary *mBody = [[self dictionaryFromPedometerData:data] mutableCopy];
-      mBody[@"steps"] = @(delta);
-      mBody[@"counterType"] = @"CMPedometer";
-      body = [mBody copy];
-    });
-    if (body) {
-      [self sendEventWithName:@"StepCounter.stepCounterUpdate" body:body];
-    }
-  }];
+// Must run on stateQueue, before asking producers to stop.
+- (void)resetSession {
+  _sessionGeneration = nil;
+  _sessionStartDate = nil;
+  _baselineSteps = 0;
+  _lastEmittedSteps = 0;
+  _baselineReady = NO;
 }
 
 RCT_EXPORT_METHOD(stopStepCounterUpdate) {
-  [self.pedometer stopPedometerUpdates];
-  [[SOMotionDetecter sharedInstance] stopDetection];
-
   dispatch_sync(_stateQueue, ^{
-    self->_sessionStartDate = nil;
-    self->_baselineSteps = 0;
-    self->_lastEmittedSteps = 0;
-    self->_baselineReady = NO;
+    [self resetSession];
+    [self.pedometer stopPedometerUpdates];
+    [[SOMotionDetecter sharedInstance] stopDetection];
   });
+}
+
+- (void)invalidate {
+  dispatch_sync(_stateQueue, ^{
+    self->_invalidated = YES;
+    [self resetSession];
+    [self.pedometer stopPedometerUpdates];
+    [[SOMotionDetecter sharedInstance] stopDetection];
+  });
+  [super invalidate];
 }
 
 RCT_EXPORT_METHOD(startStepsDetection) {

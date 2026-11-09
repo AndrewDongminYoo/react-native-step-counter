@@ -50,6 +50,9 @@ jobs:
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
 
+      - name: Test native callback scheduling
+        run: bash tests/ios/run-session-tests.sh
+
       - name: Test native payload contract
         run: |
           xcrun clang++ -fobjc-arc -fblocks -framework Foundation tests/ios/StepCounterPayloadTests.mm -o "$RUNNER_TEMP/step-counter-payload-tests"
