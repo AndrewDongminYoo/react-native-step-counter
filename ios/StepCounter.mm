@@ -15,7 +15,10 @@
 @property (nonatomic) BOOL invalidated;
 
 // Baseline + monotonic
-@property (nonatomic) NSInteger baselineSteps;      // steps recorded at session start
+@property (nonatomic, strong) CMPedometerData *baselineData;
+@property (nonatomic, strong) NSDate *sessionCutoff;
+@property (nonatomic, strong) NSDate *lastEmittedEndDate;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *lastEmittedMetrics;
 @property (nonatomic) NSInteger lastEmittedSteps;   // last emitted delta (monotonic)
 @property (nonatomic) BOOL baselineReady;
 @end
@@ -98,11 +101,10 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
   // while milliseconds is ~1.7–2.0e12.
   double fromSeconds = (from > 1e12) ? (from / 1000.0) : from;
 
-  // Extra sanity: if caller accidentally passes ms-but-small (unlikely) or future timestamps,
-  // clamp to "now" to avoid "future date" sessions.
+  // Clamp future origins to the query cutoff so its interval cannot be inverted.
   NSDate *now = [NSDate date];
   NSDate *requested = (fromSeconds > 0) ? [NSDate dateWithTimeIntervalSince1970:fromSeconds] : now;
-  if ([requested timeIntervalSinceDate:now] > 60.0) { // > 60s into the future
+  if ([requested compare:now] == NSOrderedDescending) {
     requested = now;
   }
   // Lifecycle, state mutation and event enqueueing share one serialization boundary.
@@ -112,12 +114,12 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
   __weak StepCounter *weakSelf = self;
   dispatch_sync(_stateQueue, ^{
     if (self->_invalidated) return;
+    [self resetSession];
     self->_sessionGeneration = generation;
     [self.pedometer stopPedometerUpdates];
     self->_sessionStartDate = sessionStart;
-    self->_baselineSteps = 0;
-    self->_lastEmittedSteps = 0;
-    self->_baselineReady = NO;
+    self->_sessionCutoff = now;
+    self->_lastEmittedMetrics = [NSMutableDictionary new];
 
     [self.pedometer queryPedometerDataFromDate:sessionStart
                                       toDate:now
@@ -126,7 +128,7 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
       if (!strongSelf) return;
       dispatch_sync(strongSelf->_stateQueue, ^{
         if (strongSelf->_sessionGeneration != generation) return;
-        strongSelf->_baselineSteps = error ? 0 : data.numberOfSteps.integerValue;
+        strongSelf->_baselineData = error ? nil : data;
         strongSelf->_baselineReady = YES;
         if (error) {
           [strongSelf sendEventWithName:@"StepCounter.errorOccurred" body:error];
@@ -144,22 +146,45 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
           [strongSelf sendEventWithName:@"StepCounter.errorOccurred" body:error];
           return;
         }
-        if (!data || !strongSelf->_baselineReady) return;
+        if (!data || !data.startDate || !data.endDate || !data.numberOfSteps ||
+            !strongSelf->_baselineReady) return;
 
         // Date matching filters OS windows; generation establishes ownership.
         NSTimeInterval startDiff = fabs([data.startDate timeIntervalSinceDate:sessionStart]);
-        if (startDiff > 1.0) return;
-        NSInteger cumulative = data.numberOfSteps.integerValue;
-        NSInteger delta = cumulative - strongSelf->_baselineSteps;
-        if (delta < 0) {
-          delta = 0;
-          strongSelf->_baselineSteps = cumulative;
+        if (startDiff > 1.0 || [data.endDate compare:strongSelf->_sessionCutoff] == NSOrderedAscending) return;
+        if (!strongSelf->_baselineData) {
+          // A failed/empty query cannot safely imply a zero historical baseline.
+          // Seed every metric together and discard this first cumulative sample.
+          strongSelf->_baselineData = data;
+          strongSelf->_sessionCutoff = data.endDate;
+          return;
         }
+        if ([data.endDate compare:strongSelf->_sessionCutoff] != NSOrderedDescending ||
+            (strongSelf->_lastEmittedEndDate &&
+             [data.endDate compare:strongSelf->_lastEmittedEndDate] != NSOrderedDescending)) return;
+        NSInteger delta = data.numberOfSteps.integerValue - strongSelf->_baselineData.numberOfSteps.integerValue;
+        // Never lower the baseline on a correction: recovery must not add history.
         if (delta <= strongSelf->_lastEmittedSteps) return;
+        NSDictionary *baseline = [strongSelf dictionaryFromPedometerData:strongSelf->_baselineData];
+        NSMutableDictionary *body = [StepCounterPayload(strongSelf->_sessionCutoff, data.endDate, @(delta),
+                                                        data.distance, data.floorsAscended, data.floorsDescended) mutableCopy];
+        for (NSString *key in @[@"distance", @"floorsAscended", @"floorsDescended"]) {
+          NSNumber *current = body[key], *initial = baseline[key];
+          if ((id)current == [NSNull null] || (id)initial == [NSNull null]) {
+            body[key] = [NSNull null];
+            continue;
+          }
+          double metricDelta = current.doubleValue - initial.doubleValue;
+          if (!isfinite(metricDelta) || metricDelta < 0 ||
+              metricDelta < strongSelf->_lastEmittedMetrics[key].doubleValue) return;
+          body[key] = @(metricDelta);
+        }
+        // Commit state only after the complete window passes validation.
         strongSelf->_lastEmittedSteps = delta;
-        NSMutableDictionary *body = [[strongSelf dictionaryFromPedometerData:data] mutableCopy];
-        body[@"steps"] = @(delta);
-        body[@"counterType"] = @"CMPedometer";
+        strongSelf->_lastEmittedEndDate = data.endDate;
+        for (NSString *key in @[@"distance", @"floorsAscended", @"floorsDescended"]) {
+          if (body[key] != [NSNull null]) strongSelf->_lastEmittedMetrics[key] = body[key];
+        }
         [strongSelf sendEventWithName:@"StepCounter.stepCounterUpdate" body:body];
       });
     }];
@@ -170,7 +195,10 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
 - (void)resetSession {
   _sessionGeneration = nil;
   _sessionStartDate = nil;
-  _baselineSteps = 0;
+  _baselineData = nil;
+  _sessionCutoff = nil;
+  _lastEmittedEndDate = nil;
+  _lastEmittedMetrics = nil;
   _lastEmittedSteps = 0;
   _baselineReady = NO;
 }
@@ -243,7 +271,10 @@ RCT_EXPORT_METHOD(startStepsDetection) {
 
   _pedometer = [[CMPedometer alloc] init];
   _stateQueue = dispatch_queue_create("com.dongminyu.stepcounter.state", DISPATCH_QUEUE_SERIAL);
-  _baselineSteps = 0;
+  _baselineData = nil;
+  _sessionCutoff = nil;
+  _lastEmittedEndDate = nil;
+  _lastEmittedMetrics = nil;
   _lastEmittedSteps = 0;
   _baselineReady = NO;
 
