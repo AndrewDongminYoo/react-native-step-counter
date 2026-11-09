@@ -135,6 +135,142 @@ describe("createStepCountFilter", () => {
     expect(filter(stepData(2, 650))?.steps).toBe(2);
     expect(filter(stepData(3, 1000))?.steps).toBe(3);
   });
+
+  it("preserves delayed cumulative batches instead of permanently subtracting them", () => {
+    const filter = createStepCountFilter();
+    expect(filter(stepData(10, 10000))?.steps).toBe(10);
+    expect(filter(stepData(20, 10010))?.steps).toBe(20);
+    expect(filter(stepData(21, 11000))?.steps).toBe(21);
+  });
+
+  it("does not charge idle reports against a later cumulative batch", () => {
+    const filter = createStepCountFilter();
+    expect(filter(stepData(0, 9990))?.steps).toBe(0);
+    expect(filter(stepData(20, 10000))?.steps).toBe(20);
+  });
+
+  it.each([
+    { steps: NaN },
+    { steps: Infinity },
+    { steps: -1 },
+    { steps: 1.5 },
+    { startDate: NaN },
+    { startDate: Infinity },
+    { endDate: NaN },
+    { endDate: Infinity },
+    { endDate: startDate - 1 },
+    { distance: NaN },
+    { distance: Infinity },
+    { distance: -1 },
+  ])("rejects malformed input without poisoning subsequent totals: %p", (invalid) => {
+    const filter = createStepCountFilter();
+    expect(filter({ ...stepData(1, 1000), ...invalid })).toBeNull();
+    expect(filter(stepData(2, 2000))?.steps).toBe(2);
+  });
+
+  it("ignores duplicates, backwards dates, and same-session counter resets", () => {
+    const filter = createStepCountFilter();
+    expect(filter(stepData(10, 10000))?.steps).toBe(10);
+    expect(filter(stepData(10, 10000))).toBeNull();
+    expect(filter(stepData(11, 9000))).toBeNull();
+    expect(filter(stepData(1, 11000))).toBeNull();
+    expect(filter(stepData(11, 12000))?.steps).toBe(11);
+  });
+
+  it("rejects decreasing distances without corrupting the next event", () => {
+    const filter = createStepCountFilter();
+    filter(stepData(10, 10000));
+    expect(filter({ ...stepData(11, 11000), distance: 0 })).toBeNull();
+    expect(filter(stepData(12, 12000))?.distance).toBeCloseTo(9.144);
+  });
+
+  it("keeps iOS steps when native distance is unavailable", () => {
+    const filter = createStepCountFilter();
+    const unavailable = {
+      ...stepData(2, 1000),
+      counterType: "CMPedometer" as const,
+      // The native dictionary emits NSNull although the public type is numeric.
+      distance: null as unknown as number,
+    };
+    expect(filter(unavailable)).toMatchObject({ steps: 2, distance: 0 });
+    expect(
+      filter({ ...unavailable, steps: 3, endDate: startDate + 2000, distance: 2 })
+    ).toMatchObject({ steps: 3, distance: 2 });
+    expect(filter({ ...unavailable, steps: 4, endDate: startDate + 3000 })).toMatchObject({
+      steps: 4,
+      distance: 2,
+    });
+  });
+
+  it("does not carry unavailable distance across explicit session or backend boundaries", () => {
+    const filter = createStepCountFilter();
+    filter(stepData(10, 10000));
+    const unavailable = {
+      ...stepData(1, 11000),
+      counterType: "CMPedometer" as const,
+      distance: null as unknown as number,
+    };
+    expect(filter({ ...unavailable, counterType: "CMPedometer" })).toMatchObject({
+      steps: 1,
+      distance: 0,
+    });
+    expect(
+      filter({ ...unavailable, endDate: startDate + 13000, startDate: startDate + 12000 })
+    ).toMatchObject({ steps: 1, distance: 0 });
+  });
+
+  it("clears burst adjustments at a newer explicit session and ignores old sessions", () => {
+    const filter = createStepCountFilter();
+    expect(filter(stepData(1, 100))).toBeNull();
+    const nextSession = { ...stepData(1, 2000), startDate: startDate + 1000 };
+    expect(filter(nextSession)?.steps).toBe(1);
+    expect(filter(stepData(10, 3000))).toBeNull();
+    expect(
+      filter({ ...nextSession, steps: 2, distance: 1.524, endDate: startDate + 3000 })?.steps
+    ).toBe(2);
+  });
+
+  it("accepts a backend boundary and rejects delayed events from its retired backend", () => {
+    const filter = createStepCountFilter();
+    filter(stepData(10, 10000));
+    const fallback = { ...stepData(1, 11000), counterType: "ACCELEROMETER" as const };
+    expect(filter(fallback)?.steps).toBe(1);
+    expect(filter(stepData(11, 12000))).toBeNull();
+    expect(
+      filter({ ...fallback, steps: 2, distance: 1.524, endDate: startDate + 13000 })?.steps
+    ).toBe(2);
+  });
+
+  it("does not let a stale backend switch replace the active stream", () => {
+    const filter = createStepCountFilter();
+    filter(stepData(10, 10000));
+    expect(filter({ ...stepData(1, 9000), counterType: "ACCELEROMETER" })).toBeNull();
+    expect(filter(stepData(11, 11000))?.steps).toBe(11);
+  });
+
+  it("allows an explicit new session to restart a smaller counter", () => {
+    const filter = createStepCountFilter();
+    filter(stepData(10, 10000));
+    expect(filter({ ...stepData(1, 12000), startDate: startDate + 11000 })?.steps).toBe(1);
+  });
+
+  it("keeps internal snapshots independent of input and output mutations", () => {
+    const filter = createStepCountFilter();
+    const first = stepData(1, 1000);
+    const result = filter(first);
+    first.steps = 100;
+    if (result) result.endDate = startDate + 100000;
+    expect(filter(stepData(2, 2000))?.steps).toBe(2);
+  });
+
+  it.each([NaN, Infinity, 0, -1])(
+    "uses the default cadence for invalid interval %s",
+    (interval) => {
+      const filter = createStepCountFilter({ minimumStepIntervalMs: interval });
+      expect(filter(stepData(1, 100))).toBeNull();
+      expect(filter(stepData(2, 1000))?.steps).toBe(1);
+    }
+  );
 });
 
 // ─── isStepCountingSupported ─────────────────────────────────────────────────

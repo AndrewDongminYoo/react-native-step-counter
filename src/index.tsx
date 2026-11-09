@@ -65,9 +65,10 @@ export type StepCountFilter = (data: StepCountData) => StepCountData | null;
 
 export interface StepCountFilterOptions {
   /**
-   * Minimum elapsed time expected per accepted step.
+   * Minimum elapsed measurement time expected per accepted step over the session.
    *
-   * Events that imply a faster cadence are treated as sensor false positives.
+   * Cumulative totals that exceed this session cadence are treated as false positives.
+   * Short intervals between reports alone do not demonstrate false steps.
    * 250ms allows up to 4 steps/second, which is already faster than typical walking.
    */
   minimumStepIntervalMs?: number;
@@ -111,44 +112,91 @@ export function parseStepData(data: StepCountData): ParsedStepCountData {
  *
  * Native pedometer APIs can already include device/OS false positives, and the
  * Android accelerometer fallback can also react to quick hand rotation. This
- * helper drops updates that imply an impossible cadence and rebases later
- * cumulative values so ignored burst steps do not come back on the next event.
+ * helper rejects totals that exceed the session's measurement-time cadence budget
+ * and rebases later values so demonstrated impossible steps do not come back.
+ * It cannot detect false steps hidden by idle time earlier in the session.
+ * A newer startDate or backend change resets adjustments; stale events are ignored.
+ * Create a fresh filter when restarting with the same startDate and backend.
  */
 export function createStepCountFilter(options: StepCountFilterOptions = {}): StepCountFilter {
   const minimumStepIntervalMs =
-    options.minimumStepIntervalMs && options.minimumStepIntervalMs > 0
+    Number.isFinite(options.minimumStepIntervalMs) &&
+    options.minimumStepIntervalMs !== undefined &&
+    options.minimumStepIntervalMs > 0
       ? options.minimumStepIntervalMs
       : DEFAULT_MINIMUM_STEP_INTERVAL_MS;
 
   let previousRawData: StepCountData | null = null;
   let ignoredSteps = 0;
   let ignoredDistance = 0;
+  const retiredBackends = new Set<CounterType>();
 
   return (data: StepCountData) => {
-    if (!Number.isFinite(data.steps) || data.steps < 0) {
+    // iOS serializes an unavailable distance as NSNull. Preserve step updates
+    // and hold the last distance only within the same session/backend.
+    if (data.distance === null && data.counterType === "CMPedometer") {
+      data = {
+        ...data,
+        distance:
+          previousRawData &&
+          data.startDate === previousRawData.startDate &&
+          data.counterType === previousRawData.counterType
+            ? previousRawData.distance
+            : 0,
+      };
+    }
+    if (
+      !Number.isSafeInteger(data.steps) ||
+      data.steps < 0 ||
+      !Number.isFinite(data.startDate) ||
+      !Number.isFinite(data.endDate) ||
+      !Number.isFinite(data.endDate - data.startDate) ||
+      data.endDate < data.startDate ||
+      !Number.isFinite(data.distance) ||
+      data.distance < 0
+    ) {
       return null;
     }
 
-    if (previousRawData && data.steps < previousRawData.steps) {
-      previousRawData = data;
-      ignoredSteps = 0;
-      ignoredDistance = 0;
-      return data;
+    if (previousRawData) {
+      if (data.startDate < previousRawData.startDate) {
+        return null;
+      }
+      if (data.startDate > previousRawData.startDate) {
+        previousRawData = null;
+        ignoredSteps = 0;
+        ignoredDistance = 0;
+        retiredBackends.clear();
+      } else {
+        if (data.endDate <= previousRawData.endDate) {
+          return null;
+        }
+        if (data.counterType !== previousRawData.counterType) {
+          if (retiredBackends.has(data.counterType)) {
+            return null;
+          }
+          retiredBackends.add(previousRawData.counterType);
+          previousRawData = null;
+          ignoredSteps = 0;
+          ignoredDistance = 0;
+        } else if (data.steps < previousRawData.steps || data.distance < previousRawData.distance) {
+          // A decrease alone cannot distinguish a reset from a stale report.
+          return null;
+        }
+      }
     }
 
-    const referenceTime = previousRawData ? previousRawData.endDate : data.startDate;
     const stepDelta = previousRawData ? data.steps - previousRawData.steps : data.steps;
     const distanceDelta = previousRawData
       ? data.distance - previousRawData.distance
       : data.distance;
-    const elapsedMs =
-      Number.isFinite(data.endDate) && Number.isFinite(referenceTime)
-        ? data.endDate - referenceTime
-        : Number.POSITIVE_INFINITY;
+    const elapsedMs = data.endDate - data.startDate;
+    // Cumulative reports may arrive close together even when their steps were
+    // measured over a longer window. Only the session total proves an excess.
     const isSuspiciousBurst =
-      stepDelta > 0 && elapsedMs >= 0 && elapsedMs < stepDelta * minimumStepIntervalMs;
+      stepDelta > 0 && data.steps - ignoredSteps > elapsedMs / minimumStepIntervalMs;
 
-    previousRawData = data;
+    previousRawData = { ...data };
 
     if (isSuspiciousBurst) {
       ignoredSteps += stepDelta;
