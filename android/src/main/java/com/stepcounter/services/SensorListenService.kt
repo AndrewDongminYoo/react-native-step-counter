@@ -198,9 +198,13 @@ abstract class SensorListenService internal constructor(
    * @see android.content.Context.stopService
    * @see SensorManager.registerListener
    */
+  var permissionDeniedOnStart: Boolean = false
+    private set
+
   @Synchronized
   fun startService(startDateMillis: Long? = null): Boolean {
     stopService()
+    permissionDeniedOnStart = false
     synchronized(stateLock) {
       // SensorEvent.timestamp shares elapsedRealtimeNanos' time base, including deep sleep.
       // Keep this anchor fixed until restart, even when the wall clock is adjusted.
@@ -216,6 +220,7 @@ abstract class SensorListenService internal constructor(
       try {
         sensorManager.registerListener(this, sensor, samplingPeriodUs)
       } catch (error: SecurityException) {
+        permissionDeniedOnStart = true
         Log.w(TAG_NAME, "Sensor permission denied during registration", error)
         false
       }

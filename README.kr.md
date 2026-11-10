@@ -65,7 +65,7 @@ yarn add react-native-step-counter-newarch
   - `granted`는 센서 유무와 별개로 권한 상태를 나타냅니다. Android 10(API 29) 이상에서는 두 센서 모두 `ACTIVITY_RECOGNITION` 권한을 확인하며, 사용자가 거부한 권한을 가속도계로 우회하지 않습니다. API 24~28에서는 해당 런타임 권한이 필요하지 않으므로 `granted`는 `true`입니다.
   - 필요한 권한을 요청한 뒤에는 지원 여부와 권한 상태를 다시 확인하고 시작하세요. 기존 Android 전용 런타임 필드 `working`은 센서 등록이 성공한 뒤 중지되거나 호스트가 종료되기 전까지 `true`입니다. 이 값은 센서 이벤트 수신을 보장하지 않으며 공개 TypeScript 반환 타입에는 포함되지 않습니다.
 
-- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: EventSubscription:
+- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback, onError?: (error: StepCounterError) => void)`: EventSubscription:
   - 반환된 핸들은 현재 네이티브 세션을 소유합니다. `remove()`를 호출하면 디버그 리스너가 남아 있어도 센서를 중지하고 해당 리스너를 제거합니다. 반복해서 제거해도 안전합니다. 다시 시작하면 이전 핸들을 교체하며, 이전 핸들을 제거해도 새 세션은 중지되지 않습니다.
   - 교체 중 이전 세션의 중지가 예외를 던지면 이전 리스너를 제거하고, 새 리스너나 네이티브 세션을 시작하기 전에 오류를 전달합니다. 네이티브 시작이 동기적으로 예외를 던져도 새 리스너를 제거하고 네이티브 정리를 시도하며, 원래 시작 오류를 유지합니다.
   - iOS 실시간 업데이트는 `start`가 과거여도 호출 전 활동을 제외합니다. `start`부터 호출 시점까지의 누적값을 기준값으로 조회한 뒤 걸음 수·거리·층수에서 차감합니다. 반환되는 `startDate`는 이 기준 시각이고 `endDate`는 샘플 측정 시각입니다. 미래의 `start`는 호출 시점으로 조정합니다.
@@ -109,7 +109,17 @@ yarn add react-native-step-counter-newarch
 
 `onStepDetected`는 안드로이드에서 센서 등록 상태를 알리며, iOS 내부 모션 헬퍼도 감지 알림을 보낼 수 있습니다.
 플랫폼 공통의 보행 상태를 보장하는 이벤트는 아닙니다.
-`onErrorOccurred`는 문자열 `code`와 `message`를 가진 `StepCounterError`를 전달하며, iOS 오류 코드는 도메인과 번호를 포함합니다.
+`onErrorOccurred`는 `code`, `message`, `platform`, `sessionId`, `operation`, `fatal`을 담은 직렬화 가능한 `StepCounterError`를 전달합니다.
+오류 코드는 `PERMISSION_DENIED`, `SENSOR_UNAVAILABLE`, `REGISTRATION_FAILED`, `QUERY_FAILED`, `UPDATE_FAILED`, `DETECTION_FAILED`로 구분합니다.
+iOS 오류의 도메인과 번호는 선택적 문자열 필드인 `nativeDomain`과 `nativeCode`로 전달하며, NSError나 userInfo 객체는 전달하지 않습니다.
+일반 조회 오류는 기존 실시간 기준값 설정 방식으로 복구할 수 있지만, 권한 오류나 치명적인 시작·업데이트 오류가 발생하면 측정을 중지합니다.
+Android는 허용된 대체 센서 등록 시도까지 실패한 경우에만 오류를 전달합니다.
+
+`startStepCounterUpdate`의 선택적 세 번째 콜백을 사용하면 해당 세션의 비동기 시작 실패를 포함한 오류만 받을 수 있습니다.
+기존 두 인자 호출은 그대로 사용할 수 있습니다.
+같은 시작 날짜를 재사용해도 세션 토큰은 달라지며, 교체하거나 중지한 세션의 오류는 콜백으로 전달하지 않습니다.
+반환된 구독을 제거하면 해당 오류 리스너도 함께 제거되지만, 독립적으로 등록한 `onErrorOccurred` 리스너는 유지됩니다.
+새 콜백을 사용하려면 네이티브 앱을 다시 빌드해야 합니다.
 `StepsSensorInfo`는 센서 `name`과 플랫폼별 선택 필드를 가집니다. iOS는 지원 기능을, 안드로이드는 등록에 성공한 센서의 메타데이터를 보냅니다.
 모든 플랫폼이 모든 진단 이벤트를 보내는 것은 아닙니다.
 

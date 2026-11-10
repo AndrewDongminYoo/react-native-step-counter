@@ -71,7 +71,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 - **`src/NativeStepCounter.ts`** — TurboModule spec definition. Defines the `Spec` interface registered as `"StepCounter"` via `TurboModuleRegistry.getEnforcing`. Exports `StepCountData` type and constants (`NAME`, `VERSION`, `eventName`).
 - **`src/index.tsx`** — Public API. Uses the native module’s generated Codegen event subscriptions and exposes:
   - `isStepCountingSupported()` → Promise with `{ supported, granted }`
-  - `startStepCounterUpdate(start, callback)` → returns an owned `EventSubscription`; removing the current handle stops native producers, while stale or repeated removal cannot stop a replacement
+  - `startStepCounterUpdate(start, callback, onError?)` → returns an owned `EventSubscription`; removing the current handle stops native producers, while stale or repeated removal cannot stop a replacement; the optional error callback receives only that session’s errors
   - `stopStepCounterUpdate()` → removes only the subscription created by the most recent `startStepCounterUpdate` (tracked as `_activeSubscription`) and stops native updates; external listeners are left intact
   - `parseStepData(data)` → transforms raw `StepCountData` into human-readable `ParsedStepCountData`
   - `createStepCountFilter(options?)` → compares cumulative steps with elapsed session measurement time (`minimumStepIntervalMs`, default 250), preserving valid delayed batches and rebasing demonstrated impossible totals. It rejects invalid/stale/decreasing same-session data, resets adjustments at newer start dates or backend switches, and retires previous backends until the next session. Recreate the filter for indistinguishable restarts or counter resets.
@@ -80,7 +80,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 
 **iOS (`ios/`)**:
 
-- `StepCounter.h / .mm` — Main Objective-C module. Implements `isStepCountingSupported`, `startStepCounterUpdate`, `stopStepCounterUpdate`. Uses `CMPedometer` for step data and `SOMotionDetecter` for motion detection. Uses `NativeStepCounterSpecBase` generated emitters; errors are serializable `{ code, message }`. The native-only historical query and motion-start helpers remain internal.
+- `StepCounter.h / .mm` — Main Objective-C module. Implements `isStepCountingSupported`, `startStepCounterUpdate`, `stopStepCounterUpdate`. Uses `CMPedometer` for step data and `SOMotionDetecter` for motion detection. Uses `NativeStepCounterSpecBase` generated emitters; errors are serializable `{ code, message, platform, sessionId, operation, fatal }` with optional native detail strings. The native-only historical query and motion-start helpers remain internal.
 - `SOMotionDetecter.h / .m` — Motion detection helper used by the iOS module.
 - New Architecture support via `#ifdef RCT_NEW_ARCH_ENABLED` guard with `NativeStepCounterSpecJSI`.
 

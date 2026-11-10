@@ -67,7 +67,7 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
   - `granted` reports permission independently of hardware availability. On Android 10 (API 29) and later, this package requires `ACTIVITY_RECOGNITION` for both backends and never uses the accelerometer to bypass a denial. On API 24–28, that runtime permission is not required, so `granted` is `true`.
   - Request permission when needed, then check capabilities again before starting. The existing Android-only runtime `working` field indicates successful sensor registration until stop or host destruction; it does not guarantee sensor delivery and is not part of the public TypeScript result type.
 
-- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: `EventSubscription`:
+- `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback, onError?: (error: StepCounterError) => void)`: `EventSubscription`:
   - The returned handle owns the current native session. Calling its `remove()` stops sensors and removes that listener, including when debug listeners remain subscribed. Repeated removal is safe. Starting again replaces the previous handle; removing an older handle cannot stop the replacement.
   - If stopping the previous session throws during replacement, its listener is removed and the error propagates before a new listener or native session starts. A synchronous native start error also removes the new listener, attempts native cleanup and preserves the original start error.
   - iOS live updates exclude activity before the call, including when `start` is in the past. Steps, distance, and floors subtract the cumulative baseline from `start` to the call time; emitted `startDate` is that cutoff and `endDate` is the sample measurement time. Future origins clamp to the call time.
@@ -130,7 +130,25 @@ subscriptions.forEach((subscription) => subscription.remove());
 These listeners neither start nor keep sensors running; removing one never stops the owned counting session or another listener.
 `onStepDetected` reports Android registration status; the internal iOS motion helper can also emit detection notifications.
 It is not a cross-platform walking-state guarantee.
-`onErrorOccurred` carries serializable `StepCounterError` strings (`code` and `message`); iOS codes include the error domain and number.
+`onErrorOccurred` carries serializable `StepCounterError` data: `code`, `message`, `platform`, `sessionId`, `operation`, and `fatal`.
+Stable codes are `PERMISSION_DENIED`, `SENSOR_UNAVAILABLE`, `REGISTRATION_FAILED`, `QUERY_FAILED`, `UPDATE_FAILED`, and `DETECTION_FAILED`.
+iOS preserves the original error in optional `nativeDomain` and `nativeCode` strings, without exposing NSError or userInfo.
+A query failure is recoverable through the existing live-baseline fallback; fatal start/update failures stop counting.
+Android emits a failure only after permitted fallback attempts fail.
+
+Pass an optional third callback to receive only errors belonging to that start, including asynchronous startup failure:
+
+```tsx
+const subscription = startStepCounterUpdate(new Date(), onSteps, (error) => {
+  console.warn(error.code, error.message);
+  if (error.fatal) subscription.remove();
+});
+```
+
+The existing two-argument signature is unchanged.
+The session callback uses a unique token even when two starts reuse the same date, ignores replaced/stopped sessions, and is removed with its owned subscription.
+Independent `onErrorOccurred` listeners remain subscribed and receive the native session ID for correlation.
+Rebuild native apps to use the new session-aware callback.
 `StepsSensorInfo` requires `name` and has optional platform-specific fields; iOS reports capability flags, while Android reports sensor metadata after registration.
 A platform need not emit every diagnostic event.
 

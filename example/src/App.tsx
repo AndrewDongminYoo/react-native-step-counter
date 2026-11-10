@@ -112,42 +112,51 @@ export default function App(): React.JSX.Element {
     const filterStepCountData = createStepCountFilter();
 
     // Subscribe once here; DO NOT subscribe elsewhere in UI.
-    stepSubscriptionRef.current = startStepCounterUpdate(now, (data) => {
-      const filteredData = filterStepCountData(data);
-      if (!filteredData) {
+    stepSubscriptionRef.current = startStepCounterUpdate(
+      now,
+      (data) => {
+        if (!startedRef.current || sessionIdRef.current !== nextSessionId) return;
+        const filteredData = filterStepCountData(data);
+        if (!filteredData) {
+          appendLog(
+            "stepCounterUpdateFiltered",
+            () => ({
+              counterType: data.counterType,
+              rawSteps: data.steps,
+              rawDistance: data.distance,
+              startDate: data.startDate,
+              endDate: data.endDate,
+            }),
+            nextSessionId
+          );
+          return;
+        }
+
+        setStepData(filteredData);
+        setCalories(parseStepData(filteredData).calories);
+
+        // Log the raw event we get from wrapper callback (single source of truth)
         appendLog(
-          "stepCounterUpdateFiltered",
+          "stepCounterUpdate",
           () => ({
             counterType: data.counterType,
             rawSteps: data.steps,
+            acceptedSteps: filteredData.steps,
             rawDistance: data.distance,
-            startDate: data.startDate,
-            endDate: data.endDate,
+            acceptedDistance: filteredData.distance,
+            startDate: filteredData.startDate,
+            endDate: filteredData.endDate,
           }),
           nextSessionId
         );
-        return;
+      },
+      (error) => {
+        if (!startedRef.current || sessionIdRef.current !== nextSessionId) return;
+        appendLog("sessionError", () => error, nextSessionId);
+        if (error.fatal) stopStepCounter();
       }
-
-      setStepData(filteredData);
-      setCalories(parseStepData(filteredData).calories);
-
-      // Log the raw event we get from wrapper callback (single source of truth)
-      appendLog(
-        "stepCounterUpdate",
-        () => ({
-          counterType: data.counterType,
-          rawSteps: data.steps,
-          acceptedSteps: filteredData.steps,
-          rawDistance: data.distance,
-          acceptedDistance: filteredData.distance,
-          startDate: filteredData.startDate,
-          endDate: filteredData.endDate,
-        }),
-        nextSessionId
-      );
-    });
-  }, [appendLog, clearLogs]);
+    );
+  }, [appendLog, clearLogs, stopStepCounter]);
 
   const requestAndStartStepCounter = React.useCallback(async () => {
     if (startedRef.current) return;

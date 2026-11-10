@@ -51,6 +51,41 @@ class StepCounterModuleTest {
   }
 
   @Test
+  fun failedStartsEmitSerializableSessionErrors() {
+    val module = fixture.module()
+    fixture.granted = false
+    module.startStepCounterUpdate(1700000000000.0)
+    assertEquals("PERMISSION_DENIED", fixture.errors.last().getString("code"))
+    fixture.granted = true
+    fixture.setSensors(false, false)
+    module.startStepCounterUpdate(1700000000000.0)
+    assertEquals("SENSOR_UNAVAILABLE", fixture.errors.last().getString("code"))
+    fixture.setSensors(true, true)
+    fixture.rejectedTypes.addAll(listOf(Sensor.TYPE_STEP_COUNTER, Sensor.TYPE_ACCELEROMETER))
+    module.startStepCounterUpdate(1700000000000.0)
+    assertEquals("REGISTRATION_FAILED", fixture.errors.last().getString("code"))
+    fixture.rejectedTypes.clear()
+    fixture.revokeOnRegister = true
+    module.startStepCounterUpdate(1700000000000.0)
+    assertEquals("PERMISSION_DENIED", fixture.errors.last().getString("code"))
+    assertEquals(4, fixture.errors.size)
+    assertEquals(
+      4,
+      fixture.errors
+        .map { it.getString("sessionId") }
+        .toSet()
+        .size,
+    )
+    fixture.errors.forEach {
+      assertEquals("android", it.getString("platform"))
+      assertEquals("start", it.getString("operation"))
+      assertTrue(it.getBoolean("fatal"))
+      assertTrue(it.getString("message")!!.isNotEmpty())
+    }
+    assertTrue(fixture.active.isEmpty())
+  }
+
+  @Test
   fun capabilityAndSelectionMatrixUsesCurrentSensorsAndPermission() {
     // Literal expectations: the permission boundary is API 29, and presence is not consent.
     val cases =
@@ -304,6 +339,7 @@ private class AndroidSensorFixture : AutoCloseable {
   val status = mutableListOf<Boolean>()
   val sensorInfo = mutableListOf<Any>()
   val stepUpdates = mutableListOf<WritableMap>()
+  val errors = mutableListOf<WritableMap>()
   private val sensors = mutableMapOf<Int, Sensor>()
   private val context =
     mock(ReactApplicationContext::class.java) {
@@ -337,6 +373,9 @@ private class AndroidSensorFixture : AutoCloseable {
       }
       if (it.method.name == "invoke" && it.getArgument<String>(0) == "onStepDetected") {
         status.add(it.getArgument(1))
+      }
+      if (it.method.name == "invoke" && it.getArgument<String>(0) == "onErrorOccurred") {
+        errors.add(it.getArgument(1))
       }
       null
     }

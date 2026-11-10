@@ -13,6 +13,7 @@
 @property (nonatomic, strong) NSDate *sessionStartDate;
 @property (nonatomic, strong) NSObject *sessionGeneration;
 @property (nonatomic) BOOL invalidated;
+@property (nonatomic, copy) NSString *sessionId;
 
 // Baseline + monotonic
 @property (nonatomic, strong) CMPedometerData *baselineData;
@@ -65,6 +66,10 @@ RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
 }
 
 RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
+  [self startStepCounterUpdateWithSession:from sessionId:[NSUUID UUID].UUIDString];
+}
+
+RCT_EXPORT_METHOD(startStepCounterUpdateWithSession:(double)from sessionId:(NSString *)sessionId) {
   // --- Timestamp guard (ms vs seconds) ---
   // Valid Unix timestamp in seconds is ~1.7–2.0e9 (2024–2033),
   // while milliseconds is ~1.7–2.0e12.
@@ -85,6 +90,16 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
     if (self->_invalidated) return;
     [self resetSession];
     self->_sessionGeneration = generation;
+    self->_sessionId = [sessionId copy];
+    if (![CMPedometer isStepCountingAvailable]) {
+      [self emitSessionError:nil code:@"SENSOR_UNAVAILABLE" operation:@"start" fatal:YES];
+      return;
+    }
+    CMAuthorizationStatus authorization = [CMPedometer authorizationStatus];
+    if (authorization == CMAuthorizationStatusDenied || authorization == CMAuthorizationStatusRestricted) {
+      [self emitSessionError:nil code:@"PERMISSION_DENIED" operation:@"start" fatal:YES];
+      return;
+    }
     [self.pedometer stopPedometerUpdates];
     self->_sessionStartDate = sessionStart;
     self->_sessionCutoff = now;
@@ -100,7 +115,7 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
         strongSelf->_baselineData = error ? nil : data;
         strongSelf->_baselineReady = YES;
         if (error) {
-          [strongSelf emitOnErrorOccurred:[strongSelf dictionaryFromError:error]];
+          [strongSelf emitSessionError:error code:@"QUERY_FAILED" operation:@"query" fatal:NO];
         }
       });
     }];
@@ -112,7 +127,7 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
       dispatch_sync(strongSelf->_stateQueue, ^{
         if (strongSelf->_sessionGeneration != generation) return;
         if (error) {
-          [strongSelf emitOnErrorOccurred:[strongSelf dictionaryFromError:error]];
+          [strongSelf emitSessionError:error code:@"UPDATE_FAILED" operation:@"update" fatal:YES];
           return;
         }
         if (!data || !data.startDate || !data.endDate || !data.numberOfSteps ||
@@ -163,6 +178,7 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
 // Must run on stateQueue, before asking producers to stop.
 - (void)resetSession {
   _sessionGeneration = nil;
+  _sessionId = nil;
   _sessionStartDate = nil;
   _baselineData = nil;
   _sessionCutoff = nil;
@@ -204,7 +220,7 @@ RCT_EXPORT_METHOD(stopStepCounterUpdate) {
       dispatch_sync(strongSelf->_stateQueue, ^{
         if (strongSelf->_invalidated || strongSelf->_detectionGeneration != generation) return;
         if (error) {
-          [strongSelf emitOnErrorOccurred:[strongSelf dictionaryFromError:error]];
+          [strongSelf emitSessionError:error code:@"DETECTION_FAILED" operation:@"detection" fatal:NO];
         } else {
           [strongSelf emitOnStepDetected:YES];
         }
@@ -215,9 +231,30 @@ RCT_EXPORT_METHOD(stopStepCounterUpdate) {
 
 #pragma mark - Sensor info / mapping
 
-- (NSDictionary *)dictionaryFromError:(NSError *)error {
-  return @{ @"code": [NSString stringWithFormat:@"%@:%ld", error.domain, (long)error.code],
-            @"message": error.localizedDescription };
+// Called only on stateQueue; never transport NSError or userInfo to JavaScript.
+- (void)emitSessionError:(NSError *)error code:(NSString *)code operation:(NSString *)operation fatal:(BOOL)fatal {
+  NSString *stableCode = code;
+  if ([error.domain isEqualToString:CMErrorDomain] && (error.code == CMErrorMotionActivityNotAuthorized || error.code == CMErrorNotAuthorized)) {
+    stableCode = @"PERMISSION_DENIED";
+    fatal = YES;
+  }
+  NSMutableDictionary *body = [@{
+    @"code": stableCode,
+    @"message": error.localizedDescription ?: stableCode,
+    @"platform": @"ios",
+    @"sessionId": _sessionId ?: @"",
+    @"operation": operation,
+    @"fatal": @(fatal),
+  } mutableCopy];
+  if (error) {
+    body[@"nativeDomain"] = error.domain;
+    body[@"nativeCode"] = [NSString stringWithFormat:@"%ld", (long)error.code];
+  }
+  [self emitOnErrorOccurred:body];
+  if (fatal) {
+    [self resetSession];
+    [self.pedometer stopPedometerUpdates];
+  }
 }
 
 - (NSDictionary *)dictionaryAboutSensorInfo {

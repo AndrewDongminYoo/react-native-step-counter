@@ -430,3 +430,18 @@ it("permission rejection leaves a stopped, retryable state", async () => {
   expect(screen.getByText("Stopped")).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "STOP" })).toBeDisabled();
 });
+
+it("stops on fatal session errors and ignores callbacks from a replaced session", async () => {
+  mockSupported.mockResolvedValue({ supported: true, granted: true });
+  await render(<App />);
+  const oldError = mockStart.mock.calls[0][2];
+  expect(oldError).toEqual(expect.any(Function));
+  await fireEvent.press(screen.getByRole("button", { name: "RESTART" }));
+  await act(() => oldError({ fatal: true }));
+  expect(screen.getByRole("button", { name: "START" })).toBeDisabled();
+  await act(() => mockStart.mock.lastCall![2]({ fatal: false }));
+  expect(screen.getByRole("button", { name: "START" })).toBeDisabled();
+  await act(() => mockStart.mock.lastCall![2]({ fatal: true }));
+  expect(screen.getByText("Stopped")).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "START" })).not.toBeDisabled();
+});

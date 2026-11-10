@@ -3,15 +3,17 @@
 #import "../../ios/StepCounter.h"
 
 // Only external hardware and bridge transport are replaced.
+static BOOL stepCountingAvailable = YES;
+static CMAuthorizationStatus motionAuthorization = CMAuthorizationStatusAuthorized;
 @implementation CMPedometerData
 @end
 @implementation CMPedometer
-+ (BOOL)isStepCountingAvailable { return YES; }
++ (BOOL)isStepCountingAvailable { return stepCountingAvailable; }
 + (BOOL)isPaceAvailable { return YES; }
 + (BOOL)isCadenceAvailable { return YES; }
 + (BOOL)isDistanceAvailable { return YES; }
 + (BOOL)isFloorCountingAvailable { return YES; }
-+ (CMAuthorizationStatus)authorizationStatus { return CMAuthorizationStatusAuthorized; }
++ (CMAuthorizationStatus)authorizationStatus { return motionAuthorization; }
 - (void)queryPedometerDataFromDate:(NSDate *)start toDate:(NSDate *)end withHandler:(CMPedometerHandler)handler {}
 - (void)startPedometerUpdatesFromDate:(NSDate *)start withHandler:(CMPedometerHandler)handler {}
 - (void)stopPedometerUpdates {}
@@ -21,6 +23,7 @@
 @interface StepCounter (Testing)
 - (void)isStepCountingSupported:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
 - (void)startStepCounterUpdate:(double)from;
+- (void)startStepCounterUpdateWithSession:(double)from sessionId:(NSString *)sessionId;
 - (void)stopStepCounterUpdate;
 - (void)startStepsDetection;
 - (void)queryStepCounterDataBetweenDates:(NSDate *)start endDate:(NSDate *)end handler:(RCTResponseSenderBlock)handler;
@@ -81,12 +84,54 @@
 @property(nonatomic) NSTimeInterval sampleEnd;
 @end
 @implementation StepCounterSessionTests
-- (void)setUp { self.sampleEnd = [NSDate date].timeIntervalSince1970 + 20; self.sensor = [ScheduledPedometer new]; self.counter = [RecordingCounter new]; [self.counter setValue:self.sensor forKey:@"pedometer"]; }
+- (void)setUp { stepCountingAvailable = YES; motionAuthorization = CMAuthorizationStatusAuthorized; self.sampleEnd = [NSDate date].timeIntervalSince1970 + 20; self.sensor = [ScheduledPedometer new]; self.counter = [RecordingCounter new]; [self.counter setValue:self.sensor forKey:@"pedometer"]; }
 - (CMPedometerData *)data:(NSInteger)steps start:(double)start {
   CMPedometerData *data = [CMPedometerData new];
   data.startDate = [NSDate dateWithTimeIntervalSince1970:start]; self.sampleEnd += 1; data.endDate = [NSDate dateWithTimeIntervalSince1970:self.sampleEnd]; data.numberOfSteps = @(steps); return data;
 }
 - (NSError *)error { return [NSError errorWithDomain:@"test" code:1 userInfo:nil]; }
+- (void)testUnavailableAndDeniedStartsDoNotStartProducers {
+  stepCountingAvailable = NO;
+  [self.counter startStepCounterUpdateWithSession:1000 sessionId:@"missing"];
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"code"], @"SENSOR_UNAVAILABLE");
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"sessionId"], @"missing");
+  stepCountingAvailable = YES;
+  motionAuthorization = CMAuthorizationStatusDenied;
+  [self.counter startStepCounterUpdateWithSession:1000 sessionId:@"denied"];
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"code"], @"PERMISSION_DENIED");
+  XCTAssertEqual(self.sensor.queries.count, 0u);
+  XCTAssertEqual(self.sensor.updates.count, 0u);
+}
+- (void)testFirstPromptDenialTerminatesSessionAndRejectsQueuedCallbacks {
+  motionAuthorization = CMAuthorizationStatusNotDetermined;
+  [self.counter startStepCounterUpdateWithSession:1000 sessionId:@"first-prompt"];
+  self.sensor.updates[0](nil, [NSError errorWithDomain:CMErrorDomain code:CMErrorMotionActivityNotAuthorized userInfo:nil]);
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"code"], @"PERMISSION_DENIED");
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"sessionId"], @"first-prompt");
+  NSUInteger count = self.counter.events.count;
+  self.sensor.queries[0](nil, self.error);
+  self.sensor.updates[0](nil, self.error);
+  XCTAssertEqual(self.counter.events.count, count);
+}
+- (void)testGenericAuthorizationQueryFailureIsFatal {
+  [self.counter startStepCounterUpdateWithSession:1000 sessionId:@"revoked"];
+  self.sensor.queries[0](nil, [NSError errorWithDomain:CMErrorDomain code:CMErrorNotAuthorized userInfo:nil]);
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"code"], @"PERMISSION_DENIED");
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"fatal"], @YES);
+  self.sensor.updates[0](nil, self.error);
+  XCTAssertEqual(self.counter.events.count, 1u);
+}
+- (void)testQueryErrorIncludesRecoverableSessionContext {
+  [self.counter startStepCounterUpdate:1000];
+  self.sensor.queries[0](nil, self.error);
+  NSDictionary *body = self.counter.events.lastObject[@"body"];
+  XCTAssertEqualObjects(body[@"code"], @"QUERY_FAILED");
+  XCTAssertEqualObjects(body[@"operation"], @"query");
+  XCTAssertEqualObjects(body[@"fatal"], @NO);
+  XCTAssertEqualObjects(body[@"platform"], @"ios");
+  XCTAssertTrue([body[@"sessionId"] length] > 0);
+  XCTAssertNotNil([NSJSONSerialization dataWithJSONObject:body options:0 error:nil]);
+}
 - (void)testGeneratedSensorAndErrorCallbacksCarrySerializablePayloads {
   [self.counter isStepCountingSupported:^(id result) {
     XCTAssertEqualObjects(result[@"supported"], @YES);
@@ -96,7 +141,13 @@
   [self.counter startStepCounterUpdate:1000];
   self.sensor.updates[0](nil, [NSError errorWithDomain:@"motion" code:42 userInfo:@{NSLocalizedDescriptionKey: @"denied"}]);
   XCTAssertEqualObjects(self.counter.events.lastObject[@"name"], @"onErrorOccurred");
-  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"], (@{@"code": @"motion:42", @"message": @"denied"}));
+  NSDictionary *body = self.counter.events.lastObject[@"body"];
+  XCTAssertEqualObjects(body[@"code"], @"UPDATE_FAILED");
+  XCTAssertEqualObjects(body[@"message"], @"denied");
+  XCTAssertEqualObjects(body[@"platform"], @"ios");
+  XCTAssertEqualObjects(body[@"fatal"], @YES);
+  XCTAssertEqualObjects(body[@"nativeCode"], @"42");
+  XCTAssertEqualObjects(body[@"nativeDomain"], @"motion");
   XCTAssertNotNil([NSJSONSerialization dataWithJSONObject:self.counter.events options:0 error:nil]);
   [self.counter invalidate];
 }
