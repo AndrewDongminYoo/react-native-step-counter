@@ -10,4 +10,5 @@ typedef void (^RCTResponseSenderBlock)(NSArray *);
 @property(nonatomic, weak) id callableJSModules;
 - (void)sendEventWithName:(NSString *)name body:(id)body;
 - (void)invalidate;
+- (void)stopObserving;
 @end

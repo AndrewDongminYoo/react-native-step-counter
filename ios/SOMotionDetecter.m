@@ -14,6 +14,8 @@
 
 @property(strong, nonatomic) CMMotionManager *motionManager;
 @property(strong, nonatomic) NSOperationQueue *queue;
+@property(copy, nonatomic) void (^updateBlock)(NSError *);
+@property(strong, nonatomic) NSObject *generation;
 
 @end
 
@@ -45,45 +47,38 @@
 }
 
 - (void)startDetectionWithUpdateBlock:(void (^)(NSError *))callback {
-  if (self.motionManager.isAccelerometerActive) {
-    return;
+  @synchronized(self) {
+    [self stopDetection];
+    NSObject *generation = [NSObject new];
+    self.generation = generation;
+    self.updateBlock = callback;
+    __weak SOMotionDetecter *weakSelf = self;
+    [self.motionManager startAccelerometerUpdatesToQueue:self.queue
+                                           withHandler:^(CMAccelerometerData *data, NSError *error) {
+      CMAcceleration acceleration = data.acceleration;
+      if (!error && (!data || (fabs(acceleration.x) <= 1.2f &&
+                               fabs(acceleration.y) <= 1.2f &&
+                               fabs(acceleration.z) <= 1.2f))) return;
+      // Queued work holds no consumer callback; stop releases its captures immediately.
+      dispatch_async(dispatch_get_main_queue(), ^{
+        SOMotionDetecter *strongSelf = weakSelf;
+        if (!strongSelf) return;
+        void (^update)(NSError *);
+        @synchronized(strongSelf) {
+          if (strongSelf.generation != generation) return;
+          update = strongSelf.updateBlock;
+        }
+        // Never enter module state while holding the detector monitor.
+        if (update) update(error);
+      });
+    }];
   }
-
-  [self.motionManager
-      startAccelerometerUpdatesToQueue:self.queue
-                           withHandler:^(CMAccelerometerData *accelerometerData,
-                                         NSError *error) {
-                             if (error) {
-                               if (callback) {
-                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                   callback(error);
-                                 });
-                               }
-                               return;
-                             }
-
-                             CMAcceleration acceleration =
-                                 accelerometerData.acceleration;
-
-                             CGFloat strength = 1.2f;
-                             BOOL isStep = NO;
-                             if (fabs(acceleration.x) > strength ||
-                                 fabs(acceleration.y) > strength ||
-                                 fabs(acceleration.z) > strength) {
-                               isStep = YES;
-                             }
-                             if (isStep) {
-                               if (callback) {
-                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                   callback(nil);
-                                 });
-                               }
-                             }
-                           }];
 }
 
 - (void)stopDetection {
-  if (self.motionManager.isAccelerometerActive) {
+  @synchronized(self) {
+    self.generation = nil;
+    self.updateBlock = nil;
     [self.motionManager stopAccelerometerUpdates];
   }
 }

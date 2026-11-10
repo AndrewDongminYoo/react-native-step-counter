@@ -65,6 +65,7 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
   - Request permission when needed, then check capabilities again before starting. The existing Android-only runtime `working` field indicates successful sensor registration until stop or host destruction; it does not guarantee sensor delivery and is not part of the public TypeScript result type.
 
 - `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: `EventSubscription`:
+  - The returned handle owns the current native session. Calling its `remove()` stops sensors and removes that listener, including when debug listeners remain subscribed. Repeated removal is safe. Starting again replaces the previous handle; removing an older handle cannot stop the replacement.
   - iOS live updates exclude activity before the call, including when `start` is in the past. Steps, distance, and floors subtract the cumulative baseline from `start` to the call time; emitted `startDate` is that cutoff and `endDate` is the sample measurement time. Future origins clamp to the call time.
   - An unavailable baseline or current distance/floor metric yields `null`; a metric with an unknown baseline stays `null` for that session. If the baseline query fails or returns no data, the first valid live sample establishes every baseline and its end date becomes `startDate`; that sample is not emitted.
   - iOS ignores zero-step, stale, and decreasing windows without lowering baselines. A correction can pause delivery until cumulative metrics recover; it does not add historical activity on recovery.
@@ -73,7 +74,9 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
   - If the hardware counter is absent or registration fails, Android tries an available accelerometer only while permission remains allowed. Missing sensors, denied permission, or failed registrations leave native counting stopped; no sensor metadata is emitted for a failed registration. The returned JS subscription alone does not confirm native registration.
 
 - `stopStepCounterUpdate(): void`:
-  - Removes the subscription registered by `startStepCounterUpdate` and stops the native sensor session.
+  - Removes the current owned subscription and stops the native sensor session. Stop is safe before start and on repeated calls; independent debug listeners remain registered.
+  - Removing the last native emitter listener or invalidating the React Native runtime also stops native producers. Android host destruction releases its sensor and lifecycle registration. iOS releases pedometer updates and motion callbacks, including queued callbacks from retired sessions.
+  - Activity pause alone does not stop a session. Background delivery follows OS restrictions; this library does not provide a foreground service, guaranteed background counting, or app-killed tracking. Device energy impact has not been measured.
 
 - `createStepCountFilter(options?: StepCountFilterOptions)`: `(data: StepCountData) => StepCountData | null`:
   - Creates a stateful live-update filter for sensor false positives such as hand rotation.

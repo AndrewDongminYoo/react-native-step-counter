@@ -25,3 +25,22 @@ typedef void (^CMPedometerHandler)(CMPedometerData *, NSError *);
 - (void)startPedometerUpdatesFromDate:(NSDate *)start withHandler:(CMPedometerHandler)handler;
 - (void)stopPedometerUpdates;
 @end
+
+#define CMMotionManager SCFixtureMotionManager
+#define CMAccelerometerData SCFixtureAccelerometerData
+typedef struct { double x, y, z; } CMAcceleration;
+@interface CMAccelerometerData : NSObject
+@property(nonatomic) CMAcceleration acceleration;
+@end
+typedef void (^CMAccelerometerHandler)(CMAccelerometerData *, NSError *);
+@interface CMMotionManager : NSObject
+@property(nonatomic) NSTimeInterval accelerometerUpdateInterval;
+@property(nonatomic) NSTimeInterval deviceMotionUpdateInterval;
+@property(nonatomic) NSTimeInterval gyroUpdateInterval;
+@property(nonatomic) NSTimeInterval magnetometerUpdateInterval;
+@property(nonatomic) BOOL showsDeviceMovementDisplay;
+@property(nonatomic) BOOL isAccelerometerActive;
+@property(nonatomic, copy) CMAccelerometerHandler updateHandler;
+- (void)startAccelerometerUpdatesToQueue:(NSOperationQueue *)queue withHandler:(CMAccelerometerHandler)handler;
+- (void)stopAccelerometerUpdates;
+@end

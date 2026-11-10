@@ -8,6 +8,8 @@
 @interface StepCounter ()
 @property (nonatomic, readonly) CMPedometer *pedometer;
 @property (nonatomic, strong) dispatch_queue_t stateQueue;
+@property (nonatomic, strong) SOMotionDetecter *motionDetector;
+@property (nonatomic, strong) NSObject *detectionGeneration;
 
 // Session control
 @property (nonatomic, strong) NSDate *sessionStartDate;
@@ -206,30 +208,43 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
 RCT_EXPORT_METHOD(stopStepCounterUpdate) {
   dispatch_sync(_stateQueue, ^{
     [self resetSession];
+    self->_detectionGeneration = nil;
     [self.pedometer stopPedometerUpdates];
-    [[SOMotionDetecter sharedInstance] stopDetection];
+    [self.motionDetector stopDetection];
   });
+}
+
+- (void)stopObserving {
+  [self stopStepCounterUpdate];
 }
 
 - (void)invalidate {
   dispatch_sync(_stateQueue, ^{
     self->_invalidated = YES;
     [self resetSession];
+    self->_detectionGeneration = nil;
     [self.pedometer stopPedometerUpdates];
-    [[SOMotionDetecter sharedInstance] stopDetection];
+    [self.motionDetector stopDetection];
   });
   [super invalidate];
 }
 
 RCT_EXPORT_METHOD(startStepsDetection) {
-  [[SOMotionDetecter sharedInstance]
-   startDetectionWithUpdateBlock:^(NSError *error) {
-    if (error) {
-      [self sendEventWithName:@"StepCounter.errorOccurred" body:error];
-    } else {
-      [self sendEventWithName:@"StepCounter.stepDetected" body:@true];
-    }
-  }];
+  NSObject *generation = [NSObject new];
+  __weak StepCounter *weakSelf = self;
+  dispatch_sync(_stateQueue, ^{
+    if (self->_invalidated) return;
+    self->_detectionGeneration = generation;
+    [self.motionDetector startDetectionWithUpdateBlock:^(NSError *error) {
+      StepCounter *strongSelf = weakSelf;
+      if (!strongSelf) return;
+      dispatch_sync(strongSelf->_stateQueue, ^{
+        if (strongSelf->_invalidated || strongSelf->_detectionGeneration != generation) return;
+        [strongSelf sendEventWithName:error ? @"StepCounter.errorOccurred" : @"StepCounter.stepDetected"
+                                body:error ?: @YES];
+      });
+    }];
+  });
 }
 
 #pragma mark - Sensor info / mapping
@@ -270,6 +285,7 @@ RCT_EXPORT_METHOD(startStepsDetection) {
   if (!self) return nil;
 
   _pedometer = [[CMPedometer alloc] init];
+  _motionDetector = [SOMotionDetecter new];
   _stateQueue = dispatch_queue_create("com.dongminyu.stepcounter.state", DISPATCH_QUEUE_SERIAL);
   _baselineData = nil;
   _sessionCutoff = nil;

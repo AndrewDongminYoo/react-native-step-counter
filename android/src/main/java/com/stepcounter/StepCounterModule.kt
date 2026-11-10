@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 import androidx.core.content.PermissionChecker.checkSelfPermission
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -34,7 +35,8 @@ import com.stepcounter.services.StepCounterService
  */
 class StepCounterModule(
   reactContext: ReactApplicationContext,
-) : NativeStepCounterSpec(reactContext) {
+) : NativeStepCounterSpec(reactContext),
+  LifecycleEventListener {
   companion object {
     const val NAME: String = NativeStepCounterSpec.NAME
     private val TAG_NAME: String = StepCounterModule::class.java.name
@@ -67,6 +69,10 @@ class StepCounterModule(
    * @see PERMISSION_GRANTED
    */
   private var stepCounterListener: SensorListenService? = null
+  private var listenerCount = 0
+
+  @Volatile
+  private var invalidated = false
 
   /**
    * The method ask if the step counter sensor is supported.
@@ -77,6 +83,7 @@ class StepCounterModule(
    * @see WritableMap
    */
   @ReactMethod
+  @Synchronized
   override fun isStepCountingSupported(promise: Promise) {
     val granted = stepsOK
     if (!granted) {
@@ -97,7 +104,9 @@ class StepCounterModule(
    * @param from the number of steps to start from
    */
   @ReactMethod
+  @Synchronized
   override fun startStepCounterUpdate(from: Double) {
+    if (invalidated) return
     val sessionStartMillis = normalizeStartTimestampToMillis(from)
     stopStepCounterUpdate()
     for (sensorType in listOf(Sensor.TYPE_STEP_COUNTER, Sensor.TYPE_ACCELEROMETER)) {
@@ -111,7 +120,7 @@ class StepCounterModule(
         }
       if (service.startService(sessionStartMillis)) {
         stepCounterListener = service
-        appContext.addLifecycleEventListener(service)
+        appContext.addLifecycleEventListener(this)
         sendDeviceEvent("stepDetected", true)
         return
       }
@@ -124,11 +133,12 @@ class StepCounterModule(
    * @return Nothing.
    */
   @ReactMethod
+  @Synchronized
   override fun stopStepCounterUpdate() {
     Log.d(TAG_NAME, "stopStepCounterUpdate")
     stepCounterListener?.let {
       it.stopService()
-      appContext.removeLifecycleEventListener(it)
+      appContext.removeLifecycleEventListener(this)
     }
     stepCounterListener = null
     sendDeviceEvent("stepDetected", false)
@@ -139,16 +149,37 @@ class StepCounterModule(
    * @param eventName the name of the event. usually "stepCounterUpdate".
    */
   @ReactMethod
+  @Synchronized
   override fun addListener(eventName: String) {
+    if (!invalidated) listenerCount++
   }
 
   /**
    * Keep: Required for RN built in Event Emitter Support.
    * @param count the number of listeners to remove.
-   * not implemented.
    */
   @ReactMethod
+  @Synchronized
   override fun removeListeners(count: Double) {
+    if (!count.isFinite() || count <= 0) return
+    listenerCount = (listenerCount - count.toInt()).coerceAtLeast(0)
+    if (listenerCount == 0) stopStepCounterUpdate()
+  }
+
+  @Synchronized
+  override fun invalidate() {
+    invalidated = true
+    stopStepCounterUpdate()
+    listenerCount = 0
+    super.invalidate()
+  }
+
+  override fun onHostResume() {}
+
+  override fun onHostPause() {}
+
+  override fun onHostDestroy() {
+    stopStepCounterUpdate()
   }
 
   /**
@@ -170,6 +201,7 @@ class StepCounterModule(
     eventType: String,
     eventPayload: Any,
   ) {
+    if (invalidated) return
     try {
       appContext
         .getJSModule(RCTDeviceEventEmitter::class.java)
