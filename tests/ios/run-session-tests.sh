@@ -10,7 +10,8 @@ mkdir -p "$bundle/Contents/MacOS"
 xcrun clang++ -fobjc-arc -fblocks -bundle -framework Foundation -framework XCTest \
   -F "$frameworks" -Wl,-rpath,"$frameworks" \
   -I "$repo_root/tests/ios/stubs" \
-  "$repo_root/ios/StepCounter.mm" "$repo_root/tests/ios/StepCounterSessionTests.mm" \
+  "$repo_root/ios/StepCounter.mm" "$repo_root/ios/SOMotionDetecter.m" \
+  "$repo_root/tests/ios/StepCounterSessionTests.mm" "$repo_root/tests/ios/SOMotionDetecterTests.mm" \
   -o "$bundle/Contents/MacOS/StepCounterSessionTests"
 cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>

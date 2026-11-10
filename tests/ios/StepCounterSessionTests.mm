@@ -2,7 +2,7 @@
 #import <CoreMotion/CoreMotion.h>
 #import "../../ios/StepCounter.h"
 
-// Only external hardware, bridge transport and motion helper are replaced.
+// Only external hardware and bridge transport are replaced.
 @implementation CMPedometerData
 @end
 @implementation CMPedometer
@@ -19,16 +19,12 @@
 @implementation RCTEventEmitter
 - (void)sendEventWithName:(NSString *)name body:(id)body {}
 - (void)invalidate {}
+- (void)stopObserving {}
 @end
-@implementation SOMotionDetecter
-+ (instancetype)sharedInstance { static SOMotionDetecter *instance; if (!instance) instance = [self new]; return instance; }
-- (void)startDetectionWithUpdateBlock:(void (^)(NSError *))callback {}
-- (void)stopDetection {}
-@end
-
 @interface StepCounter (Testing)
 - (void)startStepCounterUpdate:(double)from;
 - (void)stopStepCounterUpdate;
+- (void)startStepsDetection;
 - (void)queryStepCounterDataBetweenDates:(NSDate *)start endDate:(NSDate *)end handler:(RCTResponseSenderBlock)handler;
 @end
 
@@ -46,12 +42,25 @@
 - (void)stopPedometerUpdates { if (self.onStop) self.onStop(); }
 @end
 
+@interface ScheduledMotion : SOMotionDetecter
+@property(nonatomic, strong) NSMutableArray<void (^)(NSError *)> *callbacks;
+@property(nonatomic) BOOL active;
+@end
+@implementation ScheduledMotion
+- (instancetype)init { if ((self = [super init])) _callbacks = [NSMutableArray new]; return self; }
+- (void)startDetectionWithUpdateBlock:(void (^)(NSError *))callback { self.active = YES; [self.callbacks addObject:[callback copy]]; }
+- (void)stopDetection { self.active = NO; }
+@end
+
 @interface RecordingCounter : StepCounter
 @property(nonatomic, strong) NSMutableArray *events;
 @property(nonatomic, copy) void (^onEmit)(void);
+@property(nonatomic, strong) ScheduledMotion *testMotion;
+- (SOMotionDetecter *)motionDetector;
 @end
 @implementation RecordingCounter
 - (instancetype)init { if ((self = [super init])) _events = [NSMutableArray new]; return self; }
+- (SOMotionDetecter *)motionDetector { if (!self.testMotion) self.testMotion = [ScheduledMotion new]; return self.testMotion; }
 - (void)sendEventWithName:(NSString *)name body:(id)body { if (self.onEmit) self.onEmit(); [self.events addObject:@{@"name": name, @"body": body}]; }
 @end
 
@@ -67,6 +76,75 @@
   data.startDate = [NSDate dateWithTimeIntervalSince1970:start]; self.sampleEnd += 1; data.endDate = [NSDate dateWithTimeIntervalSince1970:self.sampleEnd]; data.numberOfSteps = @(steps); return data;
 }
 - (NSError *)error { return [NSError errorWithDomain:@"test" code:1 userInfo:nil]; }
+- (void)testStopObservingReleasesLiveProducerAndRejectsQueuedCallbacks {
+  [self.counter startStepCounterUpdate:1000];
+  __block BOOL stopped = NO;
+  self.sensor.onStop = ^{ stopped = YES; };
+  [self.counter stopObserving];
+  XCTAssertTrue(stopped);
+  self.sensor.queries[0]([self data:10 start:1000], nil);
+  self.sensor.updates[0]([self data:20 start:1000], nil);
+  XCTAssertEqual(self.counter.events.count, 0u);
+  [self.counter stopObserving];
+}
+- (void)testMotionStopRejectsQueuedSuccessAndErrorsAndRestartReplacesOwnership {
+  [self.counter startStepsDetection];
+  ScheduledMotion *motion = (ScheduledMotion *)self.counter.motionDetector;
+  XCTAssertTrue(motion.active);
+  XCTAssertEqual(motion.callbacks.count, 1u);
+  if (!motion.callbacks.count) return;
+  void (^old)(NSError *) = motion.callbacks[0];
+  [self.counter startStepsDetection];
+  old(nil); old(self.error);
+  XCTAssertEqual(self.counter.events.count, 0u);
+  motion.callbacks.lastObject(nil);
+  XCTAssertEqual(self.counter.events.count, 1u);
+  [self.counter stopStepCounterUpdate];
+  XCTAssertFalse(motion.active);
+  motion.callbacks.lastObject(nil); motion.callbacks.lastObject(self.error);
+  XCTAssertEqual(self.counter.events.count, 1u);
+  [self.counter invalidate];
+  [self.counter startStepsDetection];
+  XCTAssertFalse(motion.active);
+  XCTAssertEqual(motion.callbacks.count, 2u);
+}
+- (void)testStoppedRuntimeDoesNotStopAnotherRuntimesMotionProducer {
+  RecordingCounter *other = [RecordingCounter new];
+  [self.counter startStepsDetection]; [other startStepsDetection];
+  [self.counter invalidate];
+  XCTAssertTrue(((ScheduledMotion *)other.motionDetector).active);
+  [other invalidate];
+  XCTAssertFalse(((ScheduledMotion *)other.motionDetector).active);
+}
+- (void)testRealRuntimeInvalidationLeavesOtherRuntimeMotionRegistered {
+  StepCounter *first = [StepCounter new], *second = [StepCounter new];
+  SOMotionDetecter *firstDetector = [first valueForKey:@"motionDetector"];
+  SOMotionDetecter *secondDetector = [second valueForKey:@"motionDetector"];
+  CMMotionManager *firstManager = [firstDetector valueForKey:@"motionManager"];
+  CMMotionManager *secondManager = [secondDetector valueForKey:@"motionManager"];
+  [first startStepsDetection]; [second startStepsDetection];
+  XCTAssertTrue(firstManager.isAccelerometerActive);
+  XCTAssertTrue(secondManager.isAccelerometerActive);
+  [first invalidate];
+  XCTAssertFalse(firstManager.isAccelerometerActive);
+  XCTAssertNil(firstManager.updateHandler);
+  XCTAssertTrue(secondManager.isAccelerometerActive);
+  [second invalidate];
+  XCTAssertFalse(secondManager.isAccelerometerActive);
+  XCTAssertNil(secondManager.updateHandler);
+}
+- (void)testMotionCallbackDoesNotRetainRuntime {
+  ScheduledMotion *motion;
+  __weak RecordingCounter *weakCounter;
+  @autoreleasepool {
+    RecordingCounter *counter = [RecordingCounter new];
+    [counter startStepsDetection];
+    motion = (ScheduledMotion *)counter.motionDetector;
+    weakCounter = counter;
+  }
+  XCTAssertNil(weakCounter);
+  for (void (^callback)(NSError *) in motion.callbacks) callback(nil);
+}
 - (void)testRestartRejectsOldBaselineWithIdenticalDates {
   [self.counter startStepCounterUpdate:1000]; [self.counter startStepCounterUpdate:1000];
   self.sensor.queries[1]([self data:20 start:1000], nil);

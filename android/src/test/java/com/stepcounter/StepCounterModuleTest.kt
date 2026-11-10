@@ -193,6 +193,74 @@ class StepCounterModuleTest {
   }
 
   @Test
+  fun finalListenerRemovalStopsSensorsAndDetachesLifecycle() {
+    val module = fixture.module()
+    module.addListener("StepCounter.stepCounterUpdate")
+    module.addListener("StepCounter.stepsSensorInfo")
+    module.startStepCounterUpdate(0.0)
+    module.removeListeners(1.0)
+    assertEquals(1, fixture.active.size)
+    assertEquals(1, fixture.lifecycle.size)
+    module.removeListeners(1.0)
+    assertTrue(fixture.active.isEmpty())
+    assertTrue(fixture.lifecycle.isEmpty())
+    module.removeListeners(100.0)
+    module.stopStepCounterUpdate()
+    assertTrue(fixture.active.isEmpty())
+  }
+
+  @Test
+  fun explicitStopPreservesExternalListenerAccountingAcrossRestart() {
+    val module = fixture.module()
+    module.addListener("StepCounter.stepsSensorInfo")
+    module.addListener("StepCounter.stepCounterUpdate")
+    module.startStepCounterUpdate(0.0)
+    module.stopStepCounterUpdate()
+    assertTrue(fixture.active.isEmpty())
+    module.removeListeners(1.0)
+    module.addListener("StepCounter.stepCounterUpdate")
+    module.startStepCounterUpdate(0.0)
+    module.removeListeners(1.0)
+    assertEquals(1, fixture.active.size)
+    module.removeListeners(1.0)
+    assertTrue(fixture.active.isEmpty())
+  }
+
+  @Test
+  fun runtimeInvalidationReleasesRegistrationsAndRejectsRestartsAndLateCallbacks() {
+    val module = fixture.module()
+    module.addListener("StepCounter.stepCounterUpdate")
+    module.startStepCounterUpdate(0.0)
+    val listener = fixture.active.keys.single()
+    val sensor = fixture.active.values.single()
+    module.invalidate()
+    module.invalidate()
+    module.startStepCounterUpdate(0.0)
+    listener.onSensorChanged(fixture.event(sensor, 100f))
+    listener.onSensorChanged(fixture.event(sensor, 101f))
+    assertTrue(fixture.active.isEmpty())
+    assertTrue(fixture.lifecycle.isEmpty())
+    assertTrue(fixture.stepUpdates.isEmpty())
+  }
+
+  @Test
+  fun destroyDetachesLifecycleAndRestartDoesNotRetainOldProducers() {
+    val module = fixture.module()
+    module.stopStepCounterUpdate()
+    module.stopStepCounterUpdate()
+    module.startStepCounterUpdate(0.0)
+    fixture.lifecycle.toList().forEach { it.onHostPause() }
+    assertEquals(1, fixture.active.size)
+    fixture.lifecycle.toList().forEach { it.onHostDestroy() }
+    assertTrue(fixture.lifecycle.isEmpty())
+    module.startStepCounterUpdate(0.0)
+    assertEquals(1, fixture.lifecycle.size)
+    assertEquals(1, fixture.active.size)
+    module.invalidate()
+    assertTrue(fixture.lifecycle.isEmpty())
+  }
+
+  @Test
   fun callbacksRequireTheRegisteredSensorAndAnActiveSession() {
     val module = fixture.module()
     module.startStepCounterUpdate(0.0)

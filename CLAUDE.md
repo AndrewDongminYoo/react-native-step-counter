@@ -71,7 +71,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 - **`src/NativeStepCounter.ts`** — TurboModule spec definition. Defines the `Spec` interface registered as `"StepCounter"` via `TurboModuleRegistry.getEnforcing`. Exports `StepCountData` type and constants (`NAME`, `VERSION`, `eventName`).
 - **`src/index.tsx`** — Public API. Wraps the native module with a `NativeEventEmitter`, exposes:
   - `isStepCountingSupported()` → Promise with `{ supported, granted }`
-  - `startStepCounterUpdate(start, callback)` → returns `EventSubscription`
+  - `startStepCounterUpdate(start, callback)` → returns an owned `EventSubscription`; removing the current handle stops native producers, while stale or repeated removal cannot stop a replacement
   - `stopStepCounterUpdate()` → removes only the subscription created by the most recent `startStepCounterUpdate` (tracked as `_activeSubscription`) and stops native updates; external listeners are left intact
   - `parseStepData(data)` → transforms raw `StepCountData` into human-readable `ParsedStepCountData`
   - `createStepCountFilter(options?)` → compares cumulative steps with elapsed session measurement time (`minimumStepIntervalMs`, default 250), preserving valid delayed batches and rebasing demonstrated impossible totals. It rejects invalid/stale/decreasing same-session data, resets adjustments at newer start dates or backend switches, and retires previous backends until the next session. Recreate the filter for indistinguishable restarts or counter resets.
@@ -129,5 +129,5 @@ The `jest-config` package is used in `jest.config.js` for default `moduleFileExt
 - After any native change, rebuild the example app (`yarn example android` or `yarn example ios`).
 
 Native iOS callback regressions run with `bash tests/ios/run-session-tests.sh` on macOS with Xcode selected.
-The XCTest bundle compiles the actual `ios/StepCounter.mm` with Core Motion and React Native boundary doubles; it checks session ownership, delayed success/error delivery, early live updates, invalidation, emission/stop ordering, aligned metric/date baselines, missing metrics, query fallback, and monotonic corrections.
+The XCTest bundle compiles the actual `ios/StepCounter.mm` and `ios/SOMotionDetecter.m` with Core Motion and React Native boundary doubles; it checks session ownership, delayed success/error delivery, early live updates, invalidation, emission/stop ordering, aligned metric/date baselines, missing metrics, query fallback, monotonic corrections, final observation teardown, motion callback release and stale queued delivery.
 It does not validate hardware delivery or React Native integration; native iOS CI also builds the example against the real SDK and bridge.

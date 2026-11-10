@@ -437,6 +437,122 @@ describe("startStepCounterUpdate", () => {
     expect(nativeMock.removeListeners).toHaveBeenCalledTimes(2);
   });
 
+  it("removing the current handle stops native updates exactly once", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    const subscription = startStepCounterUpdate(new Date(), jest.fn());
+    subscription.remove();
+    subscription.remove();
+    expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+  });
+
+  it("a retired handle cannot stop its replacement", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    const old = startStepCounterUpdate(new Date(), jest.fn());
+    const current = startStepCounterUpdate(new Date(), jest.fn());
+    nativeMock.stopStepCounterUpdate.mockClear();
+    old.remove();
+    expect(nativeMock.stopStepCounterUpdate).not.toHaveBeenCalled();
+    current.remove();
+    expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops a partially started native session when start throws", () => {
+    const nativeMock = makeNativeMock({
+      startStepCounterUpdate: jest.fn(() => {
+        throw new Error("start failed");
+      }),
+    });
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    expect(() => startStepCounterUpdate(new Date(), jest.fn())).toThrow("start failed");
+    expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not stop a newer session when an older start fails reentrantly", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    nativeMock.startStepCounterUpdate?.mockImplementationOnce(() => {
+      startStepCounterUpdate(new Date(), jest.fn());
+      nativeMock.stopStepCounterUpdate.mockClear();
+      throw new Error("old start failed");
+    });
+    expect(() => startStepCounterUpdate(new Date(), jest.fn())).toThrow("old start failed");
+    expect(nativeMock.stopStepCounterUpdate).not.toHaveBeenCalled();
+  });
+
+  it("preserves the original start error when native rollback also throws", () => {
+    const failure = new Error("start failed");
+    const nativeMock = makeNativeMock({
+      startStepCounterUpdate: jest.fn(() => {
+        throw failure;
+      }),
+      stopStepCounterUpdate: jest.fn(() => {
+        throw new Error("rollback failed");
+      }),
+    });
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    let thrown: unknown;
+    try {
+      startStepCounterUpdate(new Date(), jest.fn());
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBe(failure);
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates replacement cleanup failure before starting a new native session", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    const old = startStepCounterUpdate(new Date(), jest.fn());
+    const failure = new Error("previous stop failed");
+    nativeMock.stopStepCounterUpdate.mockImplementationOnce(() => {
+      throw failure;
+    });
+    expect(() => startStepCounterUpdate(new Date(), jest.fn())).toThrow(failure);
+    expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledTimes(1);
+    expect(nativeMock.addListener).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    old.remove();
+    expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
+    const replacement = startStepCounterUpdate(new Date(), jest.fn());
+    expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledTimes(2);
+    replacement.remove();
+  });
+
+  it("preserves external listeners after owned remove, stop and replacement", () => {
+    jest.isolateModules(() => {
+      const nativeMock = makeNativeMock();
+      (TurboModuleRegistry.getEnforcing as jest.Mock).mockReturnValue(nativeMock);
+      const { NativeEventEmitter } = require("react-native") as typeof import("react-native");
+      const mod = require("../index") as typeof import("../index");
+      const emitter = new NativeEventEmitter(nativeMock);
+      const debug = jest.fn();
+      const external = emitter.addListener(eventName, debug);
+      const callback = jest.fn();
+      const old = mod.startStepCounterUpdate(new Date(), callback);
+      old.remove();
+      emitter.emit(eventName, { steps: 1 });
+      expect(callback).not.toHaveBeenCalled();
+      expect(debug).toHaveBeenCalledTimes(1);
+      mod.startStepCounterUpdate(new Date(), callback);
+      const current = mod.startStepCounterUpdate(new Date(), callback);
+      old.remove();
+      emitter.emit(eventName, { steps: 2 });
+      expect(callback).toHaveBeenCalledTimes(1);
+      mod.stopStepCounterUpdate();
+      current.remove();
+      emitter.emit(eventName, { steps: 3 });
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(debug).toHaveBeenCalledTimes(3);
+      expect(emitter.listenerCount(eventName)).toBe(1);
+      external.remove();
+    });
+  });
+
   it("throws an UnavailabilityError when the native method is absent", () => {
     const nativeMock = makeNativeMock({ startStepCounterUpdate: undefined });
     const { startStepCounterUpdate } = loadModule(nativeMock);

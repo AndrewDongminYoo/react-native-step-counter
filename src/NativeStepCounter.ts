@@ -51,7 +51,7 @@ export interface Spec extends TurboModule {
   startStepCounterUpdate(from: number): void;
   /**
    * Stop updating the step count data.
-   * Removes all the listeners that were registered with `startStepCounterUpdate`.
+   * Releases native producers; the public JS wrapper removes its owned subscription.
    */
   stopStepCounterUpdate(): void;
 

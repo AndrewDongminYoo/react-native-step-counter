@@ -77,8 +77,7 @@ export interface StepCountFilterOptions {
 const DEFAULT_MINIMUM_STEP_INTERVAL_MS = 250;
 
 // Tracks the subscription created by the most recent startStepCounterUpdate call.
-// Only this subscription is removed in stopStepCounterUpdate, so that external
-// subscribers (e.g. debug log components) are not unintentionally removed.
+// Its handle owns native teardown; external debug listeners remain registered.
 let _activeSubscription: EventSubscription | null = null;
 
 /**
@@ -257,6 +256,8 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
 /**
  * Start to subscribe stepCounter updates.
  * If native start throws synchronously, the new listener is removed and the error is rethrown.
+ * If stopping a previous session throws, its listener is removed and that error
+ * propagates before a replacement listener or native session is started.
  * ### iOS
  * Live updates exclude activity recorded before this call, even for a past start date.
  * iOS queries the available history from `start` to the call time as a baseline,
@@ -276,7 +277,9 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
  * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
  * @throws {RangeError} If start is an invalid Date, before replacing the current subscription.
  * @returns {EventSubscription} - Returns a Subscription that enables you to call.
- * When you would like to unsubscribe the listener, just use a method of subscriptions's `remove()`.
+ * Calling `remove()` on the current subscription stops native sensors and removes
+ * that listener. Repeated removal and removing a replaced handle are safe.
+ * Independent debug listeners remain subscribed but do not keep sensors running.
  * @example
  * const startDate = new Date();
  * subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
@@ -296,17 +299,31 @@ export function startStepCounterUpdate(
   }
   // Clean up any previous subscription registered by this library before creating a new one.
   _activeSubscription?.remove();
-  _activeSubscription = null;
-  const subscription = StepEventEmitter.addListener(eventName, (data) =>
+  const listener = StepEventEmitter.addListener(eventName, (data) =>
     callBack(data as StepCountData)
   );
+  let removed = false;
+  const subscription: EventSubscription = {
+    remove() {
+      if (removed) return;
+      removed = true;
+      const ownsSession = _activeSubscription === subscription;
+      if (ownsSession) _activeSubscription = null;
+      try {
+        if (ownsSession) StepCounter.stopStepCounterUpdate();
+      } finally {
+        listener.remove();
+      }
+    },
+  };
   _activeSubscription = subscription;
   try {
     StepCounter.startStepCounterUpdate(from);
   } catch (error) {
-    subscription.remove();
-    if (_activeSubscription === subscription) {
-      _activeSubscription = null;
+    try {
+      subscription.remove();
+    } catch {
+      // Listener removal still runs in finally; preserve the original start error.
     }
     throw error;
   }
@@ -323,9 +340,11 @@ export function startStepCounterUpdate(
 export function stopStepCounterUpdate(): void {
   // Remove only the subscription registered by this library, not all listeners.
   // Calling removeAllListeners would break external subscribers such as debug log components.
-  _activeSubscription?.remove();
-  _activeSubscription = null;
-  StepCounter.stopStepCounterUpdate();
+  if (_activeSubscription) {
+    _activeSubscription.remove();
+  } else {
+    StepCounter.stopStepCounterUpdate();
+  }
 }
 
 export { NAME, VERSION, type CounterType, type StepCountData };
