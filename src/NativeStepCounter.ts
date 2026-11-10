@@ -44,6 +44,7 @@ export type StepsSensorInfo = {
   floorCounting?: boolean;
 };
 
+/** Registered native TurboModule name: StepCounter. */
 export const NAME = "StepCounter";
 export const VERSION = "0.5.0";
 export const eventName = "StepCounter.stepCounterUpdate";
