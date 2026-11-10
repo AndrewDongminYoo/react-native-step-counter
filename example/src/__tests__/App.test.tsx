@@ -175,16 +175,29 @@ describe("App", () => {
     }
   );
 
-  it("applies the same 200-row cap to diagnostic events", async () => {
-    mockSupported.mockResolvedValue({ supported: false, granted: false });
+  it("applies the same 200-row cap to capability diagnostics when history is full", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
     const copy = jest.spyOn(Clipboard, "setString").mockImplementation(() => {});
     await render(<App />);
-    for (let index = 0; index < 220; index += 1) {
-      await fireEvent.press(screen.getByRole("button", { name: "START" }));
-    }
-    expect(screen.getAllByText(/\[capabilities\]/)).toHaveLength(200);
+    await act(() => {
+      for (let steps = 1; steps <= 250; steps += 1) {
+        mockStart.mock.lastCall![1]({
+          counterType: "STEP_COUNTER",
+          steps,
+          startDate: 1700000000000,
+          endDate: 1700000000000 + steps * 1000,
+          distance: steps,
+        });
+      }
+    });
+    await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+    mockSupported.mockResolvedValue({ supported: false, granted: false });
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    expect(jest.mocked(LogCat).mock.lastCall![0].logs).toHaveLength(200);
     await fireEvent.press(screen.getByRole("button", { name: "Copy logs" }));
-    expect((copy.mock.lastCall![0] as string).split("\n")).toHaveLength(200);
+    const lines = (copy.mock.lastCall![0] as string).split("\n");
+    expect(lines).toHaveLength(200);
+    expect(lines[199]).toContain("[capabilities]");
   });
   it('shows "Stopped" when sensor is not supported', async () => {
     mockSupported.mockResolvedValue({ supported: false, granted: false });
