@@ -64,4 +64,18 @@
   }
   XCTAssertNil(weakDetector);
 }
+- (void)testInvalidOrBelowThresholdAccelerationDoesNotCountAsAStep {
+  SOMotionDetecter *detector = [SOMotionDetecter new];
+  CMMotionManager *manager = [detector valueForKey:@"motionManager"];
+  __block NSUInteger calls = 0;
+  [detector startDetectionWithUpdateBlock:^(NSError *error) { calls++; }];
+  for (NSNumber *x in @[@0, @1.2f, @(NAN)]) {
+    CMAccelerometerData *data = [CMAccelerometerData new];
+    data.acceleration = (CMAcceleration){x.doubleValue, 0, 0};
+    manager.updateHandler(data, nil);
+  }
+  [self drainMainQueue];
+  XCTAssertEqual(calls, 0u);
+  [detector stopDetection];
+}
 @end

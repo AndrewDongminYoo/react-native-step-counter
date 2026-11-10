@@ -56,9 +56,10 @@
     [self.motionManager startAccelerometerUpdatesToQueue:self.queue
                                            withHandler:^(CMAccelerometerData *data, NSError *error) {
       CMAcceleration acceleration = data.acceleration;
-      if (!error && (!data || (fabs(acceleration.x) <= 1.2f &&
-                               fabs(acceleration.y) <= 1.2f &&
-                               fabs(acceleration.z) <= 1.2f))) return;
+      BOOL isStep = data && (fabs(acceleration.x) > 1.2f ||
+                             fabs(acceleration.y) > 1.2f ||
+                             fabs(acceleration.z) > 1.2f);
+      if (!error && !isStep) return;
       // Queued work holds no consumer callback; stop releases its captures immediately.
       dispatch_async(dispatch_get_main_queue(), ^{
         SOMotionDetecter *strongSelf = weakSelf;
