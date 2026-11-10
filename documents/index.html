@@ -145,6 +145,30 @@
               </p>
               <ul>
                 <li>
+                  iOS live updates exclude activity before the call, including when
+                  <code>start</code> is in the past. Steps, distance, and floors subtract the
+                  cumulative baseline from <code>start</code> to the call time; emitted
+                  <code>startDate</code> is that cutoff and <code>endDate</code> is the sample
+                  measurement time. Future origins clamp to the call time.
+                </li>
+                <li>
+                  An unavailable baseline or current distance/floor metric yields <code>null</code>;
+                  a metric with an unknown baseline stays <code>null</code> for that session. If the
+                  baseline query fails or returns no data, the first valid live sample establishes
+                  every baseline and its end date becomes <code>startDate</code>; that sample is not
+                  emitted.
+                </li>
+                <li>
+                  iOS ignores zero-step, stale, and decreasing windows without lowering baselines. A
+                  correction can pause delivery until cumulative metrics recover; it does not add
+                  historical activity on recovery.
+                </li>
+                <li>
+                  The native iOS <code>queryStepCounterDataBetweenDates</code> method returns the
+                  historical interval and unadjusted totals available from Core Motion. It is
+                  separate from live sessions and is not exposed by this TypeScript wrapper.
+                </li>
+                <li>
                   Android refreshes permission and sensors on every start, stops the previous
                   backend, and prefers the hardware step counter.
                 </li>
@@ -373,7 +397,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Mon Nov 09 2026 20:41:16 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 09:03:16 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

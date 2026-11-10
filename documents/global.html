@@ -287,15 +287,24 @@
 
           <div class="description">
             <p>
-              Start to subscribe stepCounter updates. Only the past seven days worth of data is
-              stored and available for you to retrieve. Specifying a start date that is more than
-              seven days in the past returns only the available data. If native start throws
-              synchronously, the new listener is removed and the error is rethrown.
+              Start to subscribe stepCounter updates. If native start throws synchronously, the new
+              listener is removed and the error is rethrown.
             </p>
             <h3>iOS</h3>
             <p>
-              <code>CMStepCounter.startStepCountingUpdates</code> is deprecated since iOS 8.0. so
-              used <code>CMPedometer.startUpdates</code> instead.
+              Live updates exclude activity recorded before this call, even for a past start date.
+              iOS queries the available history from <code>start</code> to the call time as a
+              baseline, then subtracts it from steps, distance, and floors. Emitted
+              <code>startDate</code> is that cutoff and <code>endDate</code> is the measurement
+              time. Future origins clamp to the call time. Missing baseline/current optional metrics
+              remain null; an unknown baseline stays null for the session. If the query fails, the
+              first valid live sample becomes the baseline and its end date becomes the cutoff; that
+              sample is not emitted. Zero-step, stale, or decreasing windows are ignored without
+              lowering baselines. Native <code>queryStepCounterDataBetweenDates</code> instead
+              returns the requested historical interval (limited to available Core Motion history)
+              without live-session subtraction. It is not exposed by this TypeScript wrapper.
+              <code>CMPedometer.startUpdates</code> replaces the deprecated
+              <code>CMStepCounter</code> API.
             </p>
           </div>
 
@@ -321,7 +330,9 @@
                 </td>
 
                 <td class="description last">
-                  <p>A date indicating the start of the range over which to measure steps.</p>
+                  <p>
+                    Native origin; on iOS, used to query the baseline, not to replay past steps.
+                  </p>
                 </td>
               </tr>
 
@@ -347,7 +358,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line201">line 201</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line210">line 210</a>
                 </li>
               </ul>
             </dd>
@@ -437,7 +448,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line233">line 233</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line242">line 242</a>
                 </li>
               </ul>
             </dd>
@@ -468,7 +479,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Mon Nov 09 2026 20:41:16 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 09:03:16 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>
