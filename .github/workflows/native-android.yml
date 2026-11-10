@@ -67,3 +67,19 @@ jobs:
         env:
           JAVA_OPTS: -XX:MaxHeapSize=6g
         run: yarn example build:android
+
+      - name: Create clean packed-package consumer (minimum and current RN 0.88.0)
+        run: bash tests/compatibility/create-consumer.sh "$RUNNER_TEMP/compatibility-consumer"
+
+      - name: Record consumer toolchain
+        working-directory: ${{ runner.temp }}/compatibility-consumer
+        run: |
+          node --version
+          npm ls react react-native react-native-step-counter-newarch
+          java -version
+          cat android/build.gradle
+          cat android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Build clean Android consumer
+        working-directory: ${{ runner.temp }}/compatibility-consumer/android
+        run: ./gradlew :app:assembleDebug --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a

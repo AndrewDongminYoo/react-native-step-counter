@@ -88,3 +88,28 @@ jobs:
 
       - name: Build example for iOS
         run: yarn example build:ios
+
+      - name: Create clean packed-package consumer (minimum and current RN 0.88.0)
+        run: bash tests/compatibility/create-consumer.sh "$RUNNER_TEMP/compatibility-consumer"
+
+      - name: Record consumer toolchain
+        working-directory: ${{ runner.temp }}/compatibility-consumer
+        run: |
+          node --version
+          npm ls react react-native react-native-step-counter-newarch
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+
+      - name: Install clean consumer pods
+        working-directory: ${{ runner.temp }}/compatibility-consumer
+        run: |
+          bundle install
+          bundle exec pod install --project-directory=ios
+
+      - name: Build clean iOS consumer
+        working-directory: ${{ runner.temp }}/compatibility-consumer
+        run: >-
+          xcodebuild -workspace ios/CompatibilityConsumer.xcworkspace
+          -scheme CompatibilityConsumer -configuration Debug
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build CODE_SIGNING_ALLOWED=NO build

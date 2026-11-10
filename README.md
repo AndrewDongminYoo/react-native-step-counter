@@ -16,11 +16,13 @@ npm install react-native-step-counter-newarch
 yarn add react-native-step-counter-newarch
 ```
 
-Native modules will automatically connect after React Native 0.60 version. So you don't need to link the native modules manually.
+Native modules connect through autolinking in supported React Native CLI apps.
 
 ## Requirements
 
-- React Native `>=0.71.0`
+- React Native `~0.88.0`, React `~19.3.0`, and the New Architecture.
+- The minimum and current CI consumer both use RN `0.88.0` / React `19.3.1`.
+- See [native compatibility](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/docs/native-compatibility.md) for toolchains, verification limits, and migration from the previous `>=0.71.0` declaration.
 - React Native CLI apps. Expo Go is not supported because this package includes native code.
 
 ### ANDROID
