@@ -59,9 +59,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Test Android hardware-counter sessions
+      - name: Test Android sensor sessions and fallback benchmark
         working-directory: example/android
         run: ./gradlew :react-native-step-counter-newarch:testDebugUnitTest --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a
+
+      - name: Upload Android test and benchmark results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-unit-test-results
+          path: android/build/test-results/testDebugUnitTest/
 
       - name: Build example for Android
         env:

@@ -57,6 +57,13 @@ android {
     }
   }
 
+  testOptions {
+    unitTests.all {
+      // Measure materialized allocations consistently across JVM versions.
+      jvmArgs "-XX:-DoEscapeAnalysis"
+    }
+  }
+
   lint {
     disable "GradleCompatible"
   }
