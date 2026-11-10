@@ -129,5 +129,5 @@ The `jest-config` package is used in `jest.config.js` for default `moduleFileExt
 - After any native change, rebuild the example app (`yarn example android` or `yarn example ios`).
 
 Native iOS callback regressions run with `bash tests/ios/run-session-tests.sh` on macOS with Xcode selected.
-The XCTest bundle compiles the actual `ios/StepCounter.mm` with Core Motion and React Native boundary doubles; it checks session ownership, delayed success/error delivery, early live updates, invalidation and emission/stop ordering.
+The XCTest bundle compiles the actual `ios/StepCounter.mm` with Core Motion and React Native boundary doubles; it checks session ownership, delayed success/error delivery, early live updates, invalidation, emission/stop ordering, aligned metric/date baselines, missing metrics, query fallback, and monotonic corrections.
 It does not validate hardware delivery or React Native integration; native iOS CI also builds the example against the real SDK and bridge.

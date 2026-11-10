@@ -256,14 +256,23 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
 
 /**
  * Start to subscribe stepCounter updates.
- * Only the past seven days worth of data is stored and available for you to retrieve.
- * Specifying a start date that is more than seven days in the past returns only the available data.
  * If native start throws synchronously, the new listener is removed and the error is rethrown.
  * ### iOS
- * `CMStepCounter.startStepCountingUpdates` is deprecated since iOS 8.0. so used `CMPedometer.startUpdates` instead.
+ * Live updates exclude activity recorded before this call, even for a past start date.
+ * iOS queries the available history from `start` to the call time as a baseline,
+ * then subtracts it from steps, distance, and floors. Emitted `startDate` is that
+ * cutoff and `endDate` is the measurement time. Future origins clamp to the call time.
+ * Missing baseline/current optional metrics remain null; an unknown baseline stays
+ * null for the session. If the query fails, the first valid live sample becomes the
+ * baseline and its end date becomes the cutoff; that sample is not emitted.
+ * Zero-step, stale, or decreasing windows are ignored without lowering baselines.
+ * Native `queryStepCounterDataBetweenDates` instead returns the requested historical
+ * interval (limited to available Core Motion history) without live-session subtraction.
+ * It is not exposed by this TypeScript wrapper.
+ * `CMPedometer.startUpdates` replaces the deprecated `CMStepCounter` API.
  * @see https://developer.apple.com/documentation/coremotion/cmpedometer/1613950-startupdates
  * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates
- * @param {Date} start A date indicating the start of the range over which to measure steps.
+ * @param {Date} start Native origin; on iOS, used to query the baseline, not to replay past steps.
  * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
  * @throws {RangeError} If start is an invalid Date, before replacing the current subscription.
  * @returns {EventSubscription} - Returns a Subscription that enables you to call.
