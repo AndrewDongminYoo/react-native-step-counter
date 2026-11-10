@@ -90,3 +90,22 @@ it("cleans up when Settings fails to open", async () => {
   await expect(getStepCounterPermission()).rejects.toThrow("settings failed");
   expect(remove).toHaveBeenCalledTimes(1);
 });
+
+it("resolves false when cancelled during the post-Settings check", async () => {
+  jest.mocked(request).mockResolvedValue(RESULTS.BLOCKED);
+  let grant!: (status: typeof RESULTS.GRANTED) => void;
+  jest.mocked(check).mockReturnValueOnce(
+    new Promise((resolve) => {
+      grant = resolve;
+    })
+  );
+  const operation = new AbortController();
+  const pending = getStepCounterPermission(operation.signal);
+  await Promise.resolve();
+  change("background");
+  change("active");
+  operation.abort();
+  grant(RESULTS.GRANTED);
+  expect(await pending).toBe(false);
+  expect(remove).toHaveBeenCalledTimes(1);
+});
