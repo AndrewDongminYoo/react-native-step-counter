@@ -95,8 +95,11 @@
           </ul>
           <h3>ANDROID</h3>
           <p>
-            Add the motion permission and sensor feature declarations if your app does not already
-            include them.
+            The library contributes the following declarations through manifest merging; you do not
+            need to duplicate them in your app. Both sensors are optional for installation. Use
+            <code>isStepCountingSupported()</code> to check runtime availability and request
+            <code>ACTIVITY_RECOGNITION</code> on Android 10 (API 29) and later before counting. Step
+            counting does not require body-sensor permissions.
           </p>
           <pre
             class="prettyprint source lang-xml"
@@ -104,14 +107,13 @@
 &lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
     package=&quot;com.stepcounter&quot;>
   &lt;uses-permission android:name=&quot;android.permission.ACTIVITY_RECOGNITION&quot; />
-  &lt;uses-permission android:name=&quot;android.permission.BODY_SENSORS_BACKGROUND&quot; />
 
   &lt;uses-feature
     android:name=&quot;android.hardware.sensor.stepcounter&quot;
     android:required=&quot;false&quot; />
   &lt;uses-feature
     android:name=&quot;android.hardware.sensor.accelerometer&quot;
-    android:required=&quot;true&quot; />
+    android:required=&quot;false&quot; />
 &lt;/manifest>
 </code></pre>
           <h3>iOS</h3>
@@ -481,7 +483,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 17:46:46 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 20:45:31 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>
