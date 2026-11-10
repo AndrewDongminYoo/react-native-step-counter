@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import App from "../App";
+import { Clipboard } from "react-native";
+import * as logging from "../logging";
 
 // ─── mocks ──────────────────────────────────────────────────────────────────
 
@@ -26,6 +28,7 @@ jest.mock("../permission", () => ({
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 import {
+  createStepCountFilter,
   isStepCountingSupported,
   startStepCounterUpdate,
   stopStepCounterUpdate,
@@ -40,14 +43,141 @@ let mockSubscriptionRemove: jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  (createStepCountFilter as jest.Mock).mockImplementation(() => (data: unknown) => data);
   mockSubscriptionRemove = jest.fn();
   mockStart.mockReturnValue({ remove: mockSubscriptionRemove });
   mockPermission.mockResolvedValue(true);
 });
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 // ─── tests ───────────────────────────────────────────────────────────────────
 
 describe("App", () => {
+  it("skips log serialization and accumulation in logging-off measurements", async () => {
+    jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", false);
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    (createStepCountFilter as jest.Mock).mockReturnValue((data: { steps: number }) =>
+      data.steps % 2 ? data : null
+    );
+    const stringify = jest.spyOn(JSON, "stringify");
+    const isoDate = jest.spyOn(Date.prototype, "toISOString");
+    await render(<App />);
+    const callback = mockStart.mock.calls[0][1];
+    await act(() => {
+      for (let steps = 1; steps <= 2500; steps += 1) {
+        callback({
+          counterType: "STEP_COUNTER",
+          steps,
+          startDate: 1700000000000,
+          endDate: 1700000000000 + steps * 1000,
+          distance: steps,
+        });
+      }
+    });
+    expect(screen.getByText("2499")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+    await fireEvent.press(screen.getByRole("button", { name: "RESTART" }));
+    expect(screen.queryByText("LogCat")).not.toBeOnTheScreen();
+    for (const key of ["rawSteps", "supported", "ok", "hadSubscription", "at"]) {
+      expect(stringify).not.toHaveBeenCalledWith(
+        expect.objectContaining({ [key]: expect.anything() })
+      );
+    }
+    expect(isoDate).not.toHaveBeenCalled();
+
+    // Reveal the retained state through the real renderer rather than a mock.
+    jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", true);
+    await screen.rerender(<App />);
+    expect(screen.getByRole("button", { name: "Copy logs" })).toBeDisabled();
+  });
+
+  it("skips permission diagnostics with logging disabled", async () => {
+    jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", false);
+    mockSupported.mockResolvedValue({ supported: true, granted: false });
+    const stringify = jest.spyOn(JSON, "stringify");
+    await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    expect(mockPermission).toHaveBeenCalledTimes(1);
+    expect(stringify).not.toHaveBeenCalledWith(expect.objectContaining({ requested: true }));
+    expect(screen.queryByText("LogCat")).not.toBeOnTheScreen();
+  });
+  it.each([false, true, "mixed"])(
+    "bounds a long session (filtered=%s) to the newest 200 rows",
+    async (filtered) => {
+      mockSupported.mockResolvedValue({ supported: true, granted: true });
+      if (filtered) {
+        (createStepCountFilter as jest.Mock).mockReturnValue((data: { steps: number }) =>
+          filtered === "mixed" && data.steps % 2 ? data : null
+        );
+      }
+      const copy = jest.spyOn(Clipboard, "setString").mockImplementation(() => {});
+      await render(<App />);
+      const callback = mockStart.mock.calls[0][1];
+      const stepRows = /\[stepCounterUpdate(?:Filtered)?\]/;
+
+      for (let batch = 0; batch < 10; batch += 1) {
+        await act(() => {
+          for (let offset = 1; offset <= 250; offset += 1) {
+            const steps = batch * 250 + offset;
+            callback({
+              counterType: "STEP_COUNTER",
+              steps,
+              startDate: 1700000000000,
+              endDate: 1700000000000 + steps * 1000,
+              distance: steps,
+            });
+          }
+        });
+        expect(screen.getAllByText(stepRows)).toHaveLength(200);
+        await fireEvent.press(screen.getByRole("button", { name: "Copy logs" }));
+        const lines = (copy.mock.lastCall![0] as string).split("\n");
+        expect(lines).toHaveLength(200);
+        const rawSteps = lines.map((line) => JSON.parse(line.slice(line.indexOf("{"))).rawSteps);
+        expect(rawSteps).toEqual(
+          Array.from({ length: 200 }, (_, index) => batch * 250 + 51 + index)
+        );
+      }
+
+      await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+      await fireEvent.press(screen.getByRole("button", { name: "Copy logs" }));
+      const stoppedLines = (copy.mock.lastCall![0] as string).split("\n");
+      expect(stoppedLines).toHaveLength(200);
+      expect(stoppedLines[199]).toContain("[STOP]");
+      await fireEvent.press(screen.getByRole("button", { name: "RESTART" }));
+      expect(screen.queryAllByText(stepRows)).toHaveLength(0);
+      await fireEvent.press(screen.getByRole("button", { name: "Copy logs" }));
+      expect(copy.mock.lastCall![0]).toContain("[START]");
+      expect(copy.mock.lastCall![0]).not.toContain("stepCounterUpdate");
+      await act(() => {
+        mockStart.mock.lastCall![1]({
+          counterType: "STEP_COUNTER",
+          steps: 3001,
+          startDate: 1700003000000,
+          endDate: 1700003001000,
+          distance: 3001,
+        });
+      });
+      expect(screen.getAllByText(stepRows)).toHaveLength(1);
+      await fireEvent.press(screen.getByRole("button", { name: "Clear logs" }));
+      expect(screen.queryAllByText(stepRows)).toHaveLength(0);
+      expect(screen.getByRole("button", { name: "Copy logs" })).toBeDisabled();
+    }
+  );
+
+  it("applies the same 200-row cap to diagnostic events", async () => {
+    mockSupported.mockResolvedValue({ supported: false, granted: false });
+    const copy = jest.spyOn(Clipboard, "setString").mockImplementation(() => {});
+    await render(<App />);
+    for (let index = 0; index < 220; index += 1) {
+      await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    }
+    expect(screen.getAllByText(/\[capabilities\]/)).toHaveLength(200);
+    await fireEvent.press(screen.getByRole("button", { name: "Copy logs" }));
+    expect((copy.mock.lastCall![0] as string).split("\n")).toHaveLength(200);
+  });
   it('shows "Stopped" when sensor is not supported', async () => {
     mockSupported.mockResolvedValue({ supported: false, granted: false });
     await render(<App />);

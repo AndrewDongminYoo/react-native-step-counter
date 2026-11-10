@@ -36,7 +36,7 @@ const LogCat = ({
   // Auto-scroll on new logs
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: false });
-  }, [logs.length]);
+  }, [logs]);
 
   // Reset copy state when session changes
   useEffect(() => {
