@@ -91,6 +91,7 @@
   [self.counter startStepsDetection];
   ScheduledMotion *motion = (ScheduledMotion *)self.counter.motionDetector;
   XCTAssertTrue(motion.active);
+  XCTAssertEqual(motion.callbacks.count, 1u);
   if (!motion.callbacks.count) return;
   void (^old)(NSError *) = motion.callbacks[0];
   [self.counter startStepsDetection];

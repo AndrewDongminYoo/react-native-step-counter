@@ -256,6 +256,8 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
 /**
  * Start to subscribe stepCounter updates.
  * If native start throws synchronously, the new listener is removed and the error is rethrown.
+ * If stopping a previous session throws, its listener is removed and that error
+ * propagates before a replacement listener or native session is started.
  * ### iOS
  * Live updates exclude activity recorded before this call, even for a past start date.
  * iOS queries the available history from `start` to the call time as a baseline,

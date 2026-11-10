@@ -288,7 +288,9 @@
           <div class="description">
             <p>
               Start to subscribe stepCounter updates. If native start throws synchronously, the new
-              listener is removed and the error is rethrown.
+              listener is removed and the error is rethrown. If stopping a previous session throws,
+              its listener is removed and that error propagates before a replacement listener or
+              native session is started.
             </p>
             <h3>iOS</h3>
             <p>
@@ -358,7 +360,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line211">line 211</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line213">line 213</a>
                 </li>
               </ul>
             </dd>
@@ -450,7 +452,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line257">line 257</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line259">line 259</a>
                 </li>
               </ul>
             </dd>
@@ -481,7 +483,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 12:59:33 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 13:13:36 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

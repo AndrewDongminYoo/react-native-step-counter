@@ -504,6 +504,25 @@ describe("startStepCounterUpdate", () => {
     expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
   });
 
+  it("propagates replacement cleanup failure before starting a new native session", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    const old = startStepCounterUpdate(new Date(), jest.fn());
+    const failure = new Error("previous stop failed");
+    nativeMock.stopStepCounterUpdate.mockImplementationOnce(() => {
+      throw failure;
+    });
+    expect(() => startStepCounterUpdate(new Date(), jest.fn())).toThrow(failure);
+    expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledTimes(1);
+    expect(nativeMock.addListener).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    old.remove();
+    expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
+    const replacement = startStepCounterUpdate(new Date(), jest.fn());
+    expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledTimes(2);
+    replacement.remove();
+  });
+
   it("preserves external listeners after owned remove, stop and replacement", () => {
     jest.isolateModules(() => {
       const nativeMock = makeNativeMock();

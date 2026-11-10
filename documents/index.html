@@ -152,6 +152,12 @@
                   replacement.
                 </li>
                 <li>
+                  If stopping the previous session throws during replacement, its listener is
+                  removed and the error propagates before a new listener or native session starts. A
+                  synchronous native start error also removes the new listener, attempts native
+                  cleanup and preserves the original start error.
+                </li>
+                <li>
                   iOS live updates exclude activity before the call, including when
                   <code>start</code> is in the past. Steps, distance, and floors subtract the
                   cumulative baseline from <code>start</code> to the call time; emitted
@@ -417,7 +423,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 12:59:33 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 13:13:36 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

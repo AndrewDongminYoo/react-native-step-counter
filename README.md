@@ -66,6 +66,7 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
 
 - `startStepCounterUpdate(start: Date, callBack: StepCountUpdateCallback)`: `EventSubscription`:
   - The returned handle owns the current native session. Calling its `remove()` stops sensors and removes that listener, including when debug listeners remain subscribed. Repeated removal is safe. Starting again replaces the previous handle; removing an older handle cannot stop the replacement.
+  - If stopping the previous session throws during replacement, its listener is removed and the error propagates before a new listener or native session starts. A synchronous native start error also removes the new listener, attempts native cleanup and preserves the original start error.
   - iOS live updates exclude activity before the call, including when `start` is in the past. Steps, distance, and floors subtract the cumulative baseline from `start` to the call time; emitted `startDate` is that cutoff and `endDate` is the sample measurement time. Future origins clamp to the call time.
   - An unavailable baseline or current distance/floor metric yields `null`; a metric with an unknown baseline stays `null` for that session. If the baseline query fails or returns no data, the first valid live sample establishes every baseline and its end date becomes `startDate`; that sample is not emitted.
   - iOS ignores zero-step, stale, and decreasing windows without lowering baselines. A correction can pause delivery until cumulative metrics recover; it does not add historical activity on recovery.
