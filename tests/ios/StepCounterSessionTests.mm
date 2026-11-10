@@ -202,6 +202,9 @@
     [self.counter startStepCounterUpdate:[NSDate date].timeIntervalSince1970 + offset.doubleValue];
     NSDate *cutoff = self.sensor.queryEnds.lastObject;
     XCTAssertLessThanOrEqual([self.sensor.queryStarts.lastObject compare:cutoff], NSOrderedSame);
+    if (offset.doubleValue > 0) {
+      XCTAssertEqualObjects(self.sensor.queryStarts.lastObject, cutoff);
+    }
     self.sensor.queries.lastObject([self sample:0 distance:@0 up:@0 down:@0 end:cutoff], nil);
     self.sensor.updates.lastObject([self sample:4 distance:@3 up:@0 down:@1 end:[cutoff dateByAddingTimeInterval:5]], nil);
     NSDictionary *body = self.counter.events.lastObject[@"body"];
