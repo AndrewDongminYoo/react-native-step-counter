@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import App from "../App";
 import { Clipboard } from "react-native";
 import * as logging from "../logging";
+import LogCat from "../LogCat";
 
 // ─── mocks ──────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,11 @@ jest.mock("react-native-step-counter-newarch", () => ({
 jest.mock("../permission", () => ({
   getStepCounterPermission: jest.fn().mockResolvedValue(true),
 }));
+
+jest.mock("../LogCat", () => {
+  const actual = jest.requireActual<typeof import("../LogCat")>("../LogCat");
+  return { __esModule: true, ...actual, default: jest.fn(actual.default) };
+});
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -91,6 +97,7 @@ describe("App", () => {
     // Reveal the retained state through the real renderer rather than a mock.
     jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", true);
     await screen.rerender(<App />);
+    expect(jest.mocked(LogCat).mock.lastCall![0].logs).toEqual([]);
     expect(screen.getByRole("button", { name: "Copy logs" })).toBeDisabled();
   });
 
@@ -132,6 +139,7 @@ describe("App", () => {
           }
         });
         expect(screen.getAllByText(stepRows)).toHaveLength(200);
+        expect(jest.mocked(LogCat).mock.lastCall![0].logs).toHaveLength(200);
         await fireEvent.press(screen.getByRole("button", { name: "Copy logs" }));
         const lines = (copy.mock.lastCall![0] as string).split("\n");
         expect(lines).toHaveLength(200);
