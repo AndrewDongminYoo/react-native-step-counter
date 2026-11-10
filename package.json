@@ -123,8 +123,8 @@
     "yaml@npm:^2.6.1": "npm:^2.8.3"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-native": ">=0.71.0"
+    "react": "~19.3.0",
+    "react-native": "~0.88.0"
   },
   "workspaces": [
     "example"
