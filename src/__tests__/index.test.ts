@@ -4,24 +4,54 @@ import { TurboModuleRegistry } from "react-native";
 import { createStepCountFilter, parseStepData, NAME, VERSION, type StepCountData } from "../index";
 import { eventName } from "../NativeStepCounter";
 
+function stepData(steps: number, endOffsetMs: number): StepCountData {
+  return {
+    counterType: "STEP_COUNTER",
+    steps,
+    startDate: 1700000000000,
+    endDate: 1700000000000 + endOffsetMs,
+    distance: steps * 0.762,
+  };
+}
+
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 type NativeMock = {
   isStepCountingSupported: jest.Mock;
   startStepCounterUpdate: jest.Mock | undefined;
   stopStepCounterUpdate: jest.Mock;
-  addListener: jest.Mock;
-  removeListeners: jest.Mock;
+  onStepCounterUpdate: jest.Mock;
+  onStepDetected: jest.Mock;
+  onErrorOccurred: jest.Mock;
+  onStepsSensorInfo: jest.Mock;
+  removeSubscription: jest.Mock;
+  emitUpdate: (data: StepCountData) => void;
 };
 
 /** Build a complete native module mock with sensible defaults. */
 function makeNativeMock(overrides: Partial<NativeMock> = {}): NativeMock {
+  const listeners = new Set<(data: StepCountData) => void>();
+  const removeSubscription = jest.fn();
   return {
+    onStepCounterUpdate: jest.fn((listener: (data: StepCountData) => void) => {
+      listeners.add(listener);
+      return {
+        remove: () => {
+          listeners.delete(listener);
+          removeSubscription();
+        },
+      };
+    }),
+    onStepDetected: jest.fn(() => ({ remove: removeSubscription })),
+    onErrorOccurred: jest.fn(() => ({ remove: removeSubscription })),
+    onStepsSensorInfo: jest.fn(() => ({ remove: removeSubscription })),
+    removeSubscription,
+    emitUpdate: (data) => {
+      for (const listener of listeners) listener(data);
+    },
     isStepCountingSupported: jest.fn().mockResolvedValue({ supported: true, granted: true }),
     startStepCounterUpdate: jest.fn(),
     stopStepCounterUpdate: jest.fn(),
-    addListener: jest.fn(),
-    removeListeners: jest.fn(),
     ...overrides,
   };
 }
@@ -110,16 +140,6 @@ describe("parseStepData", () => {
 
 describe("createStepCountFilter", () => {
   const startDate = 1700000000000;
-
-  function stepData(steps: number, endOffsetMs: number): StepCountData {
-    return {
-      counterType: "STEP_COUNTER",
-      steps,
-      startDate,
-      endDate: startDate + endOffsetMs,
-      distance: steps * 0.762,
-    };
-  }
 
   it("drops rotation-like bursts that exceed the configured cadence", () => {
     const filter = createStepCountFilter({ minimumStepIntervalMs: 250 });
@@ -336,6 +356,19 @@ describe("isStepCountingSupported", () => {
 // ─── startStepCounterUpdate ──────────────────────────────────────────────────
 
 describe("startStepCounterUpdate", () => {
+  it("delivers generated events emitted synchronously by native start", () => {
+    const nativeMock = makeNativeMock();
+    const { startStepCounterUpdate } = loadModule(nativeMock);
+    const payload = stepData(1, 1000);
+    const callback = jest.fn();
+    nativeMock.startStepCounterUpdate?.mockImplementation(() => nativeMock.emitUpdate(payload));
+    const subscription = startStepCounterUpdate(new Date(), callback);
+    expect(callback).toHaveBeenCalledWith(payload);
+    subscription.remove();
+    nativeMock.emitUpdate(stepData(2, 2000));
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+
   it("registers an event listener and triggers native updates", () => {
     const nativeMock = makeNativeMock();
     const { startStepCounterUpdate } = loadModule(nativeMock);
@@ -344,7 +377,7 @@ describe("startStepCounterUpdate", () => {
     const subscription = startStepCounterUpdate(startDate, jest.fn());
 
     expect(typeof subscription.remove).toBe("function");
-    expect(nativeMock.addListener).toHaveBeenCalledWith(eventName);
+    expect(nativeMock.onStepCounterUpdate).toHaveBeenCalledWith(expect.any(Function));
     expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledWith(startDate.getTime());
   });
 
@@ -355,10 +388,10 @@ describe("startStepCounterUpdate", () => {
     startStepCounterUpdate(new Date(), jest.fn());
     startStepCounterUpdate(new Date(), jest.fn());
 
-    // Two starts → two addListener calls
-    expect(nativeMock.addListener).toHaveBeenCalledTimes(2);
-    // First subscription's remove() triggers removeListeners(1) inside NativeEventEmitter
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    // Two starts create two generated subscriptions.
+    expect(nativeMock.onStepCounterUpdate).toHaveBeenCalledTimes(2);
+    // The replaced generated subscription is removed once.
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
   });
 
   it("rejects an invalid date without registering a listener or starting native updates", () => {
@@ -367,7 +400,7 @@ describe("startStepCounterUpdate", () => {
 
     expect(() => startStepCounterUpdate(new Date(NaN), jest.fn())).toThrow(RangeError);
 
-    expect(nativeMock.addListener).not.toHaveBeenCalled();
+    expect(nativeMock.onStepCounterUpdate).not.toHaveBeenCalled();
     expect(nativeMock.startStepCounterUpdate).not.toHaveBeenCalled();
   });
 
@@ -378,11 +411,11 @@ describe("startStepCounterUpdate", () => {
 
     expect(() => startStepCounterUpdate(new Date(NaN), jest.fn())).toThrow(RangeError);
 
-    expect(nativeMock.removeListeners).not.toHaveBeenCalled();
-    expect(nativeMock.addListener).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).not.toHaveBeenCalled();
+    expect(nativeMock.onStepCounterUpdate).toHaveBeenCalledTimes(1);
     expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledTimes(1);
     stopStepCounterUpdate();
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
   });
 
   it("removes a failed start's listener and recovers on a later start", () => {
@@ -401,15 +434,15 @@ describe("startStepCounterUpdate", () => {
       thrown = error;
     }
     expect(thrown).toBe(failure);
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
 
     stopStepCounterUpdate();
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
     const subscription = startStepCounterUpdate(new Date(), jest.fn());
     expect(typeof subscription.remove).toBe("function");
     stopStepCounterUpdate();
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(2);
-    expect(nativeMock.addListener).toHaveBeenCalledTimes(2);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(2);
+    expect(nativeMock.onStepCounterUpdate).toHaveBeenCalledTimes(2);
   });
 
   it.each([0, -1, 8640000000000000])("forwards the finite timestamp %s unchanged", (from) => {
@@ -432,9 +465,9 @@ describe("startStepCounterUpdate", () => {
     });
 
     expect(() => startStepCounterUpdate(new Date(), jest.fn())).toThrow(failure);
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
     stopStepCounterUpdate();
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(2);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(2);
   });
 
   it("removing the current handle stops native updates exactly once", () => {
@@ -444,7 +477,7 @@ describe("startStepCounterUpdate", () => {
     subscription.remove();
     subscription.remove();
     expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
   });
 
   it("a retired handle cannot stop its replacement", () => {
@@ -457,7 +490,7 @@ describe("startStepCounterUpdate", () => {
     expect(nativeMock.stopStepCounterUpdate).not.toHaveBeenCalled();
     current.remove();
     expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(2);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(2);
   });
 
   it("stops a partially started native session when start throws", () => {
@@ -501,7 +534,7 @@ describe("startStepCounterUpdate", () => {
       thrown = error;
     }
     expect(thrown).toBe(failure);
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
   });
 
   it("propagates replacement cleanup failure before starting a new native session", () => {
@@ -514,8 +547,8 @@ describe("startStepCounterUpdate", () => {
     });
     expect(() => startStepCounterUpdate(new Date(), jest.fn())).toThrow(failure);
     expect(nativeMock.startStepCounterUpdate).toHaveBeenCalledTimes(1);
-    expect(nativeMock.addListener).toHaveBeenCalledTimes(1);
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.onStepCounterUpdate).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
     old.remove();
     expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
     const replacement = startStepCounterUpdate(new Date(), jest.fn());
@@ -527,28 +560,25 @@ describe("startStepCounterUpdate", () => {
     jest.isolateModules(() => {
       const nativeMock = makeNativeMock();
       (TurboModuleRegistry.getEnforcing as jest.Mock).mockReturnValue(nativeMock);
-      const { NativeEventEmitter } = require("react-native") as typeof import("react-native");
       const mod = require("../index") as typeof import("../index");
-      const emitter = new NativeEventEmitter(nativeMock);
       const debug = jest.fn();
-      const external = emitter.addListener(eventName, debug);
+      const external = nativeMock.onStepCounterUpdate(debug);
       const callback = jest.fn();
       const old = mod.startStepCounterUpdate(new Date(), callback);
       old.remove();
-      emitter.emit(eventName, { steps: 1 });
+      nativeMock.emitUpdate(stepData(1, 1000));
       expect(callback).not.toHaveBeenCalled();
       expect(debug).toHaveBeenCalledTimes(1);
       mod.startStepCounterUpdate(new Date(), callback);
       const current = mod.startStepCounterUpdate(new Date(), callback);
       old.remove();
-      emitter.emit(eventName, { steps: 2 });
+      nativeMock.emitUpdate(stepData(2, 2000));
       expect(callback).toHaveBeenCalledTimes(1);
       mod.stopStepCounterUpdate();
       current.remove();
-      emitter.emit(eventName, { steps: 3 });
+      nativeMock.emitUpdate(stepData(3, 3000));
       expect(callback).toHaveBeenCalledTimes(1);
       expect(debug).toHaveBeenCalledTimes(3);
-      expect(emitter.listenerCount(eventName)).toBe(1);
       external.remove();
     });
   });
@@ -563,6 +593,28 @@ describe("startStepCounterUpdate", () => {
   });
 });
 
+describe("generated diagnostic subscriptions", () => {
+  it.each([
+    ["onStepDetected", true],
+    ["onErrorOccurred", { code: "motion:42", message: "denied" }],
+    ["onStepsSensorInfo", { name: "CMPedometer", granted: false }],
+  ] as const)("routes %s independently of the owned step session", (event, payload) => {
+    const nativeMock = makeNativeMock();
+    const mod = loadModule(nativeMock);
+    const callback = jest.fn();
+    const diagnostic = mod[event](callback);
+    const receive = nativeMock[event].mock.calls[0]?.[0] as (value: unknown) => void;
+    const owned = mod.startStepCounterUpdate(new Date(), jest.fn());
+    owned.remove();
+    receive(payload);
+    expect(callback).toHaveBeenCalledWith(payload);
+    expect(nativeMock[event]).toHaveBeenCalledTimes(1);
+    diagnostic.remove();
+    expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(2);
+  });
+});
+
 // ─── stopStepCounterUpdate ───────────────────────────────────────────────────
 
 describe("stopStepCounterUpdate", () => {
@@ -573,7 +625,7 @@ describe("stopStepCounterUpdate", () => {
     startStepCounterUpdate(new Date(), jest.fn());
     stopStepCounterUpdate();
 
-    expect(nativeMock.removeListeners).toHaveBeenCalledTimes(1);
+    expect(nativeMock.removeSubscription).toHaveBeenCalledTimes(1);
     expect(nativeMock.stopStepCounterUpdate).toHaveBeenCalled();
   });
 

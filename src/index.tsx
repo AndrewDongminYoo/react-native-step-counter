@@ -6,8 +6,10 @@ import StepCounterModule, {
   type CounterType,
   type Spec,
   type StepCountData,
+  type StepCounterError,
+  type StepsSensorInfo,
 } from "./NativeStepCounter";
-import { NativeEventEmitter, Platform } from "react-native";
+import { Platform } from "react-native";
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR =
@@ -59,7 +61,18 @@ const StepCounter = (
       )
 ) as Spec;
 
-const StepEventEmitter = new NativeEventEmitter(StepCounter);
+/** Subscribe without owning or starting native sensors. Remove the returned listener on cleanup. */
+export const onStepCounterUpdate: Spec["onStepCounterUpdate"] = (listener) =>
+  StepCounter.onStepCounterUpdate(listener);
+/** Subscribe to platform detection/status diagnostics without starting sensors. */
+export const onStepDetected: Spec["onStepDetected"] = (listener) =>
+  StepCounter.onStepDetected(listener);
+/** Subscribe to serializable native errors without owning a counting session. */
+export const onErrorOccurred: Spec["onErrorOccurred"] = (listener) =>
+  StepCounter.onErrorOccurred(listener);
+/** Subscribe to platform-specific sensor metadata without starting sensors. */
+export const onStepsSensorInfo: Spec["onStepsSensorInfo"] = (listener) =>
+  StepCounter.onStepsSensorInfo(listener);
 type StepCountUpdateCallback = (data: StepCountData) => void;
 export type StepCountFilter = (data: StepCountData) => StepCountData | null;
 
@@ -299,9 +312,7 @@ export function startStepCounterUpdate(
   }
   // Clean up any previous subscription registered by this library before creating a new one.
   _activeSubscription?.remove();
-  const listener = StepEventEmitter.addListener(eventName, (data) =>
-    callBack(data as StepCountData)
-  );
+  const listener = StepCounter.onStepCounterUpdate(callBack);
   let removed = false;
   const subscription: EventSubscription = {
     remove() {
@@ -347,4 +358,11 @@ export function stopStepCounterUpdate(): void {
   }
 }
 
-export { NAME, VERSION, type CounterType, type StepCountData };
+export {
+  NAME,
+  VERSION,
+  type CounterType,
+  type StepCountData,
+  type StepCounterError,
+  type StepsSensorInfo,
+};

@@ -15,7 +15,6 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.SensorListenService
 import com.stepcounter.services.StepCounterService
@@ -69,7 +68,6 @@ class StepCounterModule(
    * @see PERMISSION_GRANTED
    */
   private var stepCounterListener: SensorListenService? = null
-  private var listenerCount = 0
 
   @Volatile
   private var invalidated = false
@@ -89,7 +87,7 @@ class StepCounterModule(
     if (!granted) {
       stopStepCounterUpdate()
     }
-    sendDeviceEvent("stepDetected", walkingStatus)
+    if (!invalidated) emitOnStepDetected(walkingStatus)
     promise.resolve(
       Arguments.createMap().apply {
         putBoolean("supported", supported)
@@ -121,7 +119,7 @@ class StepCounterModule(
       if (service.startService(sessionStartMillis)) {
         stepCounterListener = service
         appContext.addLifecycleEventListener(this)
-        sendDeviceEvent("stepDetected", true)
+        emitOnStepDetected(true)
         return
       }
     }
@@ -141,36 +139,13 @@ class StepCounterModule(
       appContext.removeLifecycleEventListener(this)
     }
     stepCounterListener = null
-    sendDeviceEvent("stepDetected", false)
-  }
-
-  /**
-   * Keep: Required for RN built in Event Emitter Support.
-   * @param eventName the name of the event. usually "stepCounterUpdate".
-   */
-  @ReactMethod
-  @Synchronized
-  override fun addListener(eventName: String) {
-    if (!invalidated) listenerCount++
-  }
-
-  /**
-   * Keep: Required for RN built in Event Emitter Support.
-   * @param count the number of listeners to remove.
-   */
-  @ReactMethod
-  @Synchronized
-  override fun removeListeners(count: Double) {
-    if (!count.isFinite() || count <= 0) return
-    listenerCount = (listenerCount - count.toInt()).coerceAtLeast(0)
-    if (listenerCount == 0) stopStepCounterUpdate()
+    if (!invalidated) emitOnStepDetected(false)
   }
 
   @Synchronized
   override fun invalidate() {
     invalidated = true
     stopStepCounterUpdate()
-    listenerCount = 0
     super.invalidate()
   }
 
@@ -192,28 +167,13 @@ class StepCounterModule(
    */
   override fun getName(): String = NAME
 
-  /**
-   * Send the step counter update event to the react-native code.
-   * @param eventPayload the object that contains information about the step counter update.
-   * @return Nothing.
-   * @see WritableMap
-   * @see RCTDeviceEventEmitter
-   * @see com.facebook.react.modules.core.DeviceEventManagerModule
-   * @throws RuntimeException if the event emitter is not initialized.
-   */
-  fun sendDeviceEvent(
-    eventType: String,
-    eventPayload: Any,
-  ) {
-    if (invalidated) return
-    try {
-      appContext
-        .getJSModule(RCTDeviceEventEmitter::class.java)
-        .emit(eventName = "$NAME.$eventType", data = eventPayload)
-    } catch (e: RuntimeException) {
-      e.message?.let { Log.e(TAG_NAME, it) }
-      Log.e(TAG_NAME, eventType, e)
-    }
+  /** Generated transport; services retain their existing serialized callback boundary. */
+  fun sendStepCounterUpdate(payload: WritableMap) {
+    if (!invalidated) emitOnStepCounterUpdate(payload)
+  }
+
+  fun sendStepsSensorInfo(payload: WritableMap) {
+    if (!invalidated) emitOnStepsSensorInfo(payload)
   }
 
   /**

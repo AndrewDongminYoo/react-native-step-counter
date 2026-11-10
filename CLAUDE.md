@@ -69,7 +69,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 ### JavaScript Layer (`src/`)
 
 - **`src/NativeStepCounter.ts`** — TurboModule spec definition. Defines the `Spec` interface registered as `"StepCounter"` via `TurboModuleRegistry.getEnforcing`. Exports `StepCountData` type and constants (`NAME`, `VERSION`, `eventName`).
-- **`src/index.tsx`** — Public API. Wraps the native module with a `NativeEventEmitter`, exposes:
+- **`src/index.tsx`** — Public API. Uses the native module’s generated Codegen event subscriptions and exposes:
   - `isStepCountingSupported()` → Promise with `{ supported, granted }`
   - `startStepCounterUpdate(start, callback)` → returns an owned `EventSubscription`; removing the current handle stops native producers, while stale or repeated removal cannot stop a replacement
   - `stopStepCounterUpdate()` → removes only the subscription created by the most recent `startStepCounterUpdate` (tracked as `_activeSubscription`) and stops native updates; external listeners are left intact
@@ -80,7 +80,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 
 **iOS (`ios/`)**:
 
-- `StepCounter.h / .mm` — Main Objective-C module. Implements `isStepCountingSupported`, `startStepCounterUpdate`, `stopStepCounterUpdate`. Uses `CMPedometer` for step data and `SOMotionDetecter` for motion detection. Emits `StepCounter.stepCounterUpdate` events.
+- `StepCounter.h / .mm` — Main Objective-C module. Implements `isStepCountingSupported`, `startStepCounterUpdate`, `stopStepCounterUpdate`. Uses `CMPedometer` for step data and `SOMotionDetecter` for motion detection. Uses `NativeStepCounterSpecBase` generated emitters; errors are serializable `{ code, message }`. The native-only historical query and motion-start helpers remain internal.
 - `SOMotionDetecter.h / .m` — Motion detection helper used by the iOS module.
 - New Architecture support via `#ifdef RCT_NEW_ARCH_ENABLED` guard with `NativeStepCounterSpecJSI`.
 
@@ -88,7 +88,7 @@ Config in `.release-it.json`. Uses `@release-it/conventional-changelog` with con
 
 - `StepCounterModule.kt` — Extends `NativeStepCounterSpec`. Refreshes actual sensors and permission at each start, preferring the hardware counter with accelerometer fallback. Both backends require `ACTIVITY_RECOGNITION` on API 29+ under the package consent policy; API 24–28 needs no activity runtime grant. The existing Android runtime `working` field tracks successful registration, while the public JS capability type stays `{ supported, granted }`.
 - `StepCounterPackage.kt` — Standard RN package registration.
-- `services/SensorListenService.kt` — Abstract base for sensor services; registers with `SensorManager` and emits events via `RCTDeviceEventEmitter`.
+- `services/SensorListenService.kt` — Abstract base for sensor services; registers with `SensorManager` and sends typed payloads through the module’s generated emitters.
 - `services/StepCounterService.kt` — Uses `TYPE_STEP_COUNTER` hardware sensor (API 19+).
 - `services/AccelerometerService.kt` — Fallback for devices without hardware step counter; processes raw accelerometer data.
 - `utils/AndroidVersionHelper.kt` — API level compatibility checks.
@@ -119,7 +119,7 @@ The `jest-config` package is used in `jest.config.js` for default `moduleFileExt
 - **Node version**: `lts/jod` (Node 22 LTS; see `.nvmrc`)
 - **Package manager**: Yarn 4.x for this workspace. The disposable standalone compatibility consumer uses npm to test tarball installation outside workspace resolution.
 - TypeScript strict mode is enabled with `noUnusedLocals`, `noUnusedParameters`, `noUncheckedIndexedAccess`.
-- Event name constant: `"StepCounter.stepCounterUpdate"` (defined in `NativeStepCounter.ts`).
+- Generated event subscriptions: `onStepCounterUpdate`, `onStepDetected`, `onErrorOccurred`, `onStepsSensorInfo`. Independent listeners do not own sensor teardown. The old internal `eventName` constant is retained for source compatibility only; manual `StepCounter.*` device-emitter routing is removed. See README typed-event migration guidance.
 - **Timestamp flow**: JS passes `Date.getTime()` (Unix **milliseconds**) to native via `startStepCounterUpdate`. Native auto-normalizes the incoming value (accepts both milliseconds and seconds) and returns `startDate`/`endDate` in `StepCountData` as Unix timestamps in **milliseconds**.
 - `parseStepData` assumes a daily goal of 10,000 steps and calculates calories as `steps * 0.045 kCal`.
 

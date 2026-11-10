@@ -1,6 +1,4 @@
 #import <CoreMotion/CoreMotion.h>
-#import <React/RCTBridge.h>
-#import <React/RCTEventDispatcher.h>
 #import "StepCounter.h"
 #import "StepCounterPayload.h"
 #import "SOMotionDetecter.h"
@@ -31,38 +29,7 @@
   return YES;
 }
 
-@synthesize bridge = _bridge;
-@synthesize callableJSModules = _callableJSModules;
-
 RCT_EXPORT_MODULE();
-
-- (NSArray<NSString *> *)supportedEvents {
-  return @[
-    @"StepCounter.stepCounterUpdate",
-    @"StepCounter.stepDetected",
-    @"StepCounter.errorOccurred",
-    @"StepCounter.stepsSensorInfo"
-  ];
-}
-
-#ifdef RCT_NEW_ARCH_ENABLED
-// In New Architecture, RCTEventEmitter.receiveEvent is not a registered callable JS module.
-// In bridgeless mode (RCTHost), _bridge is nil; events must go through callableJSModules.
-// In bridge-based New Architecture, fall back to _bridge.enqueueJSCall via RCTDeviceEventEmitter.
-- (void)sendEventWithName:(NSString *)eventName body:(id)body {
-  NSArray *args = body ? @[eventName, body] : @[eventName];
-  if (_callableJSModules) {
-    [_callableJSModules invokeModule:@"RCTDeviceEventEmitter"
-                              method:@"emit"
-                            withArgs:args];
-  } else if (_bridge) {
-    [_bridge enqueueJSCall:@"RCTDeviceEventEmitter"
-                    method:@"emit"
-                      args:args
-                completion:nil];
-  }
-}
-#endif // RCT_NEW_ARCH_ENABLED
 
 #pragma mark - Public API
 
@@ -73,13 +40,13 @@ RCT_EXPORT_METHOD(isStepCountingSupported:(RCTPromiseResolveBlock)resolve
     @"supported": @([CMPedometer isStepCountingAvailable]),
   });
 
-  [self sendEventWithName:@"StepCounter.stepsSensorInfo"
-                     body:[self dictionaryAboutSensorInfo]];
+  [self emitOnStepsSensorInfo:[self dictionaryAboutSensorInfo]];
 }
 
-RCT_EXPORT_METHOD(queryStepCounterDataBetweenDates:(NSDate *)startDate
-                  endDate:(NSDate *)endDate
-                  handler:(RCTResponseSenderBlock)handler) {
+// Internal historical helper; intentionally absent from the Codegen/public JS API.
+- (void)queryStepCounterDataBetweenDates:(NSDate *)startDate
+                               endDate:(NSDate *)endDate
+                               handler:(RCTResponseSenderBlock)handler {
   __weak StepCounter *weakSelf = self;
   dispatch_sync(_stateQueue, ^{
     if (self->_invalidated) return;
@@ -133,7 +100,7 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
         strongSelf->_baselineData = error ? nil : data;
         strongSelf->_baselineReady = YES;
         if (error) {
-          [strongSelf sendEventWithName:@"StepCounter.errorOccurred" body:error];
+          [strongSelf emitOnErrorOccurred:[strongSelf dictionaryFromError:error]];
         }
       });
     }];
@@ -145,7 +112,7 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
       dispatch_sync(strongSelf->_stateQueue, ^{
         if (strongSelf->_sessionGeneration != generation) return;
         if (error) {
-          [strongSelf sendEventWithName:@"StepCounter.errorOccurred" body:error];
+          [strongSelf emitOnErrorOccurred:[strongSelf dictionaryFromError:error]];
           return;
         }
         if (!data || !data.startDate || !data.endDate || !data.numberOfSteps ||
@@ -187,7 +154,7 @@ RCT_EXPORT_METHOD(startStepCounterUpdate:(double)from) {
         for (NSString *key in @[@"distance", @"floorsAscended", @"floorsDescended"]) {
           if (body[key] != [NSNull null]) strongSelf->_lastEmittedMetrics[key] = body[key];
         }
-        [strongSelf sendEventWithName:@"StepCounter.stepCounterUpdate" body:body];
+        [strongSelf emitOnStepCounterUpdate:body];
       });
     }];
   });
@@ -214,10 +181,6 @@ RCT_EXPORT_METHOD(stopStepCounterUpdate) {
   });
 }
 
-- (void)stopObserving {
-  [self stopStepCounterUpdate];
-}
-
 - (void)invalidate {
   dispatch_sync(_stateQueue, ^{
     self->_invalidated = YES;
@@ -226,10 +189,10 @@ RCT_EXPORT_METHOD(stopStepCounterUpdate) {
     [self.pedometer stopPedometerUpdates];
     [self.motionDetector stopDetection];
   });
-  [super invalidate];
 }
 
-RCT_EXPORT_METHOD(startStepsDetection) {
+// Internal motion helper; intentionally absent from the Codegen/public JS API.
+- (void)startStepsDetection {
   NSObject *generation = [NSObject new];
   __weak StepCounter *weakSelf = self;
   dispatch_sync(_stateQueue, ^{
@@ -240,14 +203,22 @@ RCT_EXPORT_METHOD(startStepsDetection) {
       if (!strongSelf) return;
       dispatch_sync(strongSelf->_stateQueue, ^{
         if (strongSelf->_invalidated || strongSelf->_detectionGeneration != generation) return;
-        [strongSelf sendEventWithName:error ? @"StepCounter.errorOccurred" : @"StepCounter.stepDetected"
-                                body:error ?: @YES];
+        if (error) {
+          [strongSelf emitOnErrorOccurred:[strongSelf dictionaryFromError:error]];
+        } else {
+          [strongSelf emitOnStepDetected:YES];
+        }
       });
     }];
   });
 }
 
 #pragma mark - Sensor info / mapping
+
+- (NSDictionary *)dictionaryFromError:(NSError *)error {
+  return @{ @"code": [NSString stringWithFormat:@"%@:%ld", error.domain, (long)error.code],
+            @"message": error.localizedDescription };
+}
 
 - (NSDictionary *)dictionaryAboutSensorInfo {
   return @{

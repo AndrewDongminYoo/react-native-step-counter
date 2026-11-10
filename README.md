@@ -78,7 +78,7 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
 
 - `stopStepCounterUpdate(): void`:
   - Removes the current owned subscription and stops the native sensor session. Stop is safe before start and on repeated calls; independent debug listeners remain registered.
-  - Removing the last native emitter listener or invalidating the React Native runtime also stops native producers. Android host destruction releases its sensor and lifecycle registration. iOS releases pedometer updates and motion callbacks, including queued callbacks from retired sessions.
+  - Removing the owned counting handle or invalidating the React Native runtime stops native producers. Independent generated listeners do not control producer lifetime. Android host destruction releases its sensor and lifecycle registration. iOS releases pedometer updates and motion callbacks, including queued callbacks from retired sessions.
   - Activity pause alone does not stop a session. Background delivery follows OS restrictions; this library does not provide a foreground service, guaranteed background counting, or app-killed tracking. Device energy impact has not been measured.
 
 - `createStepCountFilter(options?: StepCountFilterOptions)`: `(data: StepCountData) => StepCountData | null`:
@@ -102,6 +102,40 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
   - **iOS Only**
     - `floorsAscended`: This is a number property that indicates the number of floors the user has ascended during the specified time period. Its type is `number | null | undefined`: iOS sends `null` when unavailable; Android omits this field.
     - `floorsDescended`: This is a number property that indicates the number of floors the user has descended during the specified time period. Its type is `number | null | undefined`: iOS sends `null` when unavailable; Android omits this field.
+
+## Typed event subscriptions
+
+`startStepCounterUpdate(start, callback)` and its owned `EventSubscription` remain the primary counting API.
+Independent listeners use generated Codegen events:
+
+```typescript
+import {
+  onStepCounterUpdate,
+  onStepDetected,
+  onErrorOccurred,
+  onStepsSensorInfo,
+} from "react-native-step-counter-newarch";
+
+const subscriptions = [
+  onStepCounterUpdate((data) => console.log(data.steps)),
+  onStepDetected((active) => console.log(active)),
+  onErrorOccurred(({ code, message }) => console.warn(code, message)),
+  onStepsSensorInfo((info) => console.log(info.name)),
+];
+// On cleanup:
+subscriptions.forEach((subscription) => subscription.remove());
+```
+
+These listeners neither start nor keep sensors running; removing one never stops the owned counting session or another listener.
+`onStepDetected` reports Android registration status; the internal iOS motion helper can also emit detection notifications.
+It is not a cross-platform walking-state guarantee.
+`onErrorOccurred` carries serializable `StepCounterError` strings (`code` and `message`); iOS codes include the error domain and number.
+`StepsSensorInfo` requires `name` and has optional platform-specific fields; iOS reports capability flags, while Android reports sensor metadata after registration.
+A platform need not emit every diagnostic event.
+
+Direct `NativeEventEmitter` subscriptions to old `StepCounter.*` names must migrate to these functions.
+The native-only iOS historical query and motion-start helpers are internal and are not new JS APIs.
+Codegen types describe the payload contract; they do not perform runtime schema validation or establish sensor accuracy.
 
 ## Payload compatibility
 

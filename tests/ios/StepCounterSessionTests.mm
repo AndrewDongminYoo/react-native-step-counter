@@ -16,12 +16,10 @@
 - (void)startPedometerUpdatesFromDate:(NSDate *)start withHandler:(CMPedometerHandler)handler {}
 - (void)stopPedometerUpdates {}
 @end
-@implementation RCTEventEmitter
-- (void)sendEventWithName:(NSString *)name body:(id)body {}
-- (void)invalidate {}
-- (void)stopObserving {}
+@implementation EventEmitterCallbackWrapper
 @end
 @interface StepCounter (Testing)
+- (void)isStepCountingSupported:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
 - (void)startStepCounterUpdate:(double)from;
 - (void)stopStepCounterUpdate;
 - (void)startStepsDetection;
@@ -59,9 +57,22 @@
 - (SOMotionDetecter *)motionDetector;
 @end
 @implementation RecordingCounter
-- (instancetype)init { if ((self = [super init])) _events = [NSMutableArray new]; return self; }
+- (instancetype)init {
+  if ((self = [super init])) {
+    _events = [NSMutableArray new];
+    __weak RecordingCounter *weakSelf = self;
+    EventEmitterCallbackWrapper *wrapper = [EventEmitterCallbackWrapper new];
+    wrapper->_eventEmitterCallback = [weakSelf](const std::string &name, id body) {
+      RecordingCounter *counter = weakSelf;
+      if (!counter) return;
+      if (counter.onEmit) counter.onEmit();
+      [counter.events addObject:@{@"name": @(name.c_str()), @"body": body}];
+    };
+    [self setEventEmitterCallback:wrapper];
+  }
+  return self;
+}
 - (SOMotionDetecter *)motionDetector { if (!self.testMotion) self.testMotion = [ScheduledMotion new]; return self.testMotion; }
-- (void)sendEventWithName:(NSString *)name body:(id)body { if (self.onEmit) self.onEmit(); [self.events addObject:@{@"name": name, @"body": body}]; }
 @end
 
 @interface StepCounterSessionTests : XCTestCase
@@ -76,16 +87,30 @@
   data.startDate = [NSDate dateWithTimeIntervalSince1970:start]; self.sampleEnd += 1; data.endDate = [NSDate dateWithTimeIntervalSince1970:self.sampleEnd]; data.numberOfSteps = @(steps); return data;
 }
 - (NSError *)error { return [NSError errorWithDomain:@"test" code:1 userInfo:nil]; }
-- (void)testStopObservingReleasesLiveProducerAndRejectsQueuedCallbacks {
+- (void)testGeneratedSensorAndErrorCallbacksCarrySerializablePayloads {
+  [self.counter isStepCountingSupported:^(id result) {
+    XCTAssertEqualObjects(result[@"supported"], @YES);
+  } reject:nil];
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"name"], @"onStepsSensorInfo");
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"][@"name"], @"CMPedometer");
+  [self.counter startStepCounterUpdate:1000];
+  self.sensor.updates[0](nil, [NSError errorWithDomain:@"motion" code:42 userInfo:@{NSLocalizedDescriptionKey: @"denied"}]);
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"name"], @"onErrorOccurred");
+  XCTAssertEqualObjects(self.counter.events.lastObject[@"body"], (@{@"code": @"motion:42", @"message": @"denied"}));
+  XCTAssertNotNil([NSJSONSerialization dataWithJSONObject:self.counter.events options:0 error:nil]);
+  [self.counter invalidate];
+}
+
+- (void)testExplicitStopReleasesLiveProducerAndRejectsQueuedCallbacks {
   [self.counter startStepCounterUpdate:1000];
   __block BOOL stopped = NO;
   self.sensor.onStop = ^{ stopped = YES; };
-  [self.counter stopObserving];
+  [self.counter stopStepCounterUpdate];
   XCTAssertTrue(stopped);
   self.sensor.queries[0]([self data:10 start:1000], nil);
   self.sensor.updates[0]([self data:20 start:1000], nil);
   XCTAssertEqual(self.counter.events.count, 0u);
-  [self.counter stopObserving];
+  [self.counter stopStepCounterUpdate];
 }
 - (void)testMotionStopRejectsQueuedSuccessAndErrorsAndRestartReplacesOwnership {
   [self.counter startStepsDetection];
