@@ -110,13 +110,14 @@ The `jest-config` package is used in `jest.config.js` for default `moduleFileExt
 ## Compatibility
 
 - **v0.3.0+**: New Architecture (TurboModule/Fabric) is **required**. The library no longer supports the legacy bridge architecture.
-- **Not supported**: Expo Go, Expo managed workflow, React Native < 0.71 (the `react-native` peer dependency requires `>=0.71.0`).
+- **Supported runtime**: RN `~0.88.0` / React `~19.3.0`; minimum and current clean-consumer CI both use RN 0.88.0 / React 19.3.1.
+- **Compatibility details**: See [native compatibility](docs/native-compatibility.md) for migration, toolchains and verification limits. Expo Go and other RN minor lines are outside the validated range.
 - For legacy architecture support, use a version prior to v0.3.0.
 
 ## Key Conventions
 
 - **Node version**: `lts/jod` (Node 22 LTS; see `.nvmrc`)
-- **Package manager**: Yarn 4.x only — do not use npm or pnpm.
+- **Package manager**: Yarn 4.x for this workspace. The disposable standalone compatibility consumer uses npm to test tarball installation outside workspace resolution.
 - TypeScript strict mode is enabled with `noUnusedLocals`, `noUnusedParameters`, `noUncheckedIndexedAccess`.
 - Event name constant: `"StepCounter.stepCounterUpdate"` (defined in `NativeStepCounter.ts`).
 - **Timestamp flow**: JS passes `Date.getTime()` (Unix **milliseconds**) to native via `startStepCounterUpdate`. Native auto-normalizes the incoming value (accepts both milliseconds and seconds) and returns `startDate`/`endDate` in `StepCountData` as Unix timestamps in **milliseconds**.
