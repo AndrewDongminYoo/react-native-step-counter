@@ -38,8 +38,8 @@ function newSessionId() {
 export default function App(): React.JSX.Element {
   const { width, height } = useWindowDimensions();
   const [loaded, setLoaded] = React.useState(false);
-  const [supported, setSupported] = React.useState(false);
-  const [granted, setGranted] = React.useState(false);
+  const [requesting, setRequesting] = React.useState(true);
+  const operationRef = React.useRef<AbortController | null>(null);
 
   const [sessionId, setSessionId] = React.useState<string>(() => newSessionId());
   const [stepData, setStepData] = React.useState<StepCountData>(initialState);
@@ -74,6 +74,9 @@ export default function App(): React.JSX.Element {
   }, []);
 
   const stopStepCounter = React.useCallback(() => {
+    operationRef.current?.abort();
+    operationRef.current = null;
+    setRequesting(false);
     progressRef.current?.pause();
     stopStepCounterUpdate();
     stepSubscriptionRef.current = null;
@@ -149,28 +152,34 @@ export default function App(): React.JSX.Element {
   const requestAndStartStepCounter = React.useCallback(async () => {
     if (startedRef.current) return;
 
-    let cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
-    setSupported(cap.supported === true);
-    setGranted(cap.granted === true);
-    appendLog("capabilities", () => cap);
+    operationRef.current?.abort();
+    const operation = new AbortController();
+    operationRef.current = operation;
+    setRequesting(true);
+    try {
+      let cap = await isStepCountingSupported();
+      if (operation.signal.aborted) return;
+      appendLog("capabilities", () => cap);
+      if (!cap.supported) return;
 
-    if (!cap.supported) {
-      return;
+      if (!cap.granted) {
+        const requested = await getStepCounterPermission(operation.signal);
+        if (operation.signal.aborted) return;
+        cap = await isStepCountingSupported();
+        if (operation.signal.aborted) return;
+        appendLog("permission", () => ({ requested, ...cap }));
+      }
+      if (cap.supported && cap.granted) startStepCounter();
+    } catch (error) {
+      if (!operation.signal.aborted) {
+        appendLog("capabilityError", () => String(error));
+      }
+    } finally {
+      if (operationRef.current === operation) {
+        operationRef.current = null;
+        setRequesting(false);
+      }
     }
-
-    if (!cap.granted) {
-      const requested = await getStepCounterPermission().catch(() => false);
-      cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
-      setSupported(cap.supported === true);
-      setGranted(cap.granted === true);
-      appendLog("permission", () => ({ requested, ...cap }));
-    }
-
-    if (!cap.supported || !cap.granted) {
-      return;
-    }
-
-    startStepCounter();
   }, [appendLog, startStepCounter]);
 
   const restartStepCounter = React.useCallback(async () => {
@@ -187,29 +196,29 @@ export default function App(): React.JSX.Element {
   }, [appendLog, requestAndStartStepCounter, stopStepCounter]);
 
   React.useEffect(() => {
-    let cancelled = false;
-
-    isStepCountingSupported().then((result) => {
-      if (cancelled) return;
-      setGranted(result.granted === true);
-      setSupported(result.supported === true);
-      appendLog("isStepCountingSupported", () => result);
-    });
+    const operation = new AbortController();
+    operationRef.current = operation;
+    setRequesting(true);
+    isStepCountingSupported()
+      .then((result) => {
+        if (operation.signal.aborted) return;
+        appendLog("isStepCountingSupported", () => result);
+        if (result.supported && result.granted) startStepCounter();
+      })
+      .catch((error: unknown) => {
+        if (!operation.signal.aborted) appendLog("capabilityError", () => String(error));
+      })
+      .finally(() => {
+        if (operationRef.current === operation) {
+          operationRef.current = null;
+          setRequesting(false);
+        }
+      });
 
     return () => {
-      cancelled = true;
       stopStepCounter();
     };
-    // run once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  React.useEffect(() => {
-    appendLog("capabilities", () => ({ supported, granted }));
-    if (supported && granted) {
-      startStepCounter();
-    }
-  }, [supported, granted, startStepCounter, appendLog]);
+  }, [appendLog, startStepCounter, stopStepCounter]);
 
   const startedAtLabel = stepData.startDate
     ? new Date(stepData.startDate).toLocaleTimeString([], {
@@ -255,9 +264,20 @@ export default function App(): React.JSX.Element {
           </View>
 
           <View style={styles.bGroup}>
-            <Button title="START" onPress={requestAndStartStepCounter} disabled={loaded} />
-            <Button title="RESTART" onPress={restartStepCounter} />
-            <Button title="STOP" onPress={stopStepCounter} disabled={!loaded} />
+            <Button
+              title="START"
+              onPress={() => {
+                requestAndStartStepCounter();
+              }}
+              disabled={loaded}
+            />
+            <Button
+              title="RESTART"
+              onPress={() => {
+                restartStepCounter();
+              }}
+            />
+            <Button title="STOP" onPress={stopStepCounter} disabled={!loaded && !requesting} />
           </View>
 
           {/* LogCat becomes a pure renderer. No emitter subscription here. */}
