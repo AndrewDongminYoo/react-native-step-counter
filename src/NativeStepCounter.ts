@@ -23,8 +23,17 @@ export type StepCountData = {
   floorsDescended?: number | null; // number of floors descended (iOS only, null when unavailable)
 };
 
-/** Serializable native error; code includes the iOS error domain and numeric code. */
-export type StepCounterError = { code: string; message: string };
+/** Serializable native failure. Query errors can recover; fatal errors stop counting. */
+export type StepCounterError = {
+  code: string;
+  message: string;
+  platform: "android" | "ios";
+  sessionId: string;
+  operation: "start" | "query" | "update" | "detection";
+  fatal: boolean;
+  nativeCode?: string;
+  nativeDomain?: string;
+};
 
 /** Platform-specific diagnostic metadata; optional fields are absent on other platforms. */
 export type StepsSensorInfo = {
@@ -71,6 +80,8 @@ export interface Spec extends TurboModule {
    * @param {number} from the current time obtained by `new Date()` in milliseconds.
    */
   startStepCounterUpdate(from: number): void;
+  /** Session-aware transport used by the optional public error callback. */
+  startStepCounterUpdateWithSession(from: number, sessionId: string): void;
   /**
    * Stop updating the step count data.
    * Releases native producers; the public JS wrapper removes its owned subscription.

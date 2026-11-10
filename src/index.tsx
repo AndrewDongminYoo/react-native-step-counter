@@ -92,6 +92,7 @@ const DEFAULT_MINIMUM_STEP_INTERVAL_MS = 250;
 // Tracks the subscription created by the most recent startStepCounterUpdate call.
 // Its handle owns native teardown; external debug listeners remain registered.
 let _activeSubscription: EventSubscription | null = null;
+let sessionSequence = 0;
 
 /**
  * Transform the step count data into a more readable format.
@@ -288,6 +289,7 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
  * @see https://developer.apple.com/documentation/coremotion/cmstepcounter/1616151-startstepcountingupdates
  * @param {Date} start Native origin; on iOS, used to query the baseline, not to replay past steps.
  * @param {StepCountUpdateCallback} callBack - This callback function makes it easy for app developers to receive sensor events.
+ * @param onError Optional session-scoped native failure callback; remove the subscription on fatal errors.
  * @throws {RangeError} If start is an invalid Date, before replacing the current subscription.
  * @returns {EventSubscription} - Returns a Subscription that enables you to call.
  * Calling `remove()` on the current subscription stops native sensors and removes
@@ -301,10 +303,14 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
  */
 export function startStepCounterUpdate(
   start: Date,
-  callBack: StepCountUpdateCallback
+  callBack: StepCountUpdateCallback,
+  onError?: (error: StepCounterError) => void
 ): EventSubscription {
   if (!StepCounter.startStepCounterUpdate) {
     throw new UnavailabilityError(NAME, eventName);
+  }
+  if (onError && !StepCounter.startStepCounterUpdateWithSession) {
+    throw new UnavailabilityError(NAME, "startStepCounterUpdateWithSession");
   }
   const from = start.getTime();
   if (!Number.isFinite(from)) {
@@ -313,6 +319,8 @@ export function startStepCounterUpdate(
   // Clean up any previous subscription registered by this library before creating a new one.
   _activeSubscription?.remove();
   const listener = StepCounter.onStepCounterUpdate(callBack);
+  const sessionId = `${Date.now()}-${++sessionSequence}`;
+  let errorListener: EventSubscription | undefined;
   let removed = false;
   const subscription: EventSubscription = {
     remove() {
@@ -323,13 +331,26 @@ export function startStepCounterUpdate(
       try {
         if (ownsSession) StepCounter.stopStepCounterUpdate();
       } finally {
-        listener.remove();
+        try {
+          listener.remove();
+        } finally {
+          errorListener?.remove();
+        }
       }
     },
   };
   _activeSubscription = subscription;
   try {
-    StepCounter.startStepCounterUpdate(from);
+    if (onError) {
+      errorListener = StepCounter.onErrorOccurred((error) => {
+        if (!removed && _activeSubscription === subscription && error.sessionId === sessionId) {
+          onError(error);
+        }
+      });
+      StepCounter.startStepCounterUpdateWithSession(from, sessionId);
+    } else {
+      StepCounter.startStepCounterUpdate(from);
+    }
   } catch (error) {
     try {
       subscription.remove();

@@ -130,7 +130,25 @@ subscriptions.forEach((subscription) => subscription.remove());
 These listeners neither start nor keep sensors running; removing one never stops the owned counting session or another listener.
 `onStepDetected` reports Android registration status; the internal iOS motion helper can also emit detection notifications.
 It is not a cross-platform walking-state guarantee.
-`onErrorOccurred` carries serializable `StepCounterError` strings (`code` and `message`); iOS codes include the error domain and number.
+`onErrorOccurred` carries serializable `StepCounterError` data: `code`, `message`, `platform`, `sessionId`, `operation`, and `fatal`.
+Stable codes are `PERMISSION_DENIED`, `SENSOR_UNAVAILABLE`, `REGISTRATION_FAILED`, `QUERY_FAILED`, `UPDATE_FAILED`, and `DETECTION_FAILED`.
+iOS preserves the original error in optional `nativeDomain` and `nativeCode` strings, without exposing NSError or userInfo.
+A query failure is recoverable through the existing live-baseline fallback; fatal start/update failures stop counting.
+Android emits a failure only after permitted fallback attempts fail.
+
+Pass an optional third callback to receive only errors belonging to that start, including asynchronous startup failure:
+
+```tsx
+const subscription = startStepCounterUpdate(new Date(), onSteps, (error) => {
+  console.warn(error.code, error.message);
+  if (error.fatal) subscription.remove();
+});
+```
+
+The existing two-argument signature is unchanged.
+The session callback uses a unique token even when two starts reuse the same date, ignores replaced/stopped sessions, and is removed with its owned subscription.
+Independent `onErrorOccurred` listeners remain subscribed and receive the native session ID for correlation.
+Rebuild native apps to use the new session-aware callback.
 `StepsSensorInfo` requires `name` and has optional platform-specific fields; iOS reports capability flags, while Android reports sensor metadata after registration.
 A platform need not emit every diagnostic event.
 

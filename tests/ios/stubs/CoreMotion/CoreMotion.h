@@ -4,7 +4,10 @@
 #define CMPedometer SCFixturePedometer
 #define CMPedometerData SCFixturePedometerData
 
-typedef NS_ENUM(NSInteger, CMAuthorizationStatus) { CMAuthorizationStatusAuthorized = 3 };
+static NSString *const CMErrorDomain = @"CMErrorDomain";
+static const NSInteger CMErrorMotionActivityNotAuthorized = 105;
+static const NSInteger CMErrorNotAuthorized = 111;
+typedef NS_ENUM(NSInteger, CMAuthorizationStatus) { CMAuthorizationStatusNotDetermined = 0, CMAuthorizationStatusRestricted = 1, CMAuthorizationStatusDenied = 2, CMAuthorizationStatusAuthorized = 3 };
 @interface CMPedometerData : NSObject
 @property(nonatomic, strong) NSDate *startDate;
 @property(nonatomic, strong) NSDate *endDate;

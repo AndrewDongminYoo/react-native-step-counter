@@ -363,9 +363,35 @@ subscriptions.forEach((subscription) => subscription.remove());
             owned counting session or another listener. <code>onStepDetected</code> reports Android
             registration status; the internal iOS motion helper can also emit detection
             notifications. It is not a cross-platform walking-state guarantee.
-            <code>onErrorOccurred</code> carries serializable <code>StepCounterError</code> strings
-            (<code>code</code> and <code>message</code>); iOS codes include the error domain and
-            number. <code>StepsSensorInfo</code> requires <code>name</code> and has optional
+            <code>onErrorOccurred</code> carries serializable <code>StepCounterError</code> data:
+            <code>code</code>, <code>message</code>, <code>platform</code>, <code>sessionId</code>,
+            <code>operation</code>, and <code>fatal</code>. Stable codes are
+            <code>PERMISSION_DENIED</code>, <code>SENSOR_UNAVAILABLE</code>,
+            <code>REGISTRATION_FAILED</code>, <code>QUERY_FAILED</code>, <code>UPDATE_FAILED</code>,
+            and <code>DETECTION_FAILED</code>. iOS preserves the original error in optional
+            <code>nativeDomain</code> and <code>nativeCode</code> strings, without exposing NSError
+            or userInfo. A query failure is recoverable through the existing live-baseline fallback;
+            fatal start/update failures stop counting. Android emits a failure only after permitted
+            fallback attempts fail.
+          </p>
+          <p>
+            Pass an optional third callback to receive only errors belonging to that start,
+            including asynchronous startup failure:
+          </p>
+          <pre
+            class="prettyprint source lang-tsx"
+          ><code>const subscription = startStepCounterUpdate(new Date(), onSteps, (error) => {
+  console.warn(error.code, error.message);
+  if (error.fatal) subscription.remove();
+});
+</code></pre>
+          <p>
+            The existing two-argument signature is unchanged. The session callback uses a unique
+            token even when two starts reuse the same date, ignores replaced/stopped sessions, and
+            is removed with its owned subscription. Independent
+            <code>onErrorOccurred</code> listeners remain subscribed and receive the native session
+            ID for correlation. Rebuild native apps to use the new session-aware callback.
+            <code>StepsSensorInfo</code> requires <code>name</code> and has optional
             platform-specific fields; iOS reports capability flags, while Android reports sensor
             metadata after registration. A platform need not emit every diagnostic event.
           </p>
@@ -483,7 +509,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 20:45:31 GMT+0900 (Korean Standard Time)
+      Documentation generated at Wed Nov 11 2026 07:11:32 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

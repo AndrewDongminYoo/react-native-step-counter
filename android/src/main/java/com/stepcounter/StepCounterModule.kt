@@ -104,12 +104,30 @@ class StepCounterModule(
   @ReactMethod
   @Synchronized
   override fun startStepCounterUpdate(from: Double) {
+    startStepCounterUpdateWithSession(
+      from,
+      java.util.UUID
+        .randomUUID()
+        .toString(),
+    )
+  }
+
+  @ReactMethod
+  @Synchronized
+  override fun startStepCounterUpdateWithSession(
+    from: Double,
+    sessionId: String,
+  ) {
     if (invalidated) return
     val sessionStartMillis = normalizeStartTimestampToMillis(from)
     stopStepCounterUpdate()
+    var permissionDenied = !stepsOK
     for (sensorType in listOf(Sensor.TYPE_STEP_COUNTER, Sensor.TYPE_ACCELEROMETER)) {
       // Apply the same consent policy to fallback, including a grant lost during registration.
-      if (!stepsOK) break
+      if (!stepsOK) {
+        permissionDenied = true
+        break
+      }
       val service =
         if (sensorType == Sensor.TYPE_STEP_COUNTER) {
           StepCounterService(this, sensorManager)
@@ -122,8 +140,31 @@ class StepCounterModule(
         emitOnStepDetected(true)
         return
       }
+      permissionDenied = permissionDenied || service.permissionDeniedOnStart
     }
-    Log.w(TAG_NAME, "No permitted sensor could be registered")
+    val code =
+      when {
+        permissionDenied -> "PERMISSION_DENIED"
+        !supported -> "SENSOR_UNAVAILABLE"
+        else -> "REGISTRATION_FAILED"
+      }
+    val message =
+      when (code) {
+        "PERMISSION_DENIED" -> "Activity recognition permission is required"
+        "SENSOR_UNAVAILABLE" -> "No step counter or accelerometer is available"
+        else -> "No counting sensor could be registered"
+      }
+    emitOnErrorOccurred(
+      Arguments.createMap().apply {
+        putString("code", code)
+        putString("message", message)
+        putString("platform", "android")
+        putString("sessionId", sessionId)
+        putString("operation", "start")
+        putBoolean("fatal", true)
+      },
+    )
+    Log.w(TAG_NAME, message)
   }
 
   /**
