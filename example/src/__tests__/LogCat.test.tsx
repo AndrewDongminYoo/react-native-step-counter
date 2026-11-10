@@ -1,5 +1,5 @@
 import { render, fireEvent, screen } from "@testing-library/react-native";
-import { Clipboard } from "react-native";
+import { Clipboard, ScrollView, type ScrollViewImperativeMethods } from "react-native";
 import LogCat, { type LogLine } from "../LogCat";
 
 function makeLog(overrides: Partial<LogLine> = {}): LogLine {
@@ -13,6 +13,29 @@ function makeLog(overrides: Partial<LogLine> = {}): LogLine {
 }
 
 describe("LogCat", () => {
+  it("scrolls to the newest row when capped history is replaced at the same length", async () => {
+    // The RN preset exposes imperative scroll methods on its class mock.
+    const scrollViewMock = ScrollView as unknown as { prototype: ScrollViewImperativeMethods };
+    const scrollToEnd = jest.spyOn(scrollViewMock.prototype, "scrollToEnd");
+    const logs = Array.from({ length: 200 }, (_, index) =>
+      makeLog({ ts: 1700000000000 + index * 1000 })
+    );
+    try {
+      await render(<LogCat sessionId="session-1" logs={logs} onClear={jest.fn()} />);
+      scrollToEnd.mockClear();
+      await screen.rerender(
+        <LogCat
+          sessionId="session-1"
+          logs={[...logs.slice(1), makeLog({ tag: "LATEST" })]}
+          onClear={jest.fn()}
+        />
+      );
+      expect(scrollToEnd).toHaveBeenCalledWith({ animated: false });
+      expect(screen.getByText(/\[LATEST\]/)).toBeOnTheScreen();
+    } finally {
+      scrollToEnd.mockRestore();
+    }
+  });
   describe("empty state", () => {
     beforeEach(async () => {
       await render(<LogCat sessionId="session-1" logs={[]} onClear={jest.fn()} />);

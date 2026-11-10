@@ -20,6 +20,7 @@ import {
 import { getStepCounterPermission } from "./permission";
 import CircularProgress, { type ProgressRef } from "react-native-circular-progress-indicator";
 import LogCat, { type LogLine } from "./LogCat";
+import { EXAMPLE_LOGGING_ENABLED, MAX_LOG_ENTRIES } from "./logging";
 
 const initialState: StepCountData = {
   counterType: "STEP_COUNTER",
@@ -56,17 +57,19 @@ export default function App(): React.JSX.Element {
   // Avoid state race in RESTART/START
   const startedRef = React.useRef(false);
 
-  const appendLog = React.useCallback((tag: string, payload: unknown, sid?: string) => {
+  const appendLog = React.useCallback((tag: string, payload: () => unknown, sid?: string) => {
+    if (!EXAMPLE_LOGGING_ENABLED) return;
     const line: LogLine = {
       sessionId: sid ?? sessionIdRef.current,
       ts: Date.now(),
       tag,
-      payload: JSON.stringify(payload),
+      payload: JSON.stringify(payload()),
     };
-    setLogs((prev) => [...prev, line]);
+    setLogs((prev) => [...prev.slice(-(MAX_LOG_ENTRIES - 1)), line]);
   }, []);
 
   const clearLogs = React.useCallback(() => {
+    if (!EXAMPLE_LOGGING_ENABLED) return;
     setLogs([]);
   }, []);
 
@@ -80,7 +83,7 @@ export default function App(): React.JSX.Element {
     setLoaded(false);
     startedRef.current = false;
 
-    appendLog("STOP", { ok: true });
+    appendLog("STOP", () => ({ ok: true }));
   }, [appendLog]);
 
   const startStepCounter = React.useCallback(() => {
@@ -92,6 +95,7 @@ export default function App(): React.JSX.Element {
 
     // New session boundary
     const nextSessionId = newSessionId();
+    sessionIdRef.current = nextSessionId;
     setSessionId(nextSessionId);
 
     // Reset UI state
@@ -101,54 +105,44 @@ export default function App(): React.JSX.Element {
     setLoaded(true);
 
     const now = new Date();
-    appendLog("START", { at: now.toISOString(), sessionId: nextSessionId });
+    appendLog("START", () => ({ at: now.toISOString(), sessionId: nextSessionId }), nextSessionId);
     const filterStepCountData = createStepCountFilter();
 
     // Subscribe once here; DO NOT subscribe elsewhere in UI.
     stepSubscriptionRef.current = startStepCounterUpdate(now, (data) => {
       const filteredData = filterStepCountData(data);
       if (!filteredData) {
-        setLogs((prev) => [
-          ...prev,
-          {
-            sessionId: nextSessionId,
-            ts: Date.now(),
-            tag: "stepCounterUpdateFiltered",
-            payload: JSON.stringify({
-              counterType: data.counterType,
-              rawSteps: data.steps,
-              rawDistance: data.distance,
-              startDate: data.startDate,
-              endDate: data.endDate,
-            }),
-          },
-        ]);
+        appendLog(
+          "stepCounterUpdateFiltered",
+          () => ({
+            counterType: data.counterType,
+            rawSteps: data.steps,
+            rawDistance: data.distance,
+            startDate: data.startDate,
+            endDate: data.endDate,
+          }),
+          nextSessionId
+        );
         return;
       }
 
-      // NOTE: because sessionId is state, closure might reference old value.
-      // For demo we log without relying on closure correctness; use ref if needed.
       setStepData(filteredData);
       setCalories(parseStepData(filteredData).calories);
 
       // Log the raw event we get from wrapper callback (single source of truth)
-      setLogs((prev) => [
-        ...prev,
-        {
-          sessionId: nextSessionId,
-          ts: Date.now(),
-          tag: "stepCounterUpdate",
-          payload: JSON.stringify({
-            counterType: data.counterType,
-            rawSteps: data.steps,
-            acceptedSteps: filteredData.steps,
-            rawDistance: data.distance,
-            acceptedDistance: filteredData.distance,
-            startDate: filteredData.startDate,
-            endDate: filteredData.endDate,
-          }),
-        },
-      ]);
+      appendLog(
+        "stepCounterUpdate",
+        () => ({
+          counterType: data.counterType,
+          rawSteps: data.steps,
+          acceptedSteps: filteredData.steps,
+          rawDistance: data.distance,
+          acceptedDistance: filteredData.distance,
+          startDate: filteredData.startDate,
+          endDate: filteredData.endDate,
+        }),
+        nextSessionId
+      );
     });
   }, [appendLog, clearLogs]);
 
@@ -158,7 +152,7 @@ export default function App(): React.JSX.Element {
     let cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
     setSupported(cap.supported === true);
     setGranted(cap.granted === true);
-    appendLog("capabilities", cap);
+    appendLog("capabilities", () => cap);
 
     if (!cap.supported) {
       return;
@@ -169,7 +163,7 @@ export default function App(): React.JSX.Element {
       cap = await isStepCountingSupported().catch(() => ({ supported: false, granted: false }));
       setSupported(cap.supported === true);
       setGranted(cap.granted === true);
-      appendLog("permission", { requested, ...cap });
+      appendLog("permission", () => ({ requested, ...cap }));
     }
 
     if (!cap.supported || !cap.granted) {
@@ -181,7 +175,7 @@ export default function App(): React.JSX.Element {
 
   const restartStepCounter = React.useCallback(async () => {
     const hadSubscription = stepSubscriptionRef.current != null;
-    appendLog("RESTART", { hadSubscription });
+    appendLog("RESTART", () => ({ hadSubscription }));
 
     // Stop first
     stopStepCounter();
@@ -199,7 +193,7 @@ export default function App(): React.JSX.Element {
       if (cancelled) return;
       setGranted(result.granted === true);
       setSupported(result.supported === true);
-      appendLog("isStepCountingSupported", result);
+      appendLog("isStepCountingSupported", () => result);
     });
 
     return () => {
@@ -211,7 +205,7 @@ export default function App(): React.JSX.Element {
   }, []);
 
   React.useEffect(() => {
-    appendLog("capabilities", { supported, granted });
+    appendLog("capabilities", () => ({ supported, granted }));
     if (supported && granted) {
       startStepCounter();
     }
@@ -268,7 +262,9 @@ export default function App(): React.JSX.Element {
 
           {/* LogCat becomes a pure renderer. No emitter subscription here. */}
           <View style={styles.logSection}>
-            <LogCat sessionId={sessionId} logs={logs} onClear={clearLogs} />
+            {EXAMPLE_LOGGING_ENABLED ? (
+              <LogCat sessionId={sessionId} logs={logs} onClear={clearLogs} />
+            ) : null}
           </View>
         </View>
       </SafeAreaView>

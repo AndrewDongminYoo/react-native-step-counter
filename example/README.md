@@ -100,6 +100,29 @@ You've successfully run and modified your React Native App. :partying_face:
 - If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
 - If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
 
+## Example logging and measurements
+
+With logging enabled, the example retains the newest **200 entries** across accepted steps, filtered steps and diagnostics, evicting the oldest entry on each subsequent append.
+The existing ScrollView therefore renders at most 200 rows, and automatic scrolling continues when a row replaces the oldest entry.
+The limit bounds entry count, not payload byte size.
+Only entries from the active session are displayed and copied; Copy exports their serialized payloads verbatim in arrival order.
+Clear removes retained history, and starting a new session resets it.
+
+For repeatable measurements without example logs:
+
+1. Set `EXAMPLE_LOGGING_ENABLED` to `false` in `src/logging.ts` before launching the example.
+2. Perform a full app reload, then run the same START/STOP/RESTART and sensor-event sequence used for the logging-enabled comparison.
+3. Record the logging setting, build mode, device and event sequence alongside results; keep those conditions fixed between comparisons.
+4. Restore `EXAMPLE_LOGGING_ENABLED` to `true` and fully reload when diagnostic logs are needed again.
+
+The disabled mode skips log payload creation/serialization, timestamp formatting, log state updates and LogCat rendering for every log path, including capability and permission diagnostics.
+Step filtering, accepted-step display, calorie formatting and the progress indicator still run, so this mode is not a package-only benchmark.
+The setting is a launch-time source configuration, not a runtime toggle or a persisted preference.
+No runtime memory or frame-cost improvement is claimed from the entry cap alone.
+
+From the repository root, `yarn test example/src/__tests__/App.test.tsx example/src/__tests__/LogCat.test.tsx` checks long synthetic sessions, capped rendering and clipboard output, session changes, clear and disabled logging.
+Jest uses native boundary mocks; real device sensor delivery and native scrolling performance require separate measurements.
+
 # Troubleshooting
 
 If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
