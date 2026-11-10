@@ -283,7 +283,7 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
  * @example
  * const startDate = new Date();
  * subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
- *    const data = parseStepCountData(response);
+ *    const data = parseStepData(response);
  * })
  */
 export function startStepCounterUpdate(

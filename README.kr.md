@@ -20,7 +20,7 @@ yarn add react-native-step-counter-newarch
 
 - React Native `~0.88.0`, React `~19.3.0`, New Architecture가 필요합니다.
 - 최소·현재 버전의 CI 소비자 앱은 모두 RN `0.88.0` / React `19.3.1`을 사용합니다.
-- 도구 체인, 검증 한계, 기존 `>=0.71.0` 선언에서 이전하는 방법은 [네이티브 호환성 문서](docs/native-compatibility.md)를 참고하세요.
+- 도구 체인, 검증 한계, 기존 `>=0.71.0` 선언에서 이전하는 방법은 [네이티브 호환성 문서](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/docs/native-compatibility.md)를 참고하세요.
 - React Native CLI 앱. 네이티브 코드가 포함되어 있으므로 Expo Go는 지원하지 않습니다.
 
 ### ANDROID
