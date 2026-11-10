@@ -8,6 +8,7 @@ ANDROID = "{http://schemas.android.com/apk/res/android}"
 
 
 def check_manifest(manifest: Path) -> None:
+    """Reject permissions or required hardware outside the example sensor contract."""
     root = ET.parse(manifest).getroot()
     permissions = {
         node.get(f"{ANDROID}name")
