@@ -174,9 +174,13 @@ class StepCounterModule(
     super.invalidate()
   }
 
-  override fun onHostResume() {}
+  override fun onHostResume() {
+    // The session continues across activity resume.
+  }
 
-  override fun onHostPause() {}
+  override fun onHostPause() {
+    // Activity pause alone does not release the active session.
+  }
 
   override fun onHostDestroy() {
     stopStepCounterUpdate()

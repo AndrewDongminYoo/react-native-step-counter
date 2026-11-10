@@ -116,6 +116,23 @@
   [other invalidate];
   XCTAssertFalse(((ScheduledMotion *)other.motionDetector).active);
 }
+- (void)testRealRuntimeInvalidationLeavesOtherRuntimeMotionRegistered {
+  StepCounter *first = [StepCounter new], *second = [StepCounter new];
+  SOMotionDetecter *firstDetector = [first valueForKey:@"motionDetector"];
+  SOMotionDetecter *secondDetector = [second valueForKey:@"motionDetector"];
+  CMMotionManager *firstManager = [firstDetector valueForKey:@"motionManager"];
+  CMMotionManager *secondManager = [secondDetector valueForKey:@"motionManager"];
+  [first startStepsDetection]; [second startStepsDetection];
+  XCTAssertTrue(firstManager.isAccelerometerActive);
+  XCTAssertTrue(secondManager.isAccelerometerActive);
+  [first invalidate];
+  XCTAssertFalse(firstManager.isAccelerometerActive);
+  XCTAssertNil(firstManager.updateHandler);
+  XCTAssertTrue(secondManager.isAccelerometerActive);
+  [second invalidate];
+  XCTAssertFalse(secondManager.isAccelerometerActive);
+  XCTAssertNil(secondManager.updateHandler);
+}
 - (void)testMotionCallbackDoesNotRetainRuntime {
   ScheduledMotion *motion;
   __weak RecordingCounter *weakCounter;
