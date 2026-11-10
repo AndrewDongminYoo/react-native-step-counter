@@ -25,21 +25,22 @@ yarn add react-native-step-counter-newarch
 
 ### ANDROID
 
-앱에 아래 권한과 센서 feature 선언이 없다면 추가하세요.
+라이브러리의 아래 선언은 manifest 병합을 통해 앱에 포함되므로 앱에 중복으로 추가할 필요가 없습니다.
+두 센서는 설치 필수 조건이 아닙니다. `isStepCountingSupported()`로 실행 시 센서 지원 여부를 확인하고, Android 10(API 29) 이상에서는 걸음 수 측정을 시작하기 전에 `ACTIVITY_RECOGNITION` 권한을 요청하세요.
+걸음 수 측정에는 신체 센서 권한이 필요하지 않습니다.
 
 ```xml
 <!--  android/src/main/AndroidManifest.xml-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.stepcounter">
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-  <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
 
   <uses-feature
     android:name="android.hardware.sensor.stepcounter"
     android:required="false" />
   <uses-feature
     android:name="android.hardware.sensor.accelerometer"
-    android:required="true" />
+    android:required="false" />
 </manifest>
 ```
 

@@ -10,15 +10,9 @@ import {
 import { Platform } from "react-native";
 import appInformation from "../package.json";
 
-/**
- * Checks if the user has granted the body sensors permission
- * If the user has not granted the permission, it will request the permission
- * If the user has granted the permission, it will continue to the next step
- */
-const bodySensor = PERMISSIONS.ANDROID.BODY_SENSORS_BACKGROUND;
 const activityRecognition = PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION;
 const motion = PERMISSIONS.IOS.MOTION;
-type Permission = typeof bodySensor | typeof activityRecognition | typeof motion;
+type Permission = typeof activityRecognition | typeof motion;
 
 /**
  * @description This function checks the result and returns true if the permission is granted
@@ -34,7 +28,6 @@ const CHECK = <S = PermissionStatus>(result: S) => result === RESULTS.GRANTED;
  */
 const permissionNames: Record<Permission, string> = {
   [activityRecognition]: "Activity Recognition",
-  [bodySensor]: "Body Sensor",
   [motion]: "Motion",
 };
 
@@ -91,12 +84,3 @@ export const getStepCounterPermission = async () => {
   openSettings();
   return checkPermission(permission);
 };
-
-/**
- * @description This function ask a permission for the app to access the device's body sensor data.
- * @returns {Promise<boolean>} - Returns true if the user has granted permission for the body sensor data. Otherwise false.
- */
-export async function getBodySensorPermission() {
-  await openSettings();
-  return checkPermission(bodySensor);
-}

@@ -27,21 +27,22 @@ Native modules connect through autolinking in supported React Native CLI apps.
 
 ### ANDROID
 
-Add the motion permission and sensor feature declarations if your app does not already include them.
+The library contributes the following declarations through manifest merging; you do not need to duplicate them in your app.
+Both sensors are optional for installation. Use `isStepCountingSupported()` to check runtime availability and request `ACTIVITY_RECOGNITION` on Android 10 (API 29) and later before counting.
+Step counting does not require body-sensor permissions.
 
 ```xml
 <!--  android/src/main/AndroidManifest.xml-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.stepcounter">
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-  <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
 
   <uses-feature
     android:name="android.hardware.sensor.stepcounter"
     android:required="false" />
   <uses-feature
     android:name="android.hardware.sensor.accelerometer"
-    android:required="true" />
+    android:required="false" />
 </manifest>
 ```
 
