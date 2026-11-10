@@ -1,4 +1,4 @@
-import { TurboModuleRegistry, type TurboModule } from "react-native";
+import { TurboModuleRegistry, type CodegenTypes, type TurboModule } from "react-native";
 
 export type CounterType = "STEP_COUNTER" | "ACCELEROMETER" | "CMPedometer";
 
@@ -23,6 +23,28 @@ export type StepCountData = {
   floorsDescended?: number | null; // number of floors descended (iOS only, null when unavailable)
 };
 
+/** Serializable native error; code includes the iOS error domain and numeric code. */
+export type StepCounterError = { code: string; message: string };
+
+/** Platform-specific diagnostic metadata; optional fields are absent on other platforms. */
+export type StepsSensorInfo = {
+  name: string;
+  vendor?: string;
+  minDelay?: number;
+  maxDelay?: number;
+  power?: number;
+  resolution?: number;
+  wakeUpSensor?: boolean;
+  additionalInfoSupported?: boolean;
+  granted?: boolean;
+  stepCounting?: boolean;
+  pace?: boolean;
+  cadence?: boolean;
+  distance?: boolean;
+  floorCounting?: boolean;
+};
+
+/** Registered native TurboModule name: StepCounter. */
 export const NAME = "StepCounter";
 export const VERSION = "0.5.0";
 export const eventName = "StepCounter.stepCounterUpdate";
@@ -55,9 +77,10 @@ export interface Spec extends TurboModule {
    */
   stopStepCounterUpdate(): void;
 
-  /* Required Methods for NativeEventEmitter */
-  addListener(event: string): void;
-  removeListeners(count: number): void;
+  readonly onStepCounterUpdate: CodegenTypes.EventEmitter<StepCountData>;
+  readonly onStepDetected: CodegenTypes.EventEmitter<boolean>;
+  readonly onErrorOccurred: CodegenTypes.EventEmitter<StepCounterError>;
+  readonly onStepsSensorInfo: CodegenTypes.EventEmitter<StepsSensorInfo>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>("StepCounter");

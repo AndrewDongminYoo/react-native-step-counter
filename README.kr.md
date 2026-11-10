@@ -76,7 +76,7 @@ yarn add react-native-step-counter-newarch
 
 - `stopStepCounterUpdate()`: void:
   - 현재 소유한 구독을 제거하고 네이티브 센서 세션을 중지합니다. 시작 전이나 여러 번 호출해도 안전하며, 별도로 등록한 디버그 리스너는 유지합니다.
-  - 마지막 네이티브 이벤트 리스너를 제거하거나 React Native 런타임을 무효화해도 센서를 중지합니다. Android에서는 호스트가 종료되면 센서와 수명 주기 리스너 등록을 해제합니다. iOS에서는 보수계 업데이트와 모션 콜백을 정리하고, 종료된 세션에서 대기 중이던 콜백도 차단합니다.
+  - 측정 핸들을 제거하거나 React Native 런타임을 무효화하면 센서를 중지합니다. 독립적인 생성 이벤트 리스너는 센서 수명을 제어하지 않습니다. Android에서는 호스트가 종료되면 센서와 수명 주기 리스너 등록을 해제합니다. iOS에서는 보수계 업데이트와 모션 콜백을 정리하고, 종료된 세션에서 대기 중이던 콜백도 차단합니다.
   - Activity가 일시 정지되어도 세션을 중지하지는 않습니다. 백그라운드 전달에는 OS 제한이 적용됩니다. 이 라이브러리는 포그라운드 서비스나 앱 종료 후 추적을 제공하지 않으며 백그라운드 측정도 보장하지 않습니다. 기기 전력 사용량은 측정하지 않았습니다.
 
 - `createStepCountFilter(options?: StepCountFilterOptions)`: `(data: StepCountData) => StepCountData | null`:
@@ -98,6 +98,23 @@ yarn add react-native-step-counter-newarch
   - **iOS에만 있음**
     - `floorsAscended`: 지정된 기간 동안 사용자가 상승한 층의 수를 나타내는 숫자 속성입니다. 타입은 `number | null | undefined`이며, iOS에서 구할 수 없으면 `null`이고 안드로이드에서는 필드가 생략됩니다.
     - `floorsDescended`: 지정된 기간 동안 사용자가 하강한 층의 수를 나타내는 숫자 속성입니다. 타입은 `number | null | undefined`이며, iOS에서 구할 수 없으면 `null`이고 안드로이드에서는 필드가 생략됩니다.
+
+## 타입이 지정된 이벤트 구독
+
+걸음 수 측정에는 기존 `startStepCounterUpdate(start, callback)`과 반환된 `EventSubscription`을 계속 사용합니다.
+독립적인 걸음 수·진단 리스너는 `onStepCounterUpdate`, `onStepDetected`, `onErrorOccurred`, `onStepsSensorInfo`로 구독하고, 정리할 때 반환된 구독의 `remove()`를 호출합니다.
+이 리스너들은 센서를 시작하거나 측정 세션을 유지하지 않으며, 하나를 제거해도 다른 리스너나 측정 세션은 중지되지 않습니다.
+사용 예시는 [영문 이벤트 구독 안내](README.md#typed-event-subscriptions)를 참고하세요.
+
+`onStepDetected`는 안드로이드에서 센서 등록 상태를 알리며, iOS 내부 모션 헬퍼도 감지 알림을 보낼 수 있습니다.
+플랫폼 공통의 보행 상태를 보장하는 이벤트는 아닙니다.
+`onErrorOccurred`는 문자열 `code`와 `message`를 가진 `StepCounterError`를 전달하며, iOS 오류 코드는 도메인과 번호를 포함합니다.
+`StepsSensorInfo`는 센서 `name`과 플랫폼별 선택 필드를 가집니다. iOS는 지원 기능을, 안드로이드는 등록에 성공한 센서의 메타데이터를 보냅니다.
+모든 플랫폼이 모든 진단 이벤트를 보내는 것은 아닙니다.
+
+기존 `StepCounter.*` 이름에 `NativeEventEmitter`로 직접 연결하던 코드는 위 구독 함수로 바꿔야 합니다.
+iOS 네이티브에만 있던 과거 데이터 조회와 모션 시작 헬퍼는 내부 메서드이며, 새 JS API로 제공하지 않습니다.
+Codegen 타입은 페이로드 계약을 선언하며 런타임 스키마 검사나 센서 정확도 검증을 수행하지 않습니다.
 
 ## 페이로드 호환성
 

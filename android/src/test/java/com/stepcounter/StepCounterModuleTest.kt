@@ -11,12 +11,14 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.core.content.PermissionChecker
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.BaseJavaModule
+import com.facebook.react.bridge.CxxCallbackImpl
 import com.facebook.react.bridge.JavaOnlyMap
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
+import com.facebook.soloader.nativeloader.NativeLoader
 import com.stepcounter.services.AccelerometerService
 import com.stepcounter.services.StepCounterService
 import org.junit.After
@@ -193,43 +195,25 @@ class StepCounterModuleTest {
   }
 
   @Test
-  fun finalListenerRemovalStopsSensorsAndDetachesLifecycle() {
+  fun generatedCallbacksDeliverStatusMetadataAndSteps() {
     val module = fixture.module()
-    module.addListener("StepCounter.stepCounterUpdate")
-    module.addListener("StepCounter.stepsSensorInfo")
-    module.startStepCounterUpdate(0.0)
-    module.removeListeners(1.0)
-    assertEquals(1, fixture.active.size)
-    assertEquals(1, fixture.lifecycle.size)
-    module.removeListeners(1.0)
+    module.startStepCounterUpdate(1_700_000_000_000.0)
+    assertEquals("Fixture sensor 19", (fixture.sensorInfo.single() as WritableMap).getString("name"))
+    assertTrue(fixture.status.last())
+    val listener = fixture.active.keys.single()
+    val sensor = fixture.active.values.single()
+    listener.onSensorChanged(fixture.event(sensor, 100f))
+    listener.onSensorChanged(fixture.event(sensor, 102f))
+    assertEquals(2.0, fixture.stepUpdates.last().getDouble("steps"), 0.0)
+    module.stopStepCounterUpdate()
+    assertFalse(fixture.status.last())
     assertTrue(fixture.active.isEmpty())
     assertTrue(fixture.lifecycle.isEmpty())
-    module.removeListeners(100.0)
-    module.stopStepCounterUpdate()
-    assertTrue(fixture.active.isEmpty())
-  }
-
-  @Test
-  fun explicitStopPreservesExternalListenerAccountingAcrossRestart() {
-    val module = fixture.module()
-    module.addListener("StepCounter.stepsSensorInfo")
-    module.addListener("StepCounter.stepCounterUpdate")
-    module.startStepCounterUpdate(0.0)
-    module.stopStepCounterUpdate()
-    assertTrue(fixture.active.isEmpty())
-    module.removeListeners(1.0)
-    module.addListener("StepCounter.stepCounterUpdate")
-    module.startStepCounterUpdate(0.0)
-    module.removeListeners(1.0)
-    assertEquals(1, fixture.active.size)
-    module.removeListeners(1.0)
-    assertTrue(fixture.active.isEmpty())
   }
 
   @Test
   fun runtimeInvalidationReleasesRegistrationsAndRejectsRestartsAndLateCallbacks() {
     val module = fixture.module()
-    module.addListener("StepCounter.stepCounterUpdate")
     module.startStepCounterUpdate(0.0)
     val listener = fixture.active.keys.single()
     val sensor = fixture.active.values.single()
@@ -317,6 +301,7 @@ private class AndroidSensorFixture : AutoCloseable {
   val rejectedTypes = mutableSetOf<Int>()
   val active = mutableMapOf<SensorEventListener, Sensor>()
   val lifecycle = mutableSetOf<LifecycleEventListener>()
+  val status = mutableListOf<Boolean>()
   val sensorInfo = mutableListOf<Any>()
   val stepUpdates = mutableListOf<WritableMap>()
   private val sensors = mutableMapOf<Int, Sensor>()
@@ -339,13 +324,19 @@ private class AndroidSensorFixture : AutoCloseable {
       }
     }
   private val manager = mock(SensorManager::class.java)
+
+  // Suppress native-library loading only at the JVM transport boundary.
+  private val nativeLoader = mockStatic(NativeLoader::class.java)
   private val emitter =
-    mock(RCTDeviceEventEmitter::class.java) {
-      if (it.method.name == "emit" && it.getArgument<String>(0) == "StepCounter.stepsSensorInfo") {
+    mock(CxxCallbackImpl::class.java) {
+      if (it.method.name == "invoke" && it.getArgument<String>(0) == "onStepsSensorInfo") {
         sensorInfo.add(it.getArgument(1))
       }
-      if (it.method.name == "emit" && it.getArgument<String>(0) == "StepCounter.stepCounterUpdate") {
+      if (it.method.name == "invoke" && it.getArgument<String>(0) == "onStepCounterUpdate") {
         stepUpdates.add(it.getArgument(1))
+      }
+      if (it.method.name == "invoke" && it.getArgument<String>(0) == "onStepDetected") {
+        status.add(it.getArgument(1))
       }
       null
     }
@@ -367,7 +358,6 @@ private class AndroidSensorFixture : AutoCloseable {
     val packages = mock(PackageManager::class.java)
     `when`(context.packageManager).thenReturn(packages)
     `when`(packages.hasSystemFeature(any())).thenReturn(true)
-    `when`(context.getJSModule(RCTDeviceEventEmitter::class.java)).thenReturn(emitter)
     `when`(manager.getDefaultSensor(anyInt())).thenAnswer { sensors[it.getArgument<Int>(0)] }
     `when`(manager.registerListener(any<SensorEventListener>(), any<Sensor>(), anyInt())).thenAnswer {
       if (revokeOnRegister) {
@@ -407,7 +397,13 @@ private class AndroidSensorFixture : AutoCloseable {
     sensors[type] = sensor
   }
 
-  fun module() = StepCounterModule(context)
+  fun module() =
+    StepCounterModule(context).also { module ->
+      BaseJavaModule::class.java.getDeclaredField("mEventEmitterCallback").apply {
+        isAccessible = true
+        set(module, emitter)
+      }
+    }
 
   fun event(
     sensor: Sensor?,
@@ -432,6 +428,7 @@ private class AndroidSensorFixture : AutoCloseable {
   }
 
   override fun close() {
+    nativeLoader.close()
     clock.close()
     permission.close()
     logging.close()

@@ -1,5 +1,4 @@
-import { DeviceEventEmitter } from "react-native";
-import { eventName } from "../NativeStepCounter";
+import StepCounter from "../NativeStepCounter";
 import { startStepCounterUpdate, stopStepCounterUpdate } from "../index";
 import fixtures from "../../tests/fixtures/ios-step-payloads.json";
 import { createStepCountFilter, parseStepData, type StepCountData } from "../index";
@@ -9,7 +8,9 @@ describe("native payload contract", () => {
   it("delivers nullable native metrics to raw callbacks unchanged", () => {
     const callback = jest.fn();
     startStepCounterUpdate(new Date(1700000000000), callback);
-    DeviceEventEmitter.emit(eventName, fixtures[0]);
+    const subscribe = StepCounter.onStepCounterUpdate as jest.Mock;
+    const receive = subscribe.mock.calls.at(-1)?.[0] as (data: unknown) => void;
+    receive(fixtures[0]);
     expect(callback).toHaveBeenCalledWith(fixtures[0]);
     stopStepCounterUpdate();
   });

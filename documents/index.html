@@ -32,6 +32,10 @@
         <li><a href="global.html#createStepCountFilter">createStepCountFilter</a></li>
         <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
         <li><a href="global.html#NAME">NAME</a></li>
+        <li><a href="global.html#onErrorOccurred">onErrorOccurred</a></li>
+        <li><a href="global.html#onStepCounterUpdate">onStepCounterUpdate</a></li>
+        <li><a href="global.html#onStepDetected">onStepDetected</a></li>
+        <li><a href="global.html#onStepsSensorInfo">onStepsSensorInfo</a></li>
         <li><a href="global.html#parseStepData">parseStepData</a></li>
         <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
         <li><a href="global.html#StepCounter">StepCounter</a></li>
@@ -216,10 +220,11 @@
                   registered.
                 </li>
                 <li>
-                  Removing the last native emitter listener or invalidating the React Native runtime
-                  also stops native producers. Android host destruction releases its sensor and
-                  lifecycle registration. iOS releases pedometer updates and motion callbacks,
-                  including queued callbacks from retired sessions.
+                  Removing the owned counting handle or invalidating the React Native runtime stops
+                  native producers. Independent generated listeners do not control producer
+                  lifetime. Android host destruction releases its sensor and lifecycle registration.
+                  iOS releases pedometer updates and motion callbacks, including queued callbacks
+                  from retired sessions.
                 </li>
                 <li>
                   Activity pause alone does not stop a session. Background delivery follows OS
@@ -329,6 +334,46 @@
               </ul>
             </li>
           </ul>
+          <h2>Typed event subscriptions</h2>
+          <p>
+            <code>startStepCounterUpdate(start, callback)</code> and its owned
+            <code>EventSubscription</code> remain the primary counting API. Independent listeners
+            use generated Codegen events:
+          </p>
+          <pre class="prettyprint source lang-typescript"><code>import {
+  onStepCounterUpdate,
+  onStepDetected,
+  onErrorOccurred,
+  onStepsSensorInfo,
+} from &quot;react-native-step-counter-newarch&quot;;
+
+const subscriptions = [
+  onStepCounterUpdate((data) => console.log(data.steps)),
+  onStepDetected((active) => console.log(active)),
+  onErrorOccurred(({ code, message }) => console.warn(code, message)),
+  onStepsSensorInfo((info) => console.log(info.name)),
+];
+// On cleanup:
+subscriptions.forEach((subscription) => subscription.remove());
+</code></pre>
+          <p>
+            These listeners neither start nor keep sensors running; removing one never stops the
+            owned counting session or another listener. <code>onStepDetected</code> reports Android
+            registration status; the internal iOS motion helper can also emit detection
+            notifications. It is not a cross-platform walking-state guarantee.
+            <code>onErrorOccurred</code> carries serializable <code>StepCounterError</code> strings
+            (<code>code</code> and <code>message</code>); iOS codes include the error domain and
+            number. <code>StepsSensorInfo</code> requires <code>name</code> and has optional
+            platform-specific fields; iOS reports capability flags, while Android reports sensor
+            metadata after registration. A platform need not emit every diagnostic event.
+          </p>
+          <p>
+            Direct <code>NativeEventEmitter</code> subscriptions to old
+            <code>StepCounter.*</code> names must migrate to these functions. The native-only iOS
+            historical query and motion-start helpers are internal and are not new JS APIs. Codegen
+            types describe the payload contract; they do not perform runtime schema validation or
+            establish sensor accuracy.
+          </p>
           <h2>Payload compatibility</h2>
           <p>
             Unavailable distance remains <code>null</code> in raw callbacks and filtered output;
@@ -436,7 +481,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 16:02:16 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 17:46:46 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

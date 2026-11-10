@@ -113,3 +113,14 @@ jobs:
           -scheme CompatibilityConsumer -configuration Debug
           -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
           -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+
+      - name: Verify bridgeless generated event delivery
+        run: bash tests/ios/run-runtime-smoke.sh "$RUNNER_TEMP/compatibility-consumer"
+
+      - name: Preserve runtime event evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bridgeless-event-replay
+          path: ${{ runner.temp }}/compatibility-consumer/runtime-evidence
+          if-no-files-found: ignore

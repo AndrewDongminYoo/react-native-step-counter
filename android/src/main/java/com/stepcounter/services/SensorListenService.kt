@@ -225,7 +225,7 @@ abstract class SensorListenService internal constructor(
     }
     synchronized(stateLock) {
       isRunning = true
-      counterModule.sendDeviceEvent("stepsSensorInfo", stepsSensorInfo)
+      counterModule.sendStepsSensorInfo(stepsSensorInfo)
     }
     Log.d(TAG_NAME, "SensorManager.stepsSensorInfo: $stepsSensorInfo")
     return true
@@ -279,7 +279,7 @@ abstract class SensorListenService internal constructor(
       lastMeasurementNs = timestampNs
       if (updateCurrentSteps(event.values, timestampNs)) {
         endDate = anchorEpochMillis + (timestampNs - anchorElapsedNs) / 1_000_000
-        counterModule.sendDeviceEvent("stepCounterUpdate", stepsParamsMap)
+        counterModule.sendStepCounterUpdate(stepsParamsMap)
       }
     }
   }

@@ -199,9 +199,9 @@ private class TimestampFixture(
   private val manager = mock(SensorManager::class.java)
   private val module =
     mock(StepCounterModule::class.java) {
-      if (it.method.name == "sendDeviceEvent" && it.getArgument<String>(0) == "stepCounterUpdate") {
+      if (it.method.name == "sendStepCounterUpdate") {
         beforeEmission()
-        updates.add(it.getArgument(1))
+        updates.add(it.getArgument(0))
       }
       null
     }

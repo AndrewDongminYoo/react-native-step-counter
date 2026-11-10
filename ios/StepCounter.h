@@ -1,7 +1,7 @@
 #import <StepCounterSpec/StepCounterSpec.h>
-#import <React/RCTEventEmitter.h>
+#import <React/RCTInvalidating.h>
 #import "SOMotionDetecter.h"
 
-@interface StepCounter : RCTEventEmitter <NativeStepCounterSpec>
+@interface StepCounter : NativeStepCounterSpecBase <NativeStepCounterSpec, RCTInvalidating>
 
 @end

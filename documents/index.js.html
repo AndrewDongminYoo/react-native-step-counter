@@ -32,6 +32,10 @@
         <li><a href="global.html#createStepCountFilter">createStepCountFilter</a></li>
         <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
         <li><a href="global.html#NAME">NAME</a></li>
+        <li><a href="global.html#onErrorOccurred">onErrorOccurred</a></li>
+        <li><a href="global.html#onStepCounterUpdate">onStepCounterUpdate</a></li>
+        <li><a href="global.html#onStepDetected">onStepDetected</a></li>
+        <li><a href="global.html#onStepsSensorInfo">onStepsSensorInfo</a></li>
         <li><a href="global.html#parseStepData">parseStepData</a></li>
         <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
         <li><a href="global.html#StepCounter">StepCounter</a></li>
@@ -47,7 +51,7 @@
           <pre class="prettyprint source linenums"><code>"use strict";
 
 import StepCounterModule, { eventName, NAME, VERSION } from "./NativeStepCounter.js";
-import { NativeEventEmitter, Platform } from "react-native";
+import { Platform } from "react-native";
 
 /* A way to check if the module is linked. */
 const LINKING_ERROR = "The package 'react-native-step-counter-newarch' doesn't seem to be linked. Make sure: \n\n" + Platform.select({
@@ -70,7 +74,15 @@ const StepCounter = StepCounterModule ? StepCounterModule : new Proxy({}, {
     throw new Error(LINKING_ERROR);
   }
 });
-const StepEventEmitter = new NativeEventEmitter(StepCounter);
+
+/** Subscribe without owning or starting native sensors. Remove the returned listener on cleanup. */
+export const onStepCounterUpdate = listener => StepCounter.onStepCounterUpdate(listener);
+/** Subscribe to platform detection/status diagnostics without starting sensors. */
+export const onStepDetected = listener => StepCounter.onStepDetected(listener);
+/** Subscribe to serializable native errors without owning a counting session. */
+export const onErrorOccurred = listener => StepCounter.onErrorOccurred(listener);
+/** Subscribe to platform-specific sensor metadata without starting sensors. */
+export const onStepsSensorInfo = listener => StepCounter.onStepsSensorInfo(listener);
 const DEFAULT_MINIMUM_STEP_INTERVAL_MS = 250;
 
 // Tracks the subscription created by the most recent startStepCounterUpdate call.
@@ -266,7 +278,7 @@ export function startStepCounterUpdate(start, callBack) {
   }
   // Clean up any previous subscription registered by this library before creating a new one.
   _activeSubscription?.remove();
-  const listener = StepEventEmitter.addListener(eventName, data => callBack(data));
+  const listener = StepCounter.onStepCounterUpdate(callBack);
   let removed = false;
   const subscription = {
     remove() {
@@ -320,7 +332,7 @@ export { NAME, VERSION };
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 16:02:16 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 17:46:46 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

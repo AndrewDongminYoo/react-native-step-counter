@@ -32,6 +32,10 @@
         <li><a href="global.html#createStepCountFilter">createStepCountFilter</a></li>
         <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
         <li><a href="global.html#NAME">NAME</a></li>
+        <li><a href="global.html#onErrorOccurred">onErrorOccurred</a></li>
+        <li><a href="global.html#onStepCounterUpdate">onStepCounterUpdate</a></li>
+        <li><a href="global.html#onStepDetected">onStepDetected</a></li>
+        <li><a href="global.html#onStepsSensorInfo">onStepsSensorInfo</a></li>
         <li><a href="global.html#parseStepData">parseStepData</a></li>
         <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
         <li><a href="global.html#StepCounter">StepCounter</a></li>
@@ -60,6 +64,11 @@ import { TurboModuleRegistry } from "react-native";
  * floorsDescended - number of floors descended (iOS only, null when unavailable)
  */
 
+/** Serializable native error; code includes the iOS error domain and numeric code. */
+
+/** Platform-specific diagnostic metadata; optional fields are absent on other platforms. */
+
+/** Registered native TurboModule name: StepCounter. */
 export const NAME = "StepCounter";
 export const VERSION = "0.5.0";
 export const eventName = "StepCounter.stepCounterUpdate";
@@ -72,7 +81,7 @@ export default TurboModuleRegistry.getEnforcing("StepCounter");
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 16:02:16 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 17:46:46 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

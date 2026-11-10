@@ -32,6 +32,10 @@
         <li><a href="global.html#createStepCountFilter">createStepCountFilter</a></li>
         <li><a href="global.html#isStepCountingSupported">isStepCountingSupported</a></li>
         <li><a href="global.html#NAME">NAME</a></li>
+        <li><a href="global.html#onErrorOccurred">onErrorOccurred</a></li>
+        <li><a href="global.html#onStepCounterUpdate">onStepCounterUpdate</a></li>
+        <li><a href="global.html#onStepDetected">onStepDetected</a></li>
+        <li><a href="global.html#onStepsSensorInfo">onStepsSensorInfo</a></li>
         <li><a href="global.html#parseStepData">parseStepData</a></li>
         <li><a href="global.html#startStepCounterUpdate">startStepCounterUpdate</a></li>
         <li><a href="global.html#StepCounter">StepCounter</a></li>
@@ -59,16 +63,7 @@
           </h4>
 
           <div class="description">
-            <p>
-              <code>StepCountData</code> is an object with four properties: <code>distance</code>,
-              <code>steps</code>, <code>startDate</code>, and <code>endDate</code>. StepCountData
-              object - The Object that contains the step count data. counterType - The type of
-              counter used to count the steps. steps - The number of steps taken during the time
-              period. startDate - The start date of the data. endDate - The end date of the data.
-              distance - Distance in meters, or null when unavailable. Android estimates this from
-              steps. floorsAscended - number of floors ascended (iOS only, null when unavailable)
-              floorsDescended - number of floors descended (iOS only, null when unavailable)
-            </p>
+            <p>Registered native TurboModule name: StepCounter.</p>
           </div>
 
           <dl class="details">
@@ -77,7 +72,94 @@
               <ul class="dummy">
                 <li>
                   <a href="NativeStepCounter.js.html">NativeStepCounter.js</a>,
-                  <a href="NativeStepCounter.js.html#line17">line 17</a>
+                  <a href="NativeStepCounter.js.html#line22">line 22</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+
+          <h4 class="name" id="onErrorOccurred">
+            <span class="type-signature">(constant) </span>onErrorOccurred<span
+              class="type-signature"
+            ></span>
+          </h4>
+
+          <div class="description">
+            <p>Subscribe to serializable native errors without owning a counting session.</p>
+          </div>
+
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line33">line 33</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+
+          <h4 class="name" id="onStepCounterUpdate">
+            <span class="type-signature">(constant) </span>onStepCounterUpdate<span
+              class="type-signature"
+            ></span>
+          </h4>
+
+          <div class="description">
+            <p>
+              Subscribe without owning or starting native sensors. Remove the returned listener on
+              cleanup.
+            </p>
+          </div>
+
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line29">line 29</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+
+          <h4 class="name" id="onStepDetected">
+            <span class="type-signature">(constant) </span>onStepDetected<span
+              class="type-signature"
+            ></span>
+          </h4>
+
+          <div class="description">
+            <p>Subscribe to platform detection/status diagnostics without starting sensors.</p>
+          </div>
+
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line31">line 31</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+
+          <h4 class="name" id="onStepsSensorInfo">
+            <span class="type-signature">(constant) </span>onStepsSensorInfo<span
+              class="type-signature"
+            ></span>
+          </h4>
+
+          <div class="description">
+            <p>Subscribe to platform-specific sensor metadata without starting sensors.</p>
+          </div>
+
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line35">line 35</a>
                 </li>
               </ul>
             </dd>
@@ -144,7 +226,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line78">line 78</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line86">line 86</a>
                 </li>
               </ul>
             </dd>
@@ -170,7 +252,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line176">line 176</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line184">line 184</a>
                 </li>
               </ul>
             </dd>
@@ -258,7 +340,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line40">line 40</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line48">line 48</a>
                 </li>
               </ul>
             </dd>
@@ -360,7 +442,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line213">line 213</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line221">line 221</a>
                 </li>
               </ul>
             </dd>
@@ -452,7 +534,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line259">line 259</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line267">line 267</a>
                 </li>
               </ul>
             </dd>
@@ -483,7 +565,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Tue Nov 10 2026 16:02:16 GMT+0900 (Korean Standard Time)
+      Documentation generated at Tue Nov 10 2026 17:46:46 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>
