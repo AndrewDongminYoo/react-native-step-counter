@@ -33,14 +33,18 @@ const getRational = (permission: Permission): RationaleObject => {
   };
 };
 
-/** Request motion access; only blocked access requires a Settings round trip. */
+/** Request motion access; recover an existing iOS block on a later START. */
 export const getStepCounterPermission = async (signal?: AbortSignal): Promise<boolean> => {
   if (signal?.aborted) return false;
   const permission = Platform.OS === "ios" ? motion : activityRecognition;
+  // iOS maps the first prompt denial to BLOCKED too. Only recover a block
+  // that existed before this START, so rejecting the prompt stays in the app.
+  const recoverBlocked = Platform.OS !== "ios" || (await check(permission)) === RESULTS.BLOCKED;
+  if (signal?.aborted) return false;
   const result = await request(permission, getRational(permission));
   if (signal?.aborted) return false;
   if (result === RESULTS.GRANTED) return true;
-  if (result !== RESULTS.BLOCKED) return false;
+  if (result !== RESULTS.BLOCKED || !recoverBlocked) return false;
 
   return new Promise<boolean>((resolve, reject) => {
     let leftApp = AppState.currentState !== "active";
