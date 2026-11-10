@@ -24,6 +24,7 @@ internal class AccelerometerProcessor {
   var velocityEstimate = 0f
     private set
 
+  /** Clear all window, warm-up and refractory state for a new session. */
   fun reset() {
     x.fill(0f)
     y.fill(0f)
@@ -42,10 +43,12 @@ internal class AccelerometerProcessor {
     lastStepNs = 0L
   }
 
+  /** Process one finite acceleration vector; invalid samples leave detector state intact. */
   fun update(
     values: FloatArray,
     timestampNs: Long,
   ): Boolean {
+    if (!values[0].isFinite() || !values[1].isFinite() || !values[2].isFinite()) return false
     accelerationIndex = (accelerationIndex + 1) % x.size
     if (samples < x.size) samples++
     sumX += values[0].toDouble() - x[accelerationIndex].toDouble()

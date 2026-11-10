@@ -36,3 +36,6 @@ Double running sums limit accumulation drift; projections retain float arithmeti
 Bounded ring indices avoid lifetime counter overflow.
 Floating-point reassociation can change decisions for arbitrary signals extremely close to the threshold; these synthetic fixtures do not establish real-world accuracy or bitwise equivalence.
 Existing timestamp tests exercise the strict 250ms boundary and restart through the real service lifecycle.
+
+Non-finite sensor samples are rejected before changing detector state, preventing persistent running-sum contamination.
+A regression inserts NaN and positive/negative infinity on each axis and checks subsequent walking against an uncontaminated processor.

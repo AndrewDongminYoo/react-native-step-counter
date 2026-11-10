@@ -12,3 +12,6 @@ Velocity estimates agree within 0.001 in the velocity estimate over the syntheti
 A Linux-runnable JVM benchmark reports measured bytes/sample and ns/sample for both implementations, without a timing pass/fail threshold.
 Android CI runs replay tests and the benchmark.
 No CPU, battery or real-device accuracy claim follows from synthetic JVM results.
+
+Non-finite sensor samples are rejected before changing detector state, preventing persistent running-sum contamination.
+A regression inserts NaN and positive/negative infinity on each axis and checks subsequent walking against an uncontaminated processor.

@@ -11,6 +11,31 @@ import kotlin.math.sin
 
 class AccelerometerReplayTest {
   @Test
+  fun nonFiniteSamplesCannotPoisonOrChangeDetectorState() {
+    for (axis in 0..2) {
+      for (invalid in listOf(Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY)) {
+        val actual = AccelerometerProcessor()
+        val expected = AccelerometerProcessor()
+        val values = FloatArray(3)
+        var steps = 0
+        repeat(200) { i ->
+          sample("walking", i, values)
+          if (i == 59) {
+            val bad = values.copyOf()
+            bad[axis] = invalid
+            assertEquals(false, actual.update(bad, i * 20_000_000L - 1))
+          }
+          val accepted = actual.update(values, i * 20_000_000L)
+          assertEquals(expected.update(values, i * 20_000_000L), accepted)
+          assertEquals(expected.velocityEstimate, actual.velocityEstimate, 0f)
+          if (accepted) steps++
+        }
+        assertEquals(5, steps)
+      }
+    }
+  }
+
+  @Test
   fun replayPreservesAcceptedSamplesAndVelocity() {
     for (scenario in listOf("walking", "rotation", "stationary", "zero", "long")) {
       val reference = LegacyAccelerometer()
