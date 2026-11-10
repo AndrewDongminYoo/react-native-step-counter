@@ -1,31 +1,18 @@
 import {
   check,
   openSettings,
-  type PermissionStatus,
   PERMISSIONS,
   request,
   RESULTS,
   type RationaleObject,
 } from "react-native-permissions";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 import appInformation from "../package.json";
 
 const activityRecognition = PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION;
 const motion = PERMISSIONS.IOS.MOTION;
 type Permission = typeof activityRecognition | typeof motion;
 
-/**
- * @description This function checks the result and returns true if the permission is granted
- * It is used to check the result of the permission request
- * @param {PermissionStatus} result - Permission Request's Result.
- * @returns {boolean} - Returns if the permission is granted.
- */
-const CHECK = <S = PermissionStatus>(result: S) => result === RESULTS.GRANTED;
-
-/**
- * This is the name of the permission. It is used for the user interface
- * and must be a human readable string.
- */
 const permissionNames: Record<Permission, string> = {
   [activityRecognition]: "Activity Recognition",
   [motion]: "Motion",
@@ -46,41 +33,51 @@ const getRational = (permission: Permission): RationaleObject => {
   };
 };
 
-/**
- * @description This function requests permission to access the user's location.
- * If the user has already granted permission, it returns true.
- * If the user has not granted permission, it prompts the user to grant permission.
- * It uses the following parameters:
- * @param {Permission} permission - The permission to request.
- * @returns {boolean} - It returns a boolean value.
- */
-const requestPermission = async (permission: Permission) => {
-  const rationale = getRational(permission);
-  return request(permission, rationale).then(CHECK);
-};
-
-/**
- * @description This code checks for the permission passed in as an argument
- * and returns a boolean that indicates whether or not the permission
- * is granted.
- * @param {Permission} permission - The Permission to check.
- * @returns {Promise<boolean>} - Boolean value whether permission is granted or not.
- */
-const checkPermission = async (permission: Permission) => {
-  return check(permission).then(CHECK);
-};
-
-/**
- * @description If permission has not been granted, the user is prompted to grant permission
- * If the user has denied permission, the user is redirected to the app's settings page
- * After that, check the permissions status and return.
- * @returns {Promise<boolean>} - A boolean indicating whether the user has granted permission to access the device's step counter.
- */
-export const getStepCounterPermission = async () => {
+/** Request motion access; recover an existing iOS block on a later START. */
+export const getStepCounterPermission = async (signal?: AbortSignal): Promise<boolean> => {
+  if (signal?.aborted) return false;
   const permission = Platform.OS === "ios" ? motion : activityRecognition;
-  if (await requestPermission(permission)) {
-    return true;
-  }
-  openSettings();
-  return checkPermission(permission);
+  // iOS maps the first prompt denial to BLOCKED too. Only recover a block
+  // that existed before this START, so rejecting the prompt stays in the app.
+  const recoverBlocked = Platform.OS !== "ios" || (await check(permission)) === RESULTS.BLOCKED;
+  if (signal?.aborted) return false;
+  const result = await request(permission, getRational(permission));
+  if (signal?.aborted) return false;
+  if (result === RESULTS.GRANTED) return true;
+  if (result !== RESULTS.BLOCKED || !recoverBlocked) return false;
+
+  return new Promise<boolean>((resolve, reject) => {
+    let leftApp = AppState.currentState !== "active";
+    let settled = false;
+    const cleanup = () => {
+      subscription.remove();
+      signal?.removeEventListener("abort", cancel);
+    };
+    const cancel = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(false);
+    };
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") {
+        leftApp = true;
+      } else if (leftApp && !settled) {
+        settled = true;
+        cleanup();
+        check(permission).then(
+          (status) => resolve(!signal?.aborted && status === RESULTS.GRANTED),
+          reject
+        );
+      }
+    });
+    signal?.addEventListener("abort", cancel);
+    // Register before opening Settings so a fast round trip cannot be missed.
+    openSettings().catch((error: unknown) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    });
+  });
 };

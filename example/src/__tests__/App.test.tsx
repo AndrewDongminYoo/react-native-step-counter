@@ -328,3 +328,105 @@ describe("App", () => {
     expect(await screen.findByText("steps")).toBeTruthy();
   });
 });
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+describe("pending starts", () => {
+  it("STOP cancels permission work even if permission later becomes granted", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: false });
+    const pending = deferred<boolean>();
+    mockPermission.mockReturnValue(pending.promise);
+    await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    expect(screen.getByRole("button", { name: "STOP" })).toBeEnabled();
+    await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await act(async () => {
+      pending.resolve(true);
+    });
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(screen.getByText("Stopped")).toBeOnTheScreen();
+  });
+
+  it("unmount cancels permission work", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: false });
+    const pending = deferred<boolean>();
+    mockPermission.mockReturnValue(pending.promise);
+    const view = await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    await view.unmount();
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await act(async () => {
+      pending.resolve(true);
+    });
+    expect(mockStart).not.toHaveBeenCalled();
+  });
+
+  it("a newer START cancels the older permission result", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: false });
+    const older = deferred<boolean>();
+    const newer = deferred<boolean>();
+    mockPermission.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
+    await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await act(async () => {
+      older.resolve(true);
+    });
+    expect(mockStart).not.toHaveBeenCalled();
+    await act(async () => {
+      newer.resolve(true);
+    });
+    expect(mockStart).toHaveBeenCalledTimes(1);
+  });
+
+  it("STOP cancels initial capability auto-start", async () => {
+    const pending = deferred<{ supported: boolean; granted: boolean }>();
+    mockSupported.mockReturnValue(pending.promise);
+    await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+    await act(async () => {
+      pending.resolve({ supported: true, granted: true });
+    });
+    expect(mockStart).not.toHaveBeenCalled();
+  });
+
+  it("handles initial capability rejection", async () => {
+    mockSupported.mockRejectedValue(new Error("capability failed"));
+    await render(<App />);
+    expect(screen.getByText("Stopped")).toBeOnTheScreen();
+    expect(mockStart).not.toHaveBeenCalled();
+  });
+});
+
+it("STOP cancels the capability recheck after permission", async () => {
+  const pending = deferred<{ supported: boolean; granted: boolean }>();
+  mockSupported
+    .mockResolvedValueOnce({ supported: true, granted: false })
+    .mockResolvedValueOnce({ supported: true, granted: false })
+    .mockReturnValueOnce(pending.promise);
+  await render(<App />);
+  await fireEvent.press(screen.getByRole("button", { name: "START" }));
+  await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+  await act(async () => {
+    pending.resolve({ supported: true, granted: true });
+  });
+  expect(mockStart).not.toHaveBeenCalled();
+});
+
+it("permission rejection leaves a stopped, retryable state", async () => {
+  mockSupported.mockResolvedValue({ supported: true, granted: false });
+  mockPermission.mockRejectedValueOnce(new Error("permission failed"));
+  await render(<App />);
+  await fireEvent.press(screen.getByRole("button", { name: "START" }));
+  expect(mockStart).not.toHaveBeenCalled();
+  expect(screen.getByText("Stopped")).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "STOP" })).toBeDisabled();
+});
