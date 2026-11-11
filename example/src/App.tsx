@@ -20,7 +20,14 @@ import {
 import { getStepCounterPermission } from "./permission";
 import CircularProgress, { type ProgressRef } from "react-native-circular-progress-indicator";
 import LogCat, { type LogLine } from "./LogCat";
-import { EXAMPLE_LOGGING_ENABLED, MAX_LOG_ENTRIES } from "./logging";
+import { EXAMPLE_LOGGING_ENABLED, EXAMPLE_RENDERING_ENABLED, MAX_LOG_ENTRIES } from "./logging";
+import {
+  BENCHMARK_ENABLED,
+  BENCHMARK_WARMUP_MS,
+  BENCHMARK_DURATION_MS,
+  BenchmarkSession,
+  benchmarkNow,
+} from "./benchmark";
 
 const initialState: StepCountData = {
   counterType: "STEP_COUNTER",
@@ -48,6 +55,21 @@ export default function App(): React.JSX.Element {
   const [logs, setLogs] = React.useState<LogLine[]>([]);
   const stepSubscriptionRef = React.useRef<EventSubscription | null>(null);
   const progressRef = React.useRef<ProgressRef | null>(null);
+  const benchmarkRef = React.useRef<BenchmarkSession | null>(null);
+  const benchmarkTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingCommitRef = React.useRef<{ begin: number; count: number } | null>(null);
+  React.useLayoutEffect(() => {
+    const pending = pendingCommitRef.current;
+    if (!pending) return;
+    benchmarkRef.current?.observe(
+      "example_commit",
+      pending.begin,
+      benchmarkNow(),
+      true,
+      pending.count - 1
+    );
+    pendingCommitRef.current = null;
+  }, [stepData]);
 
   const sessionIdRef = React.useRef(sessionId);
   React.useEffect(() => {
@@ -74,6 +96,11 @@ export default function App(): React.JSX.Element {
   }, []);
 
   const stopStepCounter = React.useCallback(() => {
+    if (benchmarkTimerRef.current !== null) clearTimeout(benchmarkTimerRef.current);
+    benchmarkTimerRef.current = null;
+    pendingCommitRef.current = null;
+    const report = benchmarkRef.current?.finish(benchmarkNow());
+    benchmarkRef.current = null;
     operationRef.current?.abort();
     operationRef.current = null;
     setRequesting(false);
@@ -85,6 +112,31 @@ export default function App(): React.JSX.Element {
     setCalories("");
     setLoaded(false);
     startedRef.current = false;
+
+    if (report) {
+      // Export once, outside all timed regions. Wrap with run metadata using the guide.
+      console.log(
+        "STEP_BENCHMARK " +
+          JSON.stringify({
+            type: "start",
+            warmupMs: BENCHMARK_WARMUP_MS,
+            durationMs: BENCHMARK_DURATION_MS,
+            logging: EXAMPLE_LOGGING_ENABLED,
+            rendering: EXAMPLE_RENDERING_ENABLED,
+          })
+      );
+      for (const record of report.records)
+        console.log("STEP_BENCHMARK " + JSON.stringify({ type: "observation", ...record }));
+      console.log(
+        "STEP_BENCHMARK " +
+          JSON.stringify({
+            type: "end",
+            count: report.records.length,
+            omitted: report.omitted,
+            windowComplete: report.windowComplete,
+          })
+      );
+    }
 
     appendLog("STOP", () => ({ ok: true }));
   }, [appendLog]);
@@ -110,13 +162,22 @@ export default function App(): React.JSX.Element {
     const now = new Date();
     appendLog("START", () => ({ at: now.toISOString(), sessionId: nextSessionId }), nextSessionId);
     const filterStepCountData = createStepCountFilter();
+    if (BENCHMARK_ENABLED) {
+      benchmarkRef.current = new BenchmarkSession(benchmarkNow());
+      benchmarkTimerRef.current = setTimeout(
+        stopStepCounter,
+        BENCHMARK_WARMUP_MS + BENCHMARK_DURATION_MS
+      );
+    }
 
     // Subscribe once here; DO NOT subscribe elsewhere in UI.
     stepSubscriptionRef.current = startStepCounterUpdate(
       now,
       (data) => {
         if (!startedRef.current || sessionIdRef.current !== nextSessionId) return;
+        const begin = benchmarkRef.current ? benchmarkNow() : 0;
         const filteredData = filterStepCountData(data);
+        benchmarkRef.current?.observe("js_filter", begin, benchmarkNow(), !!filteredData);
         if (!filteredData) {
           appendLog(
             "stepCounterUpdateFiltered",
@@ -132,8 +193,17 @@ export default function App(): React.JSX.Element {
           return;
         }
 
-        setStepData(filteredData);
-        setCalories(parseStepData(filteredData).calories);
+        if (EXAMPLE_RENDERING_ENABLED) {
+          if (benchmarkRef.current) {
+            const pending = pendingCommitRef.current;
+            pendingCommitRef.current = {
+              begin: pending?.begin ?? begin,
+              count: (pending?.count ?? 0) + 1,
+            };
+          }
+          setStepData(filteredData);
+          setCalories(parseStepData(filteredData).calories);
+        }
 
         // Log the raw event we get from wrapper callback (single source of truth)
         appendLog(

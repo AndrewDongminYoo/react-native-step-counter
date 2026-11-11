@@ -206,6 +206,8 @@ async function startStepCounter() {
 
 리포지토리 및 개발 워크 플로에 기여하는 방법을 알고 싶으시다면 [`Contributing Guide`](CONTRIBUTING.md)를 참조하십시오.
 
+센서·필터 리플레이, 원시 결과 검증, Release/Hermes 기기 측정 절차는 [벤치마크 가이드](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/docs/benchmarking.md)를 참고하세요.
+
 ## License
 
 MIT

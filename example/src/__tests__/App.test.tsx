@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import App from "../App";
 import { Clipboard } from "react-native";
 import * as logging from "../logging";
+import * as benchmark from "../benchmark";
 import LogCat from "../LogCat";
 
 // ─── mocks ──────────────────────────────────────────────────────────────────
@@ -62,6 +63,70 @@ afterEach(() => {
 // ─── tests ───────────────────────────────────────────────────────────────────
 
 describe("App", () => {
+  it("stops the producer before exporting a complete benchmark window with coalesced commits", async () => {
+    jest.useFakeTimers();
+    try {
+      jest.replaceProperty(benchmark, "BENCHMARK_ENABLED", true);
+      jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", false);
+      let now = 100;
+      jest.spyOn(benchmark, "benchmarkNow").mockImplementation(() => now);
+      const output = jest.spyOn(console, "log").mockImplementation(() => {});
+      mockSupported.mockResolvedValue({ supported: true, granted: true });
+      await render(<App />);
+      const callback = mockStart.mock.calls[0][1];
+      now = 10100;
+      await act(() => {
+        for (const steps of [1, 2])
+          callback({
+            counterType: "STEP_COUNTER",
+            steps,
+            startDate: 1700000000000,
+            endDate: 1700000000000 + steps * 1000,
+            distance: steps,
+          });
+      });
+      now = 70100;
+      await act(() => {
+        jest.advanceTimersByTime(70000);
+      });
+      const exported = output.mock.calls.map((call) => JSON.parse(String(call[0]).slice(15)));
+      expect(exported.at(-1)).toEqual({ type: "end", count: 3, omitted: 0, windowComplete: true });
+      expect(exported.find((row) => row.stage === "example_commit").coalesced).toBe(1);
+      expect(mockStop.mock.invocationCallOrder.at(-1)).toBeLessThan(
+        output.mock.invocationCallOrder[0]!
+      );
+      expect(screen.getByText("Stopped")).toBeOnTheScreen();
+      await act(() => {
+        callback({ steps: 99 });
+      });
+      expect(screen.queryByText("99")).not.toBeOnTheScreen();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("keeps filtering without retaining event UI state when rendering is disabled", async () => {
+    jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", false);
+    jest.replaceProperty(logging, "EXAMPLE_RENDERING_ENABLED", false);
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await render(<App />);
+    await act(() => {
+      mockStart.mock.calls[0][1]({
+        counterType: "STEP_COUNTER",
+        steps: 123,
+        startDate: 1700000000000,
+        endDate: 1700000123000,
+        distance: 123,
+      });
+    });
+    expect(screen.queryByText("123")).not.toBeOnTheScreen();
+    expect(screen.getByText("0")).toBeOnTheScreen();
+    expect(createStepCountFilter).toHaveBeenCalledTimes(1);
+    jest.replaceProperty(logging, "EXAMPLE_RENDERING_ENABLED", true);
+    await screen.rerender(<App />);
+    expect(screen.queryByText("123")).not.toBeOnTheScreen();
+  });
+
   it("skips log serialization and accumulation in logging-off measurements", async () => {
     jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", false);
     mockSupported.mockResolvedValue({ supported: true, granted: true });
