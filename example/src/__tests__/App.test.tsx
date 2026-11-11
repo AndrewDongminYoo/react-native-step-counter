@@ -63,6 +63,37 @@ afterEach(() => {
 // ─── tests ───────────────────────────────────────────────────────────────────
 
 describe("App", () => {
+  it.each([false, true])(
+    "allows retry after synchronous startup failure (benchmark=%s)",
+    async (enabled) => {
+      jest.useFakeTimers();
+      try {
+        jest.replaceProperty(benchmark, "BENCHMARK_ENABLED", enabled);
+        const output = jest.spyOn(console, "log").mockImplementation(() => {});
+        let now = 100;
+        jest.spyOn(benchmark, "benchmarkNow").mockImplementation(() => now);
+        mockSupported.mockResolvedValue({ supported: true, granted: true });
+        mockStart.mockImplementationOnce(() => {
+          throw new Error("start failed");
+        });
+        const view = await render(<App />);
+        if (enabled) await fireEvent.press(screen.getByRole("button", { name: "START" }));
+        expect(screen.getByRole("button", { name: "START" })).toBeEnabled();
+        expect(screen.getByText("Stopped")).toBeOnTheScreen();
+        const exportsAfterFailure = output.mock.calls.length;
+        now = 70100;
+        await act(() => jest.advanceTimersByTime(70000));
+        expect(output.mock.calls.length).toBe(exportsAfterFailure);
+        await fireEvent.press(screen.getByRole("button", { name: "START" }));
+        expect(screen.getByText(/^Counting steps/)).toBeOnTheScreen();
+        expect(mockStart).toHaveBeenCalledTimes(2);
+        await view.unmount();
+      } finally {
+        jest.useRealTimers();
+      }
+    }
+  );
+
   it("shows counting before any sensor callback while preserving the existing UI", async () => {
     mockSupported.mockResolvedValue({ supported: true, granted: true });
     await render(<App />);

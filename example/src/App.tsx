@@ -279,6 +279,7 @@ export default function App(): React.JSX.Element {
         );
     } catch (error) {
       if (!operation.signal.aborted) {
+        if (startedRef.current) stopStepCounter();
         appendLog("capabilityError", () => String(error));
         setErrorMessage("Could not start counting. Tap START to try again.");
       }
@@ -288,7 +289,7 @@ export default function App(): React.JSX.Element {
         setRequesting(false);
       }
     }
-  }, [appendLog, startStepCounter]);
+  }, [appendLog, startStepCounter, stopStepCounter]);
 
   const restartStepCounter = React.useCallback(async () => {
     const hadSubscription = stepSubscriptionRef.current != null;
@@ -315,6 +316,7 @@ export default function App(): React.JSX.Element {
       })
       .catch((error: unknown) => {
         if (!operation.signal.aborted) {
+          if (startedRef.current) stopStepCounter();
           appendLog("capabilityError", () => String(error));
           setErrorMessage("Could not check step counting. Tap START to try again.");
         }
