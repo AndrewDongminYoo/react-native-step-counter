@@ -52,6 +52,12 @@ if (observations.some((o) => !["js_filter", "example_commit"].includes(o.stage))
 const result = {
   schemaVersion: 1,
   environment: "device",
+  capture: {
+    scenario,
+    windowComplete: last.windowComplete,
+    count: last.count,
+    omitted: last.omitted,
+  },
   metadata,
   config: {
     warmup: first.warmupMs,
@@ -64,7 +70,10 @@ const result = {
     "native_processing",
     "payload_creation",
     "native_to_js",
-    ...(!first.rendering ? ["example_commit"] : []),
+    ...(!observations.some((o) => o.stage === "js_filter") ? ["js_filter"] : []),
+    ...(!first.rendering || !observations.some((o) => o.stage === "example_commit")
+      ? ["example_commit"]
+      : []),
   ],
   records,
   observations: observations.map((item) => ({ ...item, scenario, round: 0 })),

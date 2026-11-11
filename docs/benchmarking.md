@@ -68,6 +68,7 @@ Each `*-result.json` contains:
 - `unavailable`: explicit stage names with no measurement. A host result cannot claim delivery or rendering, even if a number was supplied.
 - `records`: unique `(scenario, stage, round)` rows with positive `operations`, nonnegative `accepted` and `rejected` summing to operations, and finite nonnegative aggregate `durationNs`. Device commit rows also retain the number of `coalesced` updates.
 - Device export additionally preserves per-observation durations in `observations`, allowing latency distributions rather than only means.
+- Converted device exports include `capture` with the scenario, complete-window flag, observation count and omission count. A complete zero-observation export uses empty `records`/`observations`, `capture.count: 0`, `capture.omitted: 0`, `capture.windowComplete: true` and all timing stages marked unavailable. Only a single complete device window (`rounds: 1`) can use this representation; host results and incomplete/lossy windows still reject empty records. No zero latency or accuracy is inferred from an empty capture.
 
 `node tests/benchmarks/results.mjs <files...>` rejects unsupported revisions/environments, malformed metadata, duplicate rows, invalid counts/timings and impossible host stage claims.
 The host runner also requires all expected rows (25 JS or 50 native) before publishing its result.
@@ -139,3 +140,13 @@ For teardown, continue tracing for 10 seconds after stop, check no new owned cal
 Use a separate long-duration run for leak/battery studies, with its duration and sampling protocol recorded; a 60-second replay is not battery evidence.
 Mark thermal throttling, missing events, clock-correlation failures and instrumented-vs-uninstrumented differences instead of treating them as faster runs.
 Architecture decisions require repeatable device evidence; CI timing variation alone is not a regression verdict.
+
+## Verify delayed delivery on devices
+
+For `delayed_batches`, record a specific condition expected to defer delivery, such as supported Android sensor FIFO batching or a documented background/screen-off interval, with its start/end times and backend configuration.
+Perform the same physical movement as the walking control and retain the original platform trace with matched native emission and JS callback IDs on a correlated monotonic timeline.
+The evidence must show reports covering separated measurement times arriving together after the recorded deferral; retain the delay and batch-size distribution and compare the count with the walking control.
+The existing duration-only JS export cannot establish that condition by itself.
+On iOS, CMPedometer cumulative intervals alone do not establish callback deferral or sample latency.
+If the backend does not provide the required batching control, timestamps or trace correlation, mark delayed delivery unavailable with the reason instead of relabeling ordinary walking.
+Do not block the JS thread or change sampling rates merely to manufacture a batch; any such workload is a separately identified experiment with its own overhead/accuracy control.

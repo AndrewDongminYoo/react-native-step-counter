@@ -64,8 +64,34 @@ export function validateResult(result) {
   for (const stage of stages.filter((s) => !allowed?.includes(s))) {
     require(unavailable?.includes(stage), `Must declare ${stage} unavailable`);
   }
-  if (!Array.isArray(result.records) || result.records.length === 0)
-    return [...errors, "Empty records"];
+  const capture = result.capture;
+  if (capture !== undefined) {
+    require(result.environment === "device" &&
+      config.rounds === 1 &&
+      capture?.windowComplete === true &&
+      scenarios.includes(capture.scenario) &&
+      integer(capture.count) &&
+      capture.omitted === 0 &&
+      Array.isArray(result.observations) &&
+      capture.count === result.observations.length, "Invalid capture summary");
+    require(!Array.isArray(result.records) ||
+      result.records.every(
+        (row) => row?.scenario === capture?.scenario
+      ), "Capture scenario mismatch");
+  }
+  if (!Array.isArray(result.records) || result.records.length === 0) {
+    const completeEmptyCapture =
+      result.environment === "device" &&
+      config.rounds === 1 &&
+      Array.isArray(result.records) &&
+      capture?.windowComplete === true &&
+      capture.count === 0 &&
+      capture.omitted === 0 &&
+      Array.isArray(result.observations) &&
+      result.observations.length === 0 &&
+      stages.every((stage) => unavailable.includes(stage));
+    return completeEmptyCapture ? errors : [...errors, "Empty records"];
+  }
   const seen = new Set();
   for (const row of result.records) {
     if (!row || typeof row !== "object") {

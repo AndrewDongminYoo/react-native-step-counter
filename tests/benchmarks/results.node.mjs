@@ -67,6 +67,38 @@ const device = () => ({
 });
 test("accepts consistent device aggregates and observations", () =>
   assert.deepEqual(validateResult(device()), []));
+test("accepts complete no-event device evidence without inventing timing rows", () => {
+  const empty = {
+    ...device(),
+    config: { ...device().config, rounds: 1 },
+    records: [],
+    observations: [],
+    capture: { scenario: "stationary", windowComplete: true, count: 0, omitted: 0 },
+    unavailable: [
+      "native_processing",
+      "payload_creation",
+      "native_to_js",
+      "js_filter",
+      "example_commit",
+    ],
+  };
+  assert.deepEqual(validateResult(empty), []);
+  for (const patch of [
+    { capture: undefined },
+    { capture: { ...empty.capture, windowComplete: false } },
+    { capture: { ...empty.capture, count: 1 } },
+    { capture: { ...empty.capture, omitted: 1 } },
+    { observations: undefined },
+    { unavailable: empty.unavailable.filter((s) => s !== "js_filter") },
+    { environment: "node" },
+  ])
+    assert.ok(validateResult({ ...empty, ...patch }).includes("Empty records"));
+  assert.ok(
+    validateResult({ ...empty, capture: { ...empty.capture, scenario: "unknown" } }).includes(
+      "Invalid capture summary"
+    )
+  );
+});
 const expectedErrors = {
   "invalid device window": "Invalid device durationMs",
   "negative observation": "Invalid observation values",

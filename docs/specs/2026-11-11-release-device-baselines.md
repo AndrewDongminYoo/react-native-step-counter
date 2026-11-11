@@ -23,7 +23,7 @@ Sampling-rate, batching, worker-thread and architecture changes require a demons
 ## Acceptance
 
 - Retain raw logs, original platform traces, validated result files, metadata, commands and patches for all three backends.
-- Follow the existing five-scenario protocol, three logging/rendering configurations, fixed warm-up/window and at least five independent captures per compared variant and cell, alternating baseline/candidate order.
+- Follow the existing five-scenario protocol where the backend and trace evidence support it, three logging/rendering configurations, fixed warm-up/window and at least five independent captures per compared variant and cell, alternating baseline/candidate order. Record unsupported or unverifiable scenarios as unavailable with their reasons.
 - Confirm the selected backend from device evidence; a hardware-counter run does not cover fallback. Any benchmark-only fallback selection must remain outside the public API and be included in the recorded patch.
 - Record device/OS, exact commit/toolchain/runtime, sensor rate, power, thermal and app conditions, fixture identity, and instrumentation overhead.
 - Report event rate, sensor-to-JS p50/p95/p99, detector CPU/allocations, JS/frame cost, memory/teardown, energy, binary size and clean build time. Mark unsupported or unobservable metrics `[UNKNOWN]` with a reason.
