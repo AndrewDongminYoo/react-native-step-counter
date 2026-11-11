@@ -188,9 +188,10 @@
                 <li>
                   An unavailable baseline or current distance/floor metric yields <code>null</code>;
                   a metric with an unknown baseline stays <code>null</code> for that session. If the
-                  baseline query fails or returns no data, the first valid live sample establishes
-                  every baseline and its end date becomes <code>startDate</code>; that sample is not
-                  emitted.
+                  baseline query fails with a non-permission error or returns no data, the first
+                  valid live sample establishes every baseline and its end date becomes
+                  <code>startDate</code>; that sample is not emitted. Permission errors stop
+                  counting, including errors from the baseline query.
                 </li>
                 <li>
                   iOS ignores zero-step, stale, and decreasing windows without lowering baselines. A
@@ -372,9 +373,10 @@ subscriptions.forEach((subscription) => subscription.remove());
             <code>REGISTRATION_FAILED</code>, <code>QUERY_FAILED</code>, <code>UPDATE_FAILED</code>,
             and <code>DETECTION_FAILED</code>. iOS preserves the original error in optional
             <code>nativeDomain</code> and <code>nativeCode</code> strings, without exposing NSError
-            or userInfo. A query failure is recoverable through the existing live-baseline fallback;
-            fatal start/update failures stop counting. Android emits a failure only after permitted
-            fallback attempts fail.
+            or userInfo. A non-permission query failure is recoverable through the existing
+            live-baseline fallback. Permission errors stop counting even when reported by the
+            baseline query, as do fatal start/update failures. Android emits a failure only after
+            permitted fallback attempts fail.
           </p>
           <p>
             Pass an optional third callback to receive only errors belonging to that start,
@@ -511,7 +513,7 @@ async function startStepCounter() {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Wed Nov 11 2026 07:21:29 GMT+0900 (Korean Standard Time)
+      Documentation generated at Wed Nov 11 2026 11:07:01 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

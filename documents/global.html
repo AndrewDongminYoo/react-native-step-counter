@@ -381,12 +381,14 @@
               baseline, then subtracts it from steps, distance, and floors. Emitted
               <code>startDate</code> is that cutoff and <code>endDate</code> is the measurement
               time. Future origins clamp to the call time. Missing baseline/current optional metrics
-              remain null; an unknown baseline stays null for the session. If the query fails, the
-              first valid live sample becomes the baseline and its end date becomes the cutoff; that
-              sample is not emitted. Zero-step, stale, or decreasing windows are ignored without
-              lowering baselines. Native <code>queryStepCounterDataBetweenDates</code> instead
-              returns the requested historical interval (limited to available Core Motion history)
-              without live-session subtraction. It is not exposed by this TypeScript wrapper.
+              remain null; an unknown baseline stays null for the session. If the query fails with a
+              non-permission error, the first valid live sample becomes the baseline and its end
+              date becomes the cutoff; that sample is not emitted. Permission errors stop counting
+              even when reported by the baseline query. Zero-step, stale, or decreasing windows are
+              ignored without lowering baselines. Native
+              <code>queryStepCounterDataBetweenDates</code> instead returns the requested historical
+              interval (limited to available Core Motion history) without live-session subtraction.
+              It is not exposed by this TypeScript wrapper.
               <code>CMPedometer.startUpdates</code> replaces the deprecated
               <code>CMStepCounter</code> API.
             </p>
@@ -455,7 +457,7 @@
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line223">line 223</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line225">line 225</a>
                 </li>
               </ul>
             </dd>
@@ -547,7 +549,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
             <dd class="tag-source">
               <ul class="dummy">
                 <li>
-                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line287">line 287</a>
+                  <a href="index.js.html">index.js</a>, <a href="index.js.html#line289">line 289</a>
                 </li>
               </ul>
             </dd>
@@ -578,7 +580,7 @@ subscriptionRef.current = startStepCounterUpdate(startDate, (response) => {
     <br class="clear" />
 
     <footer>
-      Documentation generated at Wed Nov 11 2026 07:11:32 GMT+0900 (Korean Standard Time)
+      Documentation generated at Wed Nov 11 2026 11:07:01 GMT+0900 (Korean Standard Time)
     </footer>
 
     <script>

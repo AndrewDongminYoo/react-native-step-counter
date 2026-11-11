@@ -71,7 +71,7 @@ Add `NSMotionUsageDescription` to your app's `Info.plist`.
   - The returned handle owns the current native session. Calling its `remove()` stops sensors and removes that listener, including when debug listeners remain subscribed. Repeated removal is safe. Starting again replaces the previous handle; removing an older handle cannot stop the replacement.
   - If stopping the previous session throws during replacement, its listener is removed and the error propagates before a new listener or native session starts. A synchronous native start error also removes the new listener, attempts native cleanup and preserves the original start error.
   - iOS live updates exclude activity before the call, including when `start` is in the past. Steps, distance, and floors subtract the cumulative baseline from `start` to the call time; emitted `startDate` is that cutoff and `endDate` is the sample measurement time. Future origins clamp to the call time.
-  - An unavailable baseline or current distance/floor metric yields `null`; a metric with an unknown baseline stays `null` for that session. If the baseline query fails or returns no data, the first valid live sample establishes every baseline and its end date becomes `startDate`; that sample is not emitted.
+  - An unavailable baseline or current distance/floor metric yields `null`; a metric with an unknown baseline stays `null` for that session. If the baseline query fails with a non-permission error or returns no data, the first valid live sample establishes every baseline and its end date becomes `startDate`; that sample is not emitted. Permission errors stop counting, including errors from the baseline query.
   - iOS ignores zero-step, stale, and decreasing windows without lowering baselines. A correction can pause delivery until cumulative metrics recover; it does not add historical activity on recovery.
   - The native iOS `queryStepCounterDataBetweenDates` method returns the historical interval and unadjusted totals available from Core Motion. It is separate from live sessions and is not exposed by this TypeScript wrapper.
   - Android refreshes permission and sensors on every start, stops the previous backend, and prefers the hardware step counter.
@@ -133,7 +133,8 @@ It is not a cross-platform walking-state guarantee.
 `onErrorOccurred` carries serializable `StepCounterError` data: `code`, `message`, `platform`, `sessionId`, `operation`, and `fatal`.
 Stable codes are `PERMISSION_DENIED`, `SENSOR_UNAVAILABLE`, `REGISTRATION_FAILED`, `QUERY_FAILED`, `UPDATE_FAILED`, and `DETECTION_FAILED`.
 iOS preserves the original error in optional `nativeDomain` and `nativeCode` strings, without exposing NSError or userInfo.
-A query failure is recoverable through the existing live-baseline fallback; fatal start/update failures stop counting.
+A non-permission query failure is recoverable through the existing live-baseline fallback.
+Permission errors stop counting even when reported by the baseline query, as do fatal start/update failures.
 Android emits a failure only after permitted fallback attempts fail.
 
 Pass an optional third callback to receive only errors belonging to that start, including asynchronous startup failure:

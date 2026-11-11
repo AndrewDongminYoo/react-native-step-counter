@@ -278,8 +278,10 @@ export function isStepCountingSupported(): Promise<{ supported: boolean; granted
  * then subtracts it from steps, distance, and floors. Emitted `startDate` is that
  * cutoff and `endDate` is the measurement time. Future origins clamp to the call time.
  * Missing baseline/current optional metrics remain null; an unknown baseline stays
- * null for the session. If the query fails, the first valid live sample becomes the
- * baseline and its end date becomes the cutoff; that sample is not emitted.
+ * null for the session. If the query fails with a non-permission error, the first
+ * valid live sample becomes the baseline and its end date becomes the cutoff;
+ * that sample is not emitted. Permission errors stop counting even when reported
+ * by the baseline query.
  * Zero-step, stale, or decreasing windows are ignored without lowering baselines.
  * Native `queryStepCounterDataBetweenDates` instead returns the requested historical
  * interval (limited to available Core Motion history) without live-session subtraction.
