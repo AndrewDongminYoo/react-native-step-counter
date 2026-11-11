@@ -40,8 +40,8 @@ export default function MeasurementStatus({
       ? "Keep this screen open. Stops automatically."
       : result
         ? result.updates > 0
-          ? `Step updates received: ${result.updates}`
-          : "No step updates received. Tap START to try again."
+          ? `Step updates during measurement: ${result.updates}`
+          : "No step updates during measurement. Tap START to try again."
         : "Tap START when you are ready to walk.";
 
   return (

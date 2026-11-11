@@ -96,7 +96,7 @@ describe("App", () => {
       await act(() => jest.advanceTimersByTime(59000));
       expect(screen.getByText("Measurement complete")).toBeOnTheScreen();
       expect(
-        screen.getByText("No step updates received. Tap START to try again.")
+        screen.getByText("No step updates during measurement. Tap START to try again.")
       ).toBeOnTheScreen();
       await view.unmount();
     } finally {
@@ -112,6 +112,31 @@ describe("App", () => {
     await fireEvent.press(screen.getByRole("button", { name: "START" }));
     await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
     expect(screen.getByText("Measurement stopped early")).toBeOnTheScreen();
+  });
+
+  it("labels warm-up-only callbacks separately from measurement-window observations", async () => {
+    jest.replaceProperty(benchmark, "BENCHMARK_ENABLED", true);
+    let now = 100;
+    jest.spyOn(benchmark, "benchmarkNow").mockImplementation(() => now);
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    now = 1100;
+    await act(() =>
+      mockStart.mock.lastCall![1]({
+        counterType: "CMPedometer",
+        steps: 9,
+        startDate: 1700000000000,
+        endDate: 1700000001000,
+        distance: 6,
+      })
+    );
+    expect(screen.getByText("9")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+    expect(
+      screen.getByText("No step updates during measurement. Tap START to try again.")
+    ).toBeOnTheScreen();
   });
 
   it("keeps fatal errors visible when example logs are disabled", async () => {

@@ -107,6 +107,7 @@ Confirm all markers and observation counts with the converter before treating a 
 The example stores at most 20,000 observations.
 Events crossing warm-up/end boundaries are excluded; `omitted` counts overflow, and the converter refuses a lossy result.
 Filter observations include both accepted and rejected inputs.
+The on-screen update summary counts observations inside the measurement window, excluding warm-up callbacks; it does not count physical steps or all callbacks since START.
 Commit latency starts at the earliest accepted callback contributing to that commit and includes JS scheduling, filtering, parsing and React work.
 Several callbacks may share one commit; `coalesced` records the additional callbacks, so commit operations are not delivered-event counts.
 It excludes GPU presentation, animation completion and unrelated logging-only commits; use platform frame traces for those.
