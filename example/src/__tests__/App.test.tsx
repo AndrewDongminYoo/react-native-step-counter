@@ -63,6 +63,74 @@ afterEach(() => {
 // ─── tests ───────────────────────────────────────────────────────────────────
 
 describe("App", () => {
+  it("shows counting before any sensor callback while preserving the existing UI", async () => {
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await render(<App />);
+    expect(screen.getByText(/^Counting steps/)).toBeOnTheScreen();
+    expect(screen.queryByText("Stopped")).not.toBeOnTheScreen();
+    expect(screen.getByText("steps")).toBeOnTheScreen();
+    expect(screen.getByText("LogCat")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Copy logs" })).toBeOnTheScreen();
+  });
+
+  it("waits for START and shows warm-up, measurement and completion without sensor events", async () => {
+    jest.useFakeTimers();
+    try {
+      jest.replaceProperty(benchmark, "BENCHMARK_ENABLED", true);
+      let now = 100;
+      jest.spyOn(benchmark, "benchmarkNow").mockImplementation(() => now);
+      jest.spyOn(console, "log").mockImplementation(() => {});
+      mockSupported.mockResolvedValue({ supported: true, granted: true });
+      const view = await render(<App />);
+      expect(screen.getByText("Ready to measure")).toBeOnTheScreen();
+      expect(mockStart).not.toHaveBeenCalled();
+      await fireEvent.press(screen.getByRole("button", { name: "START" }));
+      expect(screen.getByText("Warm-up · 10s left")).toBeOnTheScreen();
+      now = 10100;
+      await act(() => jest.advanceTimersByTime(10000));
+      expect(screen.getByText("Measuring · 60s left")).toBeOnTheScreen();
+      now = 11100;
+      await act(() => jest.advanceTimersByTime(1000));
+      expect(screen.getByText("Measuring · 59s left")).toBeOnTheScreen();
+      now = 70100;
+      await act(() => jest.advanceTimersByTime(59000));
+      expect(screen.getByText("Measurement complete")).toBeOnTheScreen();
+      expect(
+        screen.getByText("No step updates received. Tap START to try again.")
+      ).toBeOnTheScreen();
+      await view.unmount();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("distinguishes a manual early stop from measurement completion", async () => {
+    jest.replaceProperty(benchmark, "BENCHMARK_ENABLED", true);
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    await fireEvent.press(screen.getByRole("button", { name: "STOP" }));
+    expect(screen.getByText("Measurement stopped early")).toBeOnTheScreen();
+  });
+
+  it("keeps fatal errors visible when example logs are disabled", async () => {
+    jest.replaceProperty(logging, "EXAMPLE_LOGGING_ENABLED", false);
+    mockSupported.mockResolvedValue({ supported: true, granted: true });
+    await render(<App />);
+    await act(() => mockStart.mock.lastCall![2]({ fatal: true }));
+    expect(screen.getByText("Counting stopped. Tap START to try again.")).toBeOnTheScreen();
+  });
+
+  it("does not advertise readiness after a benchmark start fails", async () => {
+    jest.replaceProperty(benchmark, "BENCHMARK_ENABLED", true);
+    mockSupported.mockResolvedValue({ supported: false, granted: false });
+    await render(<App />);
+    await fireEvent.press(screen.getByRole("button", { name: "START" }));
+    expect(screen.getByText("Step counting is unavailable on this device.")).toBeOnTheScreen();
+    expect(screen.queryByText("Ready to measure")).not.toBeOnTheScreen();
+  });
+
   it("stops the producer before exporting a complete benchmark window with coalesced commits", async () => {
     jest.useFakeTimers();
     try {
@@ -73,6 +141,7 @@ describe("App", () => {
       const output = jest.spyOn(console, "log").mockImplementation(() => {});
       mockSupported.mockResolvedValue({ supported: true, granted: true });
       await render(<App />);
+      await fireEvent.press(screen.getByRole("button", { name: "START" }));
       const callback = mockStart.mock.calls[0][1];
       now = 10100;
       await act(() => {

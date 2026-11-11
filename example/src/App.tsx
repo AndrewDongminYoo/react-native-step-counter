@@ -20,6 +20,7 @@ import {
 import { getStepCounterPermission } from "./permission";
 import CircularProgress, { type ProgressRef } from "react-native-circular-progress-indicator";
 import LogCat, { type LogLine } from "./LogCat";
+import MeasurementStatus, { type MeasurementResult } from "./MeasurementStatus";
 import { EXAMPLE_LOGGING_ENABLED, EXAMPLE_RENDERING_ENABLED, MAX_LOG_ENTRIES } from "./logging";
 import {
   BENCHMARK_ENABLED,
@@ -46,6 +47,10 @@ export default function App(): React.JSX.Element {
   const { width, height } = useWindowDimensions();
   const [loaded, setLoaded] = React.useState(false);
   const [requesting, setRequesting] = React.useState(true);
+  const [startedAt, setStartedAt] = React.useState<number | null>(null);
+  const [measurementStartedAt, setMeasurementStartedAt] = React.useState<number | null>(null);
+  const [measurementResult, setMeasurementResult] = React.useState<MeasurementResult | null>(null);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const operationRef = React.useRef<AbortController | null>(null);
 
   const [sessionId, setSessionId] = React.useState<string>(() => newSessionId());
@@ -114,6 +119,11 @@ export default function App(): React.JSX.Element {
     startedRef.current = false;
 
     if (report) {
+      setMeasurementStartedAt(null);
+      setMeasurementResult({
+        complete: report.windowComplete,
+        updates: report.records.filter((record) => record.stage === "js_filter").length,
+      });
       // Export once, outside all timed regions. Wrap with run metadata using the guide.
       console.log(
         "STEP_BENCHMARK " +
@@ -160,10 +170,15 @@ export default function App(): React.JSX.Element {
     setLoaded(true);
 
     const now = new Date();
+    setStartedAt(now.getTime());
+    setErrorMessage(null);
     appendLog("START", () => ({ at: now.toISOString(), sessionId: nextSessionId }), nextSessionId);
     const filterStepCountData = createStepCountFilter();
     if (BENCHMARK_ENABLED) {
-      benchmarkRef.current = new BenchmarkSession(benchmarkNow());
+      const begin = benchmarkNow();
+      setMeasurementStartedAt(begin);
+      setMeasurementResult(null);
+      benchmarkRef.current = new BenchmarkSession(begin);
       benchmarkTimerRef.current = setTimeout(
         stopStepCounter,
         BENCHMARK_WARMUP_MS + BENCHMARK_DURATION_MS
@@ -223,7 +238,10 @@ export default function App(): React.JSX.Element {
       (error) => {
         if (!startedRef.current || sessionIdRef.current !== nextSessionId) return;
         appendLog("sessionError", () => error, nextSessionId);
-        if (error.fatal) stopStepCounter();
+        if (error.fatal) {
+          stopStepCounter();
+          setErrorMessage("Counting stopped. Tap START to try again.");
+        }
       }
     );
   }, [appendLog, clearLogs, stopStepCounter]);
@@ -235,11 +253,15 @@ export default function App(): React.JSX.Element {
     const operation = new AbortController();
     operationRef.current = operation;
     setRequesting(true);
+    setErrorMessage(null);
     try {
       let cap = await isStepCountingSupported();
       if (operation.signal.aborted) return;
       appendLog("capabilities", () => cap);
-      if (!cap.supported) return;
+      if (!cap.supported) {
+        setErrorMessage("Step counting is unavailable on this device.");
+        return;
+      }
 
       if (!cap.granted) {
         const requested = await getStepCounterPermission(operation.signal);
@@ -249,9 +271,16 @@ export default function App(): React.JSX.Element {
         appendLog("permission", () => ({ requested, ...cap }));
       }
       if (cap.supported && cap.granted) startStepCounter();
+      else
+        setErrorMessage(
+          cap.supported
+            ? "Motion access is needed. Tap START to review permissions."
+            : "Step counting is unavailable on this device."
+        );
     } catch (error) {
       if (!operation.signal.aborted) {
         appendLog("capabilityError", () => String(error));
+        setErrorMessage("Could not start counting. Tap START to try again.");
       }
     } finally {
       if (operationRef.current === operation) {
@@ -282,10 +311,13 @@ export default function App(): React.JSX.Element {
       .then((result) => {
         if (operation.signal.aborted) return;
         appendLog("isStepCountingSupported", () => result);
-        if (result.supported && result.granted) startStepCounter();
+        if (!BENCHMARK_ENABLED && result.supported && result.granted) startStepCounter();
       })
       .catch((error: unknown) => {
-        if (!operation.signal.aborted) appendLog("capabilityError", () => String(error));
+        if (!operation.signal.aborted) {
+          appendLog("capabilityError", () => String(error));
+          setErrorMessage("Could not check step counting. Tap START to try again.");
+        }
       })
       .finally(() => {
         if (operationRef.current === operation) {
@@ -299,13 +331,14 @@ export default function App(): React.JSX.Element {
     };
   }, [appendLog, startStepCounter, stopStepCounter]);
 
-  const startedAtLabel = stepData.startDate
-    ? new Date(stepData.startDate).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-    : null;
+  const startedAtLabel =
+    startedAt !== null
+      ? new Date(startedAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        })
+      : null;
   const progressRadius = Math.min(132, Math.max(104, Math.floor(Math.min(width, height) / 3.1)));
   const progressSize = progressRadius * 2;
 
@@ -316,9 +349,22 @@ export default function App(): React.JSX.Element {
           <View style={styles.statusRow}>
             <View style={[styles.statusDot, loaded ? styles.dotActive : styles.dotInactive]} />
             <Text style={styles.statusText}>
-              {loaded && startedAtLabel ? `Active · ${startedAtLabel}` : "Stopped"}
+              {loaded
+                ? `Counting steps · ${startedAtLabel}`
+                : requesting
+                  ? "Checking motion access…"
+                  : "Stopped"}
             </Text>
           </View>
+
+          {errorMessage ? (
+            <Text accessibilityRole="alert" style={styles.errorText}>
+              {errorMessage}
+            </Text>
+          ) : null}
+          {BENCHMARK_ENABLED && !errorMessage ? (
+            <MeasurementStatus startedAt={measurementStartedAt} result={measurementResult} />
+          ) : null}
 
           <View style={[styles.indicator, { width: progressSize, height: progressSize }]}>
             <CircularProgress
@@ -411,6 +457,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
   },
+  errorText: {
+    color: "#ffffff",
+    fontSize: 15,
+    textAlign: "center",
+  },
   indicator: {
     alignItems: "center",
     flexShrink: 0,
@@ -455,7 +506,7 @@ const styles = StyleSheet.create({
   },
   logSection: {
     flex: 1,
-    minHeight: 180,
+    minHeight: 80,
     width: "100%",
   },
 });
