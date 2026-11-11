@@ -236,6 +236,8 @@ See the [`Release Notes`](CHANGELOG.md) for a list of changes.
 
 See the [`Contributing Guide`](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
+For reproducible sensor/filter replay, raw result validation and Release/Hermes device measurement procedures, see the [benchmark guide](https://github.com/AndrewDongminYoo/react-native-step-counter/blob/main/docs/benchmarking.md).
+
 ## License
 
 MIT

@@ -1,5 +1,8 @@
 # Android fallback replay and microbenchmark
 
+For versioned raw results, the five-scenario harness and Release/Hermes device procedures, see [benchmarking](../benchmarking.md).
+The measurements below describe the earlier arithmetic comparison, not a device baseline.
+
 Run on Linux or macOS with JDK 17+, Android SDK and installed Yarn workspace dependencies:
 
 ```sh

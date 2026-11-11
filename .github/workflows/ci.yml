@@ -43,6 +43,19 @@ jobs:
       - name: Test
         run: yarn test
 
+      - name: Replay JavaScript benchmark and validate raw results
+        run: |
+          node --test tests/benchmarks/*.node.mjs
+          node tests/benchmarks/run.mjs node "$RUNNER_TEMP/step-benchmark-js"
+          node tests/benchmarks/results.mjs "$RUNNER_TEMP/step-benchmark-js/node-result.json"
+
+      - name: Upload JavaScript benchmark results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: benchmark-js
+          path: ${{ runner.temp }}/step-benchmark-js/
+
       - name: Build package
         run: yarn prepare
 

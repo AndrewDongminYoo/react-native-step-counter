@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "samplePeriodNs": 20000000,
+  "epochMs": 1700000000000,
+  "scenarios": [
+    {
+      "name": "stationary",
+      "samples": 6060,
+      "pattern": "stationary",
+      "events": 120,
+      "stepEvery": 0,
+      "batchSize": 1
+    },
+    {
+      "name": "walking",
+      "samples": 6060,
+      "pattern": "walking",
+      "events": 120,
+      "stepEvery": 1,
+      "batchSize": 1
+    },
+    {
+      "name": "rapid_rotation",
+      "samples": 6060,
+      "pattern": "rotation",
+      "events": 120,
+      "stepEvery": 100,
+      "batchSize": 1
+    },
+    {
+      "name": "delayed_batches",
+      "samples": 6060,
+      "pattern": "walking",
+      "events": 120,
+      "stepEvery": 1,
+      "batchSize": 20
+    },
+    {
+      "name": "long_teardown",
+      "samples": 100000,
+      "pattern": "walking",
+      "events": 10000,
+      "stepEvery": 1,
+      "batchSize": 10
+    }
+  ]
+}
