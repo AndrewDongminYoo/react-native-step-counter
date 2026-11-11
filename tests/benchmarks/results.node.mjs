@@ -67,6 +67,26 @@ const device = () => ({
 });
 test("accepts consistent device aggregates and observations", () =>
   assert.deepEqual(validateResult(device()), []));
+const expectedErrors = {
+  "invalid device window": "Invalid device durationMs",
+  "negative observation": "Invalid observation values",
+  "negative coalescing": "Invalid coalesced count",
+  "missing observations": "Missing observations",
+  "inconsistent aggregates": "Observation aggregate mismatch",
+  "Debug device claim": "Device measurements require Release/Hermes metadata",
+  "missing metadata": "Invalid commit",
+  "wrong revision": "Unsupported schemaVersion",
+  "nonfinite timing": "Invalid durationNs",
+  "negative timing": "Invalid durationNs",
+  "count mismatch": "Count mismatch",
+  "fabricated delivery": "Stage is unavailable in this environment",
+  "empty records": "Empty records",
+  "duplicate row": "Duplicate record",
+  "missing unavailable": "Must declare native_processing unavailable",
+  "unsupported scenario": "Unknown scenario",
+  "non-array unavailable": "Invalid unavailable stages",
+  "prototype environment": "Unknown environment",
+};
 for (const [name, mutate] of [
   [
     "invalid device window",
@@ -98,11 +118,17 @@ for (const [name, mutate] of [
       r.records[0].durationNs = 999;
     },
   ],
+  [
+    "Debug device claim",
+    (r) => {
+      r.metadata.build = "Debug";
+    },
+  ],
 ])
   test(`rejects ${name}`, () => {
     const r = device();
     mutate(r);
-    assert.notDeepEqual(validateResult(r), []);
+    assert.ok(validateResult(r).includes(expectedErrors[name]));
   });
 
 for (const [name, mutate] of [
@@ -178,17 +204,10 @@ for (const [name, mutate] of [
       r.environment = "constructor";
     },
   ],
-  [
-    "Debug device claim",
-    (r) => {
-      r.environment = "device";
-      r.metadata.build = "Debug";
-    },
-  ],
 ]) {
   test(`rejects ${name}`, () => {
     const result = valid();
     mutate(result);
-    assert.notDeepEqual(validateResult(result), []);
+    assert.ok(validateResult(result).includes(expectedErrors[name]));
   });
 }

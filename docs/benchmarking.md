@@ -34,10 +34,12 @@ Inputs are synthetic, not recordings of a person's gait, and do not establish co
 | `stationary`      | 6,060 gravity samples; zero accepted steps                                                               | 120 zero-step reports, all accepted                                                                                               |
 | `walking`         | 6,060 samples with 30-sample impulses after warm-up; 200 steps                                           | 120 reports, one step/second, all accepted                                                                                        |
 | `rapid_rotation`  | 6,060 rapidly rotating gravity vectors; compare each decision to frozen legacy arithmetic                | 120 reports adding 100 steps/second; burst rebasing leaves four accepted plateaus, last accepted total 400                        |
-| `delayed_batches` | Same walking samples and expected decisions                                                              | Same measurement dates as walking, delivered in logical batches of 20 at offsets 20,000ms, 40,000ms, etc.; all 120 accepted       |
+| `delayed_batches` | Same walking samples and expected decisions                                                              | Same measurement dates as walking, delivered through six queued microtasks of 20 reports; all 120 accepted                        |
 | `long_teardown`   | 100,000 samples, 3,332 steps; additional service lifecycle test rejects 10,000 queued samples after stop | 10,000 valid reports; separate owned-subscription test delivers 10,000 before removal and none from the detached source afterward |
 
-Host replay runs batches immediately without sleeping; it preserves measurement chronology and asserts arrival-offset grouping, rather than simulating an OS scheduler.
+Host JS replay queues each batch through a Promise microtask without sleeping; it preserves measurement chronology rather than simulating an OS scheduler.
+The walking scenario delivers 120 single-report batches, while delayed batches deliver six groups of 20; measured rows retain `deliveryBatches` and `largestBatch` to expose that distinction.
+Filter timing sums the processing intervals inside batches, including per-batch clock overhead and excluding the microtask wait.
 The native delayed-batch processor replay intentionally has identical sample timestamps to walking; service batching semantics also have existing `SensorTimestampTest` coverage.
 
 | Stage               | Host measurement                                                                                                                                      | Device measurement                                                                                                      |
