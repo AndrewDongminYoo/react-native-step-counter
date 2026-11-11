@@ -52,6 +52,7 @@ Native CSV parsing, processor reset, assertions and result-file I/O stay outside
 The processing loop and accepted-result consumption remain inside; the payload loop includes map reads and Mockito interception overhead.
 Mockito invocation history is cleared between passes to bound host overhead.
 Escape analysis is disabled by the existing test JVM setting; this does not configure the Android app.
+Native runtime metadata comes from the test JVM itself, including when Gradle selects a different JVM from the shell's `java` command.
 Node runs under Jest's RN boundary mocks using `node:perf_hooks`, not Hermes.
 Core Motion, real native-to-JS delivery, battery use, device CPU load, frame presentation and thermal behavior remain unmeasured on Linux.
 
@@ -86,6 +87,20 @@ Verify Hermes and the Release build in the installed binary before collecting da
 5. At stop, the example exports `STEP_BENCHMARK` start, one small JSON line per observation and an end count. This happens outside timed regions, avoiding platform line-size truncation of one giant JSON value. Keep one window per capture. Missing markers, missing lines, buffer overflow, multiple windows or early stop invalidate conversion; increase log capture capacity or reduce event rate and rerun, never silently discard observations.
 6. Create `metadata.json` with `{ "scenario": "walking", "metadata": { ... } }` using all required schema fields above. Use the printed/generated `fixtures.sha256` for the fixture protocol identity, the actual tested commit/dirty flag, `clock: "JS performance.now"`, and the actual Hermes version. Add the device conditions listed above as metadata fields.
 7. Convert and validate: `node tests/benchmarks/device.mjs capture.log metadata.json device-result.json`, then `node tests/benchmarks/results.mjs device-result.json`. The converter retains observations and counts coalesced updates. It records native stages as unavailable because this export measures JS filtering and React commit latency only.
+
+For the opt-in iOS benchmark build, explicitly enable info-level native logging before `factory.startReactNative(...)` in `example/ios/StepCounterExample/AppDelegate.swift`, then rebuild Release:
+
+```swift
+RCTSetLogThreshold(.info)
+```
+
+`AppDelegate.swift` already imports `React`, which exposes this setter.
+Keep this temporary benchmark configuration in the recorded dirty-tree diff and restore it for normal example builds.
+The JS export uses `console.log`, which RN forwards to its info-level native sink; do not rely on the default threshold or on persisted info logs being retained by iOS.
+In macOS Console enable **Action → Include Info Messages**, start the device stream before launching the app, and retain the complete stream through export.
+If using Xcode's device log tools, configure equivalent info-level collection and disable **Debug executable** in the Release scheme.
+An OS crash log is not the live JavaScript log stream and cannot replace this capture.
+Confirm all markers and observation counts with the converter before treating a device run as usable.
 
 The example stores at most 20,000 observations.
 Events crossing warm-up/end boundaries are excluded; `omitted` counts overflow, and the converter refuses a lossy result.

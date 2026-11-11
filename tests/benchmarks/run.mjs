@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { arch, platform, release } from "node:os";
 import { dirname, resolve } from "node:path";
@@ -19,10 +19,7 @@ const metadata = {
   dirty: git("status", "--porcelain").length > 0,
   fixtureHash,
   platform: `${platform()}-${arch()} ${release()}`,
-  runtime:
-    environment === "node"
-      ? process.version
-      : spawnSync("java", ["-version"], { encoding: "utf8" }).stderr.trim(),
+  runtime: environment === "node" ? process.version : "pending JVM result",
   library: JSON.parse(readFileSync(resolve(root, "package.json"))).version,
   reactNative: JSON.parse(readFileSync(resolve(root, "node_modules/react-native/package.json")))
     .version,
@@ -53,6 +50,7 @@ if (environment === "jvm") {
       },
     }
   );
+  metadata.runtime = readFileSync(`${raw}.runtime.txt`, "utf8").trim();
 } else {
   execFileSync("yarn", ["test", "--runTestsByPath", "tests/benchmarks/replay.test.ts"], {
     cwd: root,

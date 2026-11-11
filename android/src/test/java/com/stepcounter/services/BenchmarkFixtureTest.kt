@@ -85,6 +85,8 @@ class BenchmarkFixtureTest {
       }
     }
     File(output!!).writeText(rows.joinToString(",\n", "[\n", "\n]\n"))
+    // Record the test process, which may differ from the Java executable on PATH.
+    File("$output.runtime.txt").writeText("${System.getProperty("java.vm.name")} ${System.getProperty("java.runtime.version")}\n")
   }
 
   @Test
