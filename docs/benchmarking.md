@@ -68,6 +68,7 @@ Each `*-result.json` contains:
 - `unavailable`: explicit stage names with no measurement. A host result cannot claim delivery or rendering, even if a number was supplied.
 - `records`: unique `(scenario, stage, round)` rows with positive `operations`, nonnegative `accepted` and `rejected` summing to operations, and finite nonnegative aggregate `durationNs`. Device commit rows also retain the number of `coalesced` updates.
 - Device export additionally preserves per-observation durations in `observations`, allowing latency distributions rather than only means.
+- Converted device exports include `capture` with the scenario, complete-window flag, observation count and omission count. A complete zero-observation export uses empty `records`/`observations`, `capture.count: 0`, `capture.omitted: 0`, `capture.windowComplete: true` and all timing stages marked unavailable. Only a single complete device window (`rounds: 1`) can use this representation; host results and incomplete/lossy windows still reject empty records. No zero latency or accuracy is inferred from an empty capture.
 
 `node tests/benchmarks/results.mjs <files...>` rejects unsupported revisions/environments, malformed metadata, duplicate rows, invalid counts/timings and impossible host stage claims.
 The host runner also requires all expected rows (25 JS or 50 native) before publishing its result.
@@ -82,8 +83,8 @@ Record model, OS/build, CPU architecture, battery level, thermal state, power co
 Record exact React Native, Hermes and library versions, full commit and a dirty-tree flag; save the diff when testing local changes.
 Verify Hermes and the Release build in the installed binary before collecting data.
 
-1. Set `BENCHMARK_ENABLED = true` in `example/src/benchmark.ts`. This arms 10 seconds of warm-up followed by a 60-second observation window and automatically stops the session after 70 seconds. Permission requests occur before this window. A manual early stop or truncated export is rejected by the capture converter.
-2. Set `EXAMPLE_LOGGING_ENABLED` and `EXAMPLE_RENDERING_ENABLED` in `example/src/logging.ts` before a full rebuild. Collect `(false, false)` for filtering alone, `(false, true)` for UI commit cost, then `(true, true)` for logging overhead. Logging itself induces React updates; `(true, false)` does not isolate rendering. The default example remains logging/rendering on, benchmark off.
+1. Set `BENCHMARK_ENABLED = true` in `example/src/benchmark.ts`. The app waits for START even when motion permission is already granted. START arms 10 seconds of warm-up followed by a 60-second observation window and automatically stops the session after 70 seconds. Permission requests occur before this window. The status panel shows readiness, warm-up/measurement countdowns and completion or early stop without depending on sensor callbacks. A manual early stop or truncated export is rejected by the capture converter.
+2. Keep `EXAMPLE_LOGGING_ENABLED` and `EXAMPLE_RENDERING_ENABLED` in `example/src/logging.ts` enabled for operator-assisted runs so the original step display and log panel remain available. Separately identified isolation builds may collect `(false, false)` for filter timing without event rendering/logging, `(false, true)` for UI commit cost, then `(true, true)` for logging overhead. Logging itself induces React updates; `(true, false)` does not isolate rendering. The status countdown still renders once per second in all benchmark configurations, outside the filter timing interval; these builds do not eliminate all UI overhead. Record this instrumentation change when comparing with earlier captures. The default example remains logging/rendering on, benchmark off.
 3. Build Android with `cd example/android && ./gradlew :app:assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a`. For iOS open `example/ios/StepCounterExample.xcworkspace`, select the physical device and the `StepCounterExample` scheme, set Run to Release and build with the project's normal signing setup. Do not use the documented Debug example scripts for baseline measurements. Close Metro/debuggers and avoid development menus and live consoles while timing.
 4. On Android begin `adb logcat -v threadtime > capture.log` before launching; on iOS save the selected app's unified/device console log from Console or Xcode's device tools. Record the tool/version used. Start a single counting session, perform the named scenario through the full window, and keep the app foregrounded for the baseline. Collect background/batched scenarios separately with explicit screen/app state.
 5. At stop, the example exports `STEP_BENCHMARK` start, one small JSON line per observation and an end count. This happens outside timed regions, avoiding platform line-size truncation of one giant JSON value. Keep one window per capture. Missing markers, missing lines, buffer overflow, multiple windows or early stop invalidate conversion; increase log capture capacity or reduce event rate and rerun, never silently discard observations.
@@ -107,10 +108,12 @@ Confirm all markers and observation counts with the converter before treating a 
 The example stores at most 20,000 observations.
 Events crossing warm-up/end boundaries are excluded; `omitted` counts overflow, and the converter refuses a lossy result.
 Filter observations include both accepted and rejected inputs.
+The on-screen update summary counts observations inside the measurement window, excluding warm-up callbacks; it does not count physical steps or all callbacks since START.
 Commit latency starts at the earliest accepted callback contributing to that commit and includes JS scheduling, filtering, parsing and React work.
 Several callbacks may share one commit; `coalesced` records the additional callbacks, so commit operations are not delivered-event counts.
 It excludes GPU presentation, animation completion and unrelated logging-only commits; use platform frame traces for those.
-The default UI layout and style are unchanged.
+The original progress indicator, controls and log panel remain in the example; benchmark builds add a visible status panel.
+The counting label tracks session start independently of incoming step dates, and fatal errors remain visible even with logging disabled.
 
 ## Native and delivery traces on devices
 
@@ -137,3 +140,13 @@ For teardown, continue tracing for 10 seconds after stop, check no new owned cal
 Use a separate long-duration run for leak/battery studies, with its duration and sampling protocol recorded; a 60-second replay is not battery evidence.
 Mark thermal throttling, missing events, clock-correlation failures and instrumented-vs-uninstrumented differences instead of treating them as faster runs.
 Architecture decisions require repeatable device evidence; CI timing variation alone is not a regression verdict.
+
+## Verify delayed delivery on devices
+
+For `delayed_batches`, record a specific condition expected to defer delivery, such as supported Android sensor FIFO batching or a documented background/screen-off interval, with its start/end times and backend configuration.
+Perform the same physical movement as the walking control and retain the original platform trace with matched native emission and JS callback IDs on a correlated monotonic timeline.
+The evidence must show reports covering separated measurement times arriving together after the recorded deferral; retain the delay and batch-size distribution and compare the count with the walking control.
+The existing duration-only JS export cannot establish that condition by itself.
+On iOS, CMPedometer cumulative intervals alone do not establish callback deferral or sample latency.
+If the backend does not provide the required batching control, timestamps or trace correlation, mark delayed delivery unavailable with the reason instead of relabeling ordinary walking.
+Do not block the JS thread or change sampling rates merely to manufacture a batch; any such workload is a separately identified experiment with its own overhead/accuracy control.

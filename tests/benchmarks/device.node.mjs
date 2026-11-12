@@ -68,6 +68,20 @@ test("device capture retains observations and rejects missing/truncated windows"
   const result = JSON.parse(readFileSync(out, "utf8"));
   assert.equal(result.records[1].coalesced, 2);
   assert.equal(result.observations.length, 2);
+  write([rows[0], { ...rows.at(-1), count: 0 }]);
+  execFileSync(process.execPath, args);
+  const empty = JSON.parse(readFileSync(out, "utf8"));
+  assert.deepEqual(empty.records, []);
+  assert.deepEqual(empty.observations, []);
+  assert.deepEqual(empty.capture, {
+    scenario: "walking",
+    windowComplete: true,
+    count: 0,
+    omitted: 0,
+  });
+  assert.ok(empty.unavailable.includes("js_filter"));
+  assert.ok(empty.unavailable.includes("example_commit"));
+  execFileSync(process.execPath, ["tests/benchmarks/results.mjs", out]);
   for (const broken of [
     rows.slice(0, -1),
     [...rows, ...rows],
