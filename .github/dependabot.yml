@@ -26,6 +26,10 @@ updates:
       timezone: Asia/Seoul
     open-pull-requests-limit: 2
     ignore:
+      # CLI 21 targets RN 0.89; move CLI majors with the React Native upgrade (#134).
+      - dependency-name: "@react-native-community/cli*"
+        update-types:
+          - version-update:semver-major
       # React Native 0.88's Babel preset requires Babel 7 (#74: every Jest suite failed on @babel/core 8).
       # update-types limits this to version updates; security updates still open.
       - dependency-name: "@babel/*"
