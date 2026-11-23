@@ -5168,7 +5168,7 @@ __metadata:
     react-native-reanimated: "npm:^4.7.1"
     react-native-safe-area-context: "npm:^5.10.1"
     react-native-svg: "npm:^15.16.0"
-    react-native-worklets: "npm:^0.13.0"
+    react-native-worklets: "npm:^0.14.0"
   languageName: unknown
   linkType: soft
 
@@ -10310,9 +10310,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-worklets@npm:^0.13.0":
-  version: 0.13.1
-  resolution: "react-native-worklets@npm:0.13.1"
+"react-native-worklets@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "react-native-worklets@npm:0.14.0"
   dependencies:
     "@babel/generator": "npm:^7.27.1"
     "@babel/plugin-transform-arrow-functions": "npm:^7.27.1"
@@ -10334,8 +10334,8 @@ __metadata:
     "@babel/core": "*"
     "@react-native/metro-config": "*"
     react: "*"
-    react-native: 0.86 - 0.88
-  checksum: 10c0/914888189aacba41035e9f5fb605cc02c91f17199eb1d83b3b0d5b94152f1d8a4e47fbdfe4c044c495b7e951a1b8c9262e660dd7c47bc0f021c539c5438d3c55
+    react-native: 0.87 - 0.89
+  checksum: 10c0/63cf8252c52b0948c536909aa24626d4526c3df32d4359beca2ed1b35ecf3f786fa98491bf68176210e39ba1007403d639cf3c56ceb56eda52755b51fd589b02
   languageName: node
   linkType: hard
 
