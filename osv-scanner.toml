@@ -3,21 +3,6 @@
 # None of these reach the published package: it has no runtime dependencies.
 
 [[IgnoredVulns]]
-id = "GHSA-vfj7-8cjw-p6xm"
-ignoreUntil = 2027-04-18
-reason = "braces@3.0.3 has no patched release as of 2026-10-18. Dev-only path (micromatch via jest, metro); patterns are repo-authored globs. Approved on 2026-10-18. Re-evaluate when a patch is released."
-
-[[IgnoredVulns]]
-id = "GHSA-ch52-4w7c-c8xp"
-ignoreUntil = 2027-04-18
-reason = "http-cache-semantics@4.2.0 has no patched release as of 2026-10-18. Dev-only path (node-gyp via make-fetch-happen, used only when installing native build headers); no shared cache serves other users. Approved on 2026-10-18. Re-evaluate when a patch is released."
-
-[[IgnoredVulns]]
-id = "GHSA-hp3w-g68c-fv3c"
-ignoreUntil = 2027-04-18
-reason = "sprintf-js@1.0.3 has no patched release as of 2026-10-18. Dev-only path (argparse 1 via js-yaml 3 via @istanbuljs/load-nyc-config); format strings are not user-controlled. Approved on 2026-10-18. Re-evaluate when a patch is released."
-
-[[IgnoredVulns]]
 id = "GHSA-3g3m-2fjr-6pw4"
 ignoreUntil = 2027-05-05
 reason = "glob@13.0.6 via jest@30.5.2 -> @jest/core@30.5.2 -> @jest/reporters, jest-config and jest-runtime@30.5.2 and via react-native-builder-bob@0.44.1, and glob@10.5.0 via jest -> @jest/transform -> babel-plugin-istanbul@8.0.2 -> test-exclude@7.0.2, have no compatible patch as of 2026-11-05: the advisory covers >= 9.0.0, <= 14.0.1 and the fix is glob 14.0.2. jest 30.5.2 is the newest jest and its three packages still require glob@^13.0.6, as does react-native-builder-bob 0.44.1, its newest release; babel-plugin-istanbul 8.0.2, its newest release, still requires test-exclude@^7.0.1, which requires glob@^10.4.1, and 10.5.0 is the last glob 10.x release. Medium severity, AbortSignal cancellation bypass that allows filesystem traversal after a timeout. Dev-only paths (jest and the builder-bob build tool), and no first-party source imports glob. Approved on 2026-11-05. Re-evaluate when jest and react-native-builder-bob accept glob 14 or babel-plugin-istanbul moves to a test-exclude release that does."
