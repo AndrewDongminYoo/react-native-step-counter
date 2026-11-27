@@ -37,7 +37,7 @@ lint:
       paths: [.github/**/*.md]
   enabled:
     - actionlint@1.7.12
-    - checkov@3.4.6
+    - checkov@3.4.11
     - eslint@10.15.0
     - git-diff-check
     - ktlint@1.8.0
@@ -48,7 +48,7 @@ lint:
     - prettier@3.10.1
     - taplo@0.10.0
     - trivy@0.76.2
-    - trufflehog@3.100.0
+    - trufflehog@3.100.1
     - yamllint@1.38.0
 actions:
   enabled:

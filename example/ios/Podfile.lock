@@ -1349,7 +1349,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context (5.10.1):
+  - react-native-safe-area-context (5.11.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1363,8 +1363,8 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-safe-area-context/common (= 5.10.1)
-    - react-native-safe-area-context/fabric (= 5.10.1)
+    - react-native-safe-area-context/common (= 5.11.1)
+    - react-native-safe-area-context/fabric (= 5.11.1)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -1374,7 +1374,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context/common (5.10.1):
+  - react-native-safe-area-context/common (5.11.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1397,7 +1397,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context/fabric (5.10.1):
+  - react-native-safe-area-context/fabric (5.11.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1813,7 +1813,7 @@ PODS:
     - React-utils (= 0.88.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.88.0)
-  - RNPermissions (5.6.3):
+  - RNPermissions (5.7.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1836,35 +1836,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNReanimated (4.7.1):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-bridging
-    - React-Core
-    - React-Core-prebuilt
-    - React-cxxstableapi
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNReanimated/apple (= 4.7.1)
-    - RNReanimated/common (= 4.7.1)
-    - RNReanimated/view (= 4.7.1)
-    - RNWorklets
-    - Yoga
-  - RNReanimated/apple (4.7.1):
+  - RNReanimated (4.8.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1887,9 +1859,12 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
+    - RNReanimated/apple (= 4.8.0)
+    - RNReanimated/common (= 4.8.0)
+    - RNReanimated/view (= 4.8.0)
     - RNWorklets
     - Yoga
-  - RNReanimated/common (4.7.1):
+  - RNReanimated/apple (4.8.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1914,7 +1889,7 @@ PODS:
     - ReactNativeDependencies
     - RNWorklets
     - Yoga
-  - RNReanimated/view (4.7.1):
+  - RNReanimated/common (4.8.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1939,54 +1914,7 @@ PODS:
     - ReactNativeDependencies
     - RNWorklets
     - Yoga
-  - RNSVG (15.16.0):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-bridging
-    - React-Core
-    - React-Core-prebuilt
-    - React-cxxstableapi
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNSVG/common (= 15.16.0)
-    - Yoga
-  - RNSVG/common (15.16.0):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-bridging
-    - React-Core
-    - React-Core-prebuilt
-    - React-cxxstableapi
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
-  - RNWorklets (0.13.0):
+  - RNReanimated/view (4.8.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2009,10 +1937,82 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - RNWorklets/apple (= 0.13.0)
-    - RNWorklets/common (= 0.13.0)
+    - RNWorklets
     - Yoga
-  - RNWorklets/apple (0.13.0):
+  - RNSVG (15.16.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNSVG/common (= 15.16.1)
+    - Yoga
+  - RNSVG/common (15.16.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - RNWorklets (0.14.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNWorklets/apple (= 0.14.0)
+    - RNWorklets/common (= 0.14.0)
+    - Yoga
+  - RNWorklets/apple (0.14.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2036,7 +2036,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNWorklets/common (0.13.0):
+  - RNWorklets/common (0.14.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2377,7 +2377,7 @@ SPEC CHECKSUMS:
   FBLazyVector: fdebac2dfe9c53bca49f8218fbdf1e24e36c8be0
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
-  hermes-engine: a1158910bb7e300b9e3d2f1e2d433f817ec1a4b5
+  hermes-engine: 46314c4154b59ee09235c4e5323fbbe924d0ffb3
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
   RCTDeprecation: e134f2a2c096a6450f5fcbbe949531f913a2ff04
   RCTRequired: f1a68295837ee8f91e112ed1b5694d12e7ff1784
@@ -2388,7 +2388,7 @@ SPEC CHECKSUMS:
   React-bridging: 658efeb1b4704d5f60ea2fb6e8ca826ab0ae3234
   React-callinvoker: 4e40c208c1ea46686c084a7c23da6a65cbb99482
   React-Core: a831be15fcea0e345a24cb10d6cc0b87e9913d03
-  React-Core-prebuilt: 0fd2555a42f40e7770ced1c7dfc5ee1dbfe041cd
+  React-Core-prebuilt: 68ce823f12cef893ec25b3b8719f50f08e444239
   React-CoreModules: a86fbe698fd817c17b3936832dc1106a130c4694
   React-cxxreact: 48ca56bd4f26de869478a803a5544b101a57cde6
   React-cxxstableapi: f35502b4c542a0d44031b42f91c4ca813d267e16
@@ -2418,7 +2418,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: a2dae4f2cb335ebb97f2240494d0c2bab84cd339
   React-microtasksnativemodule: 8b3aaa5f3b907ecf071b105589868d9f027a448d
   React-mutationobservernativemodule: 11d77d3f7360578f07847843544ada23cc473049
-  react-native-safe-area-context: b1c9f15a36e597e9cef4c5526e209ef2645bc2e0
+  react-native-safe-area-context: 56700b839169ce88ffcec68c40447916fe512462
   React-NativeModulesApple: 52f3def085f129de1307e3eb78e26729ff70f421
   React-networking: 1e6441349ac72bfd4f7a79c300c3dd76993a7058
   React-oscompat: e64123dd8199f9e99cede19fa542c3da3445481e
@@ -2455,15 +2455,15 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 782ee9546c9cd3b53b73f1e9e3dd728540085fc7
   ReactCodegen: 7b71f4464442e9b6eae41094d11076d56c51c0e3
   ReactCommon: 145a14b942b19fc2fe38927f261955ada56978aa
-  ReactNativeDependencies: d3b7423ba1e52525e42085c8470109abde583d2e
-  RNPermissions: f9a505ad190cbe248760999dfa87b93f221dd949
-  RNReanimated: 3018727dbf272754d0f31ef73f619e49ade7baf0
-  RNSVG: c35beed3dcf6fd14b50ca1fc0d4214a17ec5334d
-  RNWorklets: 488806637a21eb17812a48dadca7cb8c698c8cfd
+  ReactNativeDependencies: 0bc7979e5a0b76b0f9184be6b0ba87c449e0a395
+  RNPermissions: ba76f7bbb37b93d44f9ae4866a3455051001d787
+  RNReanimated: 24e07521c09de9e5d93c1d30cbfdaf89f8f2fc47
+  RNSVG: 0851af4352d2e692b44aada9dd7a1d361c18fcfc
+  RNWorklets: 2beaf608a368e5894d578ac8c4e3c2b0c9b77e08
   SocketRocket: 37aec555668fb852ec12e3c0de59a86ca58f0871
   StepCounter: 440157c51cc56becae29679e6ccbbdf0ebd65391
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
 
 PODFILE CHECKSUM: cc844e779d2f3a18b09e701a6bedf73e1a9a94c6
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.17.0
